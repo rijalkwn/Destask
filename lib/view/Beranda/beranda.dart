@@ -110,8 +110,12 @@ class _BerandaState extends State<Beranda> {
   }
 
   Container _Header() {
+    DateTime currentDate = DateTime.now();
+    String dayOfWeek = _getDayOfWeek(currentDate.weekday);
+    String formattedDate =
+        "${currentDate.day} ${_getMonth(currentDate.month)} ${currentDate.year}";
     return Container(
-      padding: const EdgeInsets.only(top: 15, left: 15, right: 15, bottom: 10),
+      padding: const EdgeInsets.only(left: 15, right: 15),
       decoration: const BoxDecoration(
         //gunakan global color
         color: Colors.blueAccent,
@@ -149,22 +153,63 @@ class _BerandaState extends State<Beranda> {
                 onTap: () {
                   Get.toNamed('/notifikasi');
                 },
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.lightBlue[300],
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  padding: EdgeInsets.all(10),
-                  child: Icon(
-                    Icons.notifications,
-                    color: Colors.white,
-                  ),
+                child: Stack(
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.lightBlue[300],
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: EdgeInsets.all(10),
+                      child: Icon(
+                        Icons.notifications,
+                        color: Colors.white,
+                      ),
+                    ),
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      child: Container(
+                        width: 25,
+                        height: 25,
+                        padding: EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Align(
+                          alignment: Alignment.center,
+                          child: Text(
+                            '1',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              )
+              ),
             ],
           ),
           SizedBox(
             height: 10,
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                '$dayOfWeek,',
+                style: TextStyle(fontSize: 18, color: Colors.white),
+              ),
+              SizedBox(height: 20),
+              Text(
+                '$formattedDate',
+                style: TextStyle(fontSize: 18, color: Colors.white),
+              ),
+            ],
           ),
           Padding(
             padding: EdgeInsets.only(left: 10, right: 10),
@@ -194,19 +239,26 @@ class _BerandaState extends State<Beranda> {
                         ),
                         Positioned(
                           top: 0,
-                          right: 2,
-                          child: Container(
-                            padding: EdgeInsets.all(5),
-                            decoration: BoxDecoration(
-                              color: Colors.red, // Adjust color as needed
-                              shape: BoxShape.circle,
-                            ),
-                            child: Text(
-                              (index + 1)
-                                  .toString(), // Display the index as a number
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
+                          right: 0,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: Container(
+                              width: 25,
+                              height: 25,
+                              padding: EdgeInsets.all(5),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.red,
+                              ),
+                              child: Align(
+                                alignment: Alignment.center,
+                                child: Text(
+                                  (index + 19).toString(),
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                  ),
+                                ),
                               ),
                             ),
                           ),
@@ -232,7 +284,7 @@ class _BerandaState extends State<Beranda> {
           Container(
             margin: const EdgeInsets.only(top: 5, bottom: 20),
             width: MediaQuery.of(context).size.width,
-            height: 55,
+            height: 45,
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(10),
@@ -260,7 +312,7 @@ class _BerandaState extends State<Beranda> {
   Expanded _JobList() {
     return Expanded(
       child: Container(
-        padding: EdgeInsets.only(top: 20),
+        padding: EdgeInsets.only(top: 15),
         decoration: const BoxDecoration(
           //gunakan global color
           color: Colors.white,
@@ -320,41 +372,12 @@ class _ListOfJob extends StatelessWidget {
           //card berbentuk listtile dengan tiap card dapat di tap
           return GestureDetector(
             onTap: () {
-              //bottomsheet
-              showModalBottomSheet(
-                context: context,
-                builder: (context) {
-                  return Container(
-                    height: 200,
-                    color: Colors.white,
-                    child: Column(
-                      children: [
-                        ListTile(
-                          leading: Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: Colors.blueAccent,
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.work,
-                              size: 30,
-                              color: Colors.white,
-                            ),
-                          ),
-                          title: Text(pekerjaan[index]),
-                          subtitle: Text(status[index]),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              );
+              Get.toNamed('/list_task');
             },
             child: Card(
-              color: PM[index] == "RijaL Kurniawan"
-                  ? Colors.cyan[200]
-                  : Colors.amber[200],
+              color: PM[index] == "Rijal Kurniawan"
+                  ? Colors.blue
+                  : Colors.blue[200],
               child: ListTile(
                 leading: Container(
                   padding: const EdgeInsets.all(5),
@@ -386,5 +409,57 @@ class _ListOfJob extends StatelessWidget {
         },
       ),
     );
+  }
+}
+
+String _getDayOfWeek(int day) {
+  switch (day) {
+    case 1:
+      return 'Senin';
+    case 2:
+      return 'Selasa';
+    case 3:
+      return 'Rabu';
+    case 4:
+      return 'Kamis';
+    case 5:
+      return 'Jumat';
+    case 6:
+      return 'Sabtu';
+    case 7:
+      return 'Minggu';
+    default:
+      return '';
+  }
+}
+
+String _getMonth(int month) {
+  switch (month) {
+    case 1:
+      return 'Januari';
+    case 2:
+      return 'Februari';
+    case 3:
+      return 'Maret';
+    case 4:
+      return 'April';
+    case 5:
+      return 'Mei';
+    case 6:
+      return 'Juni';
+    case 7:
+      return 'Juli';
+    case 8:
+      return 'Agustus';
+    case 9:
+      return 'September';
+    case 10:
+      return 'Oktober';
+    case 11:
+      return 'November';
+    case 12:
+      return 'Desember';
+    default:
+      return '';
   }
 }

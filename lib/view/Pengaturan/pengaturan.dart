@@ -76,13 +76,13 @@ class _PengaturanState extends State<Pengaturan> {
           Card(
             child: ListTile(
               iconColor: Colors.black,
-              title: Text('Change Password'),
+              title: Text('Ganti Password'),
               trailing: Icon(
                 Icons.keyboard_arrow_right,
                 size: 15,
               ),
               onTap: () {
-                // Implement change password functionality
+                Get.toNamed('/ganti_password');
               },
             ),
           ),

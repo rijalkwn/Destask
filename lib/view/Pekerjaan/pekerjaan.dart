@@ -37,6 +37,8 @@ class _PekerjaanState extends State<Pekerjaan>
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blueAccent,
+        iconTheme: IconThemeData(color: Colors.white),
+        automaticallyImplyLeading: false,
         title: isSearchBarVisible
             ? TextField(
                 controller: searchController,
@@ -86,9 +88,9 @@ class _PekerjaanState extends State<Pekerjaan>
             ],
             labelStyle: TextStyle(fontSize: 17), // Ukuran teks tab yang dipilih
             unselectedLabelStyle: TextStyle(fontSize: 16),
-            indicatorColor: Colors.white, // Warna underline/tab indicator
-            labelColor: Colors.white, // Warna teks tab yang dipilih
-            unselectedLabelColor: Colors.blue.shade100,
+            indicatorColor: Colors.white,
+            labelColor: Colors.white,
+            unselectedLabelColor: Colors.blue[100],
           ),
         ),
       ),
@@ -120,169 +122,43 @@ class PekerjaanList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-      itemCount: pekerjaans.length,
-      itemBuilder: (context, index) {
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 10),
-          child: Card(
-            elevation: 3,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: ListTile(
-              title: Text(
-                pekerjaans[index],
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+    return Padding(
+      padding: const EdgeInsets.only(top: 10),
+      child: ListView.builder(
+        itemCount: pekerjaans.length,
+        itemBuilder: (context, index) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 10),
+            child: Card(
+              elevation: 3,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
               ),
-              subtitle: Text(
-                'Project Manager',
-                style: TextStyle(fontSize: 12),
-              ),
-              leading: CircleAvatar(
-                backgroundColor: Colors.blue, // Warna lingkaran sebelah kiri
-                child: Icon(Icons.work,
-                    color: Colors.white), // Ikon di dalam lingkaran
-              ),
-              trailing: IconButton(
-                icon: Icon(Icons.more_vert), // Ikon di sebelah kanan
-                onPressed: () {},
-              ),
-              onTap: () {
-                showModalBottomSheet(
-                  backgroundColor: Colors.grey,
-                  context: context,
-                  builder: (context) {
-                    List<String> selectedTasks =
-                        tabData.values.toList()[tabController.index];
-                    return _buildBottomSheet(context, index, selectedTasks);
-                  },
-                );
-              },
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildBottomSheet(
-      BuildContext context, int index, List<String> tasks) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(20),
-          topRight: Radius.circular(20),
-        ),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Padding(
-            padding: EdgeInsets.symmetric(vertical: 16),
-            child: Center(
-              child: Container(
-                width: 50,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(10),
+              child: ListTile(
+                title: Text(
+                  pekerjaans[index],
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
+                subtitle: Text(
+                  'Project Manager',
+                  style: TextStyle(fontSize: 12),
+                ),
+                leading: CircleAvatar(
+                  backgroundColor: Colors.blue, // Warna lingkaran sebelah kiri
+                  child: Icon(Icons.work,
+                      color: Colors.white), // Ikon di dalam lingkaran
+                ),
+                trailing: IconButton(
+                  icon: Icon(Icons.more_vert), // Ikon di sebelah kanan
+                  onPressed: () {},
+                ),
+                onTap: () {
+                  Get.toNamed('list_task');
+                },
               ),
             ),
-          ),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20),
-            child: InputDecorator(
-              decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10.0),
-                ),
-                contentPadding: EdgeInsets.symmetric(horizontal: 10),
-                hintText: "Kategori",
-              ),
-              child: DropdownButtonFormField(
-                isExpanded: true,
-                decoration: InputDecoration.collapsed(hintText: 'Status'),
-                items: category.map((e) {
-                  return DropdownMenuItem(
-                    child: Text(e),
-                    value: e,
-                  );
-                }).toList(),
-                onChanged: (value) {},
-              ),
-            ),
-          ),
-          SizedBox(height: 20),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                GestureDetector(
-                  onTap: () {
-                    Get.toNamed('/detail_task');
-                  },
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.file_copy,
-                        color: GlobalColors.mainColor,
-                        size: 45,
-                      ),
-                      SizedBox(height: 5),
-                      Text("Detail"),
-                    ],
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    Get.toNamed('/kelola_task');
-                  },
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.add_box_rounded,
-                        color: GlobalColors.mainColor,
-                        size: 45,
-                      ),
-                      SizedBox(height: 5),
-                      Text("Tambah"),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: 20),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Detail Pekerjaan",
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                SizedBox(height: 10),
-                Text(
-                  tasks[index],
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w300,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(height: 20),
-        ],
+          );
+        },
       ),
     );
   }
@@ -290,53 +166,53 @@ class PekerjaanList extends StatelessWidget {
 
 // Sample task lists for demonstration purposes
 List<String> OnProgress = [
-  'Task 1 - To Do',
-  'Task 2 - To Do',
-  'Task 1 - To Do',
-  'Task 2 - To Do',
-  'Task 1 - To Do',
-  'Task 2 - To Do',
-  'Task 1 - To Do',
-  'Task 2 - To Do',
-  'Task 1 - To Do',
-  'Task 2 - To Do',
-  'Task 1 - To Do',
-  'Task 2 - To Do',
-  'Task 1 - To Do',
-  'Task 2 - To Do',
-  'Task 1 - To Do',
-  'Task 2 - To Do',
-  'Task 1 - To Do',
-  'Task 2 - To Do',
+  'Pekerjaan 1 - To Do',
+  'Pekerjaan 2 - To Do',
+  'Pekerjaan 1 - To Do',
+  'Pekerjaan 2 - To Do',
+  'Pekerjaan 1 - To Do',
+  'Pekerjaan 2 - To Do',
+  'Pekerjaan 1 - To Do',
+  'Pekerjaan 2 - To Do',
+  'Pekerjaan 1 - To Do',
+  'Pekerjaan 2 - To Do',
+  'Pekerjaan 1 - To Do',
+  'Pekerjaan 2 - To Do',
+  'Pekerjaan 1 - To Do',
+  'Pekerjaan 2 - To Do',
+  'Pekerjaan 1 - To Do',
+  'Pekerjaan 2 - To Do',
+  'Pekerjaan 1 - To Do',
+  'Pekerjaan 2 - To Do',
 
-  // Add more tasks as needed
+  // Add more Pekerjaans as needed
 ];
 
 List<String> Selesai = [
-  'Task 3 - In Progress',
-  'Task 4 - In Progress',
-  // Add more tasks as needed
+  'Pekerjaan 3 - In Progress',
+  'Pekerjaan 4 - In Progress',
+  // Add more Pekerjaans as needed
 ];
 
 List<String> Pending = [
-  'Task 5 - Done',
-  'Task 6 - Done',
-  // Add more tasks as needed
+  'Pekerjaan 5 - Done',
+  'Pekerjaan 6 - Done',
+  // Add more Pekerjaans as needed
 ];
 List<String> Cancel = [
-  'Task 5 - Done',
-  'Task 6 - Done',
-  // Add more tasks as needed
+  'Pekerjaan 5 - Done',
+  'Pekerjaan 6 - Done',
+  // Add more Pekerjaans as needed
 ];
 List<String> Bast = [
-  'Task 5 - Done',
-  'Task 6 - Done',
-  // Add more tasks as needed
+  'Pekerjaan 5 - Done',
+  'Pekerjaan 6 - Done',
+  // Add more Pekerjaans as needed
 ];
 List<String> Support = [
-  'Task 5 - Done',
-  'Task 6 - Done',
-  // Add more tasks as needed
+  'Pekerjaan 5 - Done',
+  'Pekerjaan 6 - Done',
+  // Add more Pekerjaans as needed
 ];
 
 List category = [

@@ -22,16 +22,9 @@ class _LupaPasswordState extends State<LupaPassword> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Container(
-                  margin: EdgeInsets.only(top: 100),
-                  height: 120,
-                  child: Image.asset(
-                    'assets/img/logo.png',
-                    width: 100,
-                    height: 100,
-                  ),
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.1,
                 ),
-                SizedBox(height: 100),
                 LupaPasswordForm(),
               ],
             ),
@@ -51,6 +44,15 @@ class LupaPasswordForm extends StatelessWidget {
         padding: const EdgeInsets.all(20.0),
         child: Column(
           children: [
+            Container(
+              margin: EdgeInsets.only(
+                  top: MediaQuery.of(context).size.height * 0.08,
+                  bottom: MediaQuery.of(context).size.height * 0.1),
+              child: Image.asset(
+                'assets/img/logo.png',
+              ),
+            ),
+            SizedBox(height: 20),
             Text(
               "Lupa Password",
               style: TextStyle(
@@ -64,6 +66,8 @@ class LupaPasswordForm extends StatelessWidget {
               // controller: usernameController,
               decoration: InputDecoration(
                 labelText: 'Email',
+                contentPadding:
+                    EdgeInsets.symmetric(vertical: 5, horizontal: 15),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),

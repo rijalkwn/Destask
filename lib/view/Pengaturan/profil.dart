@@ -1,3 +1,4 @@
+import 'package:destask/utils/global_colors.dart';
 import 'package:flutter/material.dart';
 
 class Profil extends StatefulWidget {
@@ -24,7 +25,9 @@ class _ProfilState extends State<Profil> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Edit Profil'),
+        title: Text('Edit Profil', style: TextStyle(color: Colors.white)),
+        backgroundColor: GlobalColors.mainColor,
+        iconTheme: IconThemeData(color: Colors.white),
       ),
       body: Padding(
         padding: EdgeInsets.all(16.0),

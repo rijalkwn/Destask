@@ -140,12 +140,6 @@ class _LoginState extends State<Login> {
                         filled: true,
                         fillColor: GlobalColors.backColor,
                       ),
-                      validator: (value) {
-                        if (value!.isEmpty) {
-                          return 'Username tidak boleh kosong';
-                        }
-                        return null;
-                      },
                     ),
                   ),
                 ],
