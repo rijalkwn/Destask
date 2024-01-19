@@ -332,9 +332,9 @@ class _ListOfJob extends StatelessWidget {
         itemBuilder: (context, index) {
           var namaPekerjaan = pekerjaan[index].nama_pekerjaan;
           var PM = pekerjaan[index].PM;
-          return GestureDetector(
+          return InkWell(
             onTap: () {
-              Get.toNamed('/list_task');
+              Get.toNamed('/task/${pekerjaan[index].idpekerjaan}');
             },
             child: Card(
               color: PM == "Rijal Kurniawan" ? Colors.blue : Colors.blue[200],

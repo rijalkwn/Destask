@@ -1,8 +1,5 @@
 import 'package:destask/controller/pekerjaan_controller.dart';
-import 'package:destask/model/pekerjaan_model.dart';
 import 'package:destask/utils/global_colors.dart';
-import 'package:destask/view/Beranda/Task/list_task.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -147,7 +144,7 @@ class StatusPekerjaan extends StatelessWidget {
 
           return PekerjaanList(
             status: status,
-            pekerjaanData: filteredList,
+            pekerjaan: filteredList,
           );
         } else {
           return Center(child: Text('No data available.'));
@@ -159,59 +156,57 @@ class StatusPekerjaan extends StatelessWidget {
 
 class PekerjaanList extends StatelessWidget {
   final String status;
-  final List<dynamic> pekerjaanData;
+  final List<dynamic> pekerjaan;
 
-  PekerjaanList({required this.status, required this.pekerjaanData});
+  PekerjaanList({required this.status, required this.pekerjaan});
 
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      itemCount: pekerjaanData.length,
+      itemCount: pekerjaan.length,
       itemBuilder: (context, index) {
-        return GestureDetector(
-          onTap: () {
-            // Get.to(ListTask(idpekerjaan: pekerjaanData[index]['idpekerjaan']));
-          },
-          child: Card(
-            color: GlobalColors.mainColor,
-            child: ListTile(
-              leading: Container(
-                padding: const EdgeInsets.all(5),
-                decoration: BoxDecoration(
-                  color: Colors.amber,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.work,
-                  size: 30,
-                  color: Colors.white,
-                ),
+        return Card(
+          color: GlobalColors.mainColor,
+          child: ListTile(
+            leading: Container(
+              padding: const EdgeInsets.all(5),
+              decoration: BoxDecoration(
+                color: Colors.amber,
+                shape: BoxShape.circle,
               ),
-              title: Text(
-                pekerjaanData[index]['nama_pekerjaan'].length > 20
-                    ? '${pekerjaanData[index]['nama_pekerjaan'].substring(0, 20)}...'
-                    : pekerjaanData[index]['nama_pekerjaan'],
-                style: TextStyle(color: Colors.white),
-              ),
-              subtitle: Text(
-                "PM : " + pekerjaanData[index]['PM'],
-                style: const TextStyle(color: Colors.white),
-              ),
-              trailing: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    "Deadline",
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                  Text(
-                    pekerjaanData[index]['tanggal_selesai'],
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                ],
+              child: const Icon(
+                Icons.work,
+                size: 30,
+                color: Colors.white,
               ),
             ),
+            title: Text(
+              pekerjaan[index]['nama_pekerjaan'].length > 20
+                  ? '${pekerjaan[index]['nama_pekerjaan'].substring(0, 20)}...'
+                  : pekerjaan[index]['nama_pekerjaan'],
+              style: TextStyle(color: Colors.white),
+            ),
+            subtitle: Text(
+              "PM : " + pekerjaan[index]['PM'],
+              style: const TextStyle(color: Colors.white),
+            ),
+            trailing: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  "Deadline",
+                  style: const TextStyle(color: Colors.white),
+                ),
+                Text(
+                  pekerjaan[index]['tanggal_selesai'],
+                  style: const TextStyle(color: Colors.white),
+                ),
+              ],
+            ),
+            onTap: () {
+              Get.toNamed('/task/${pekerjaan[index]['idpekerjaan']}');
+            },
           ),
         );
       },
