@@ -1,4 +1,8 @@
+import 'package:destask/controller/pekerjaan_controller.dart';
+import 'package:destask/model/pekerjaan_model.dart';
 import 'package:destask/utils/global_colors.dart';
+import 'package:destask/view/Beranda/Task/list_task.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -12,22 +16,33 @@ class Pekerjaan extends StatefulWidget {
 class _PekerjaanState extends State<Pekerjaan>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  late Future<List<dynamic>> futurePekerjaan;
   TextEditingController searchController = TextEditingController();
+  PekerjaanController pekerjaanController = PekerjaanController();
 
-  // Map to associate each tab with its corresponding list of tasks
-  final Map<String, List<String>> tabData = {
-    'On Progress': OnProgress,
-    'Selesai': Selesai,
-    'Pending': Pending,
-    'Cancel': Cancel,
-    'Bast': Bast,
-    'Support': Support,
-  };
+  final List<String> statusNames = [
+    'On Progress',
+    'Selesai',
+    'Pending',
+    'Cancel',
+    'Bast',
+    'Support',
+  ];
+  //icon
+  final List<IconData> statusIcon = [
+    Icons.work,
+    Icons.check_circle,
+    Icons.pending,
+    Icons.cancel,
+    Icons.assignment,
+    Icons.support,
+  ];
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 6, vsync: this);
+    futurePekerjaan = PekerjaanController().getAllPekerjaan();
   }
 
   bool isSearchBarVisible = false;
@@ -72,183 +87,134 @@ class _PekerjaanState extends State<Pekerjaan>
                 ),
               ]
             : null,
-        bottom: PreferredSize(
-          preferredSize: Size.fromHeight(50),
-          child: TabBar(
-            controller: _tabController,
-            isScrollable: false,
-            labelPadding: EdgeInsets.symmetric(horizontal: 10), // padding tab
-            tabs: const [
-              Tab(icon: Icon(Icons.work), text: 'On Progress'),
-              Tab(icon: Icon(Icons.check_circle), text: 'Selesai'),
-              Tab(icon: Icon(Icons.pending), text: 'Pending'),
-              Tab(icon: Icon(Icons.cancel), text: 'Cancel'),
-              Tab(icon: Icon(Icons.support), text: 'Support'),
-              Tab(icon: Icon(Icons.assignment), text: 'Bast'),
-            ],
-            labelStyle: TextStyle(fontSize: 17), // Ukuran teks tab yang dipilih
-            unselectedLabelStyle: TextStyle(fontSize: 16),
-            indicatorColor: Colors.white,
-            labelColor: Colors.white,
-            unselectedLabelColor: Colors.blue[100],
-          ),
+        bottom: TabBar(
+          controller: _tabController,
+          isScrollable: true,
+          labelPadding: EdgeInsets.symmetric(horizontal: 10),
+          tabs: [
+            for (var i = 0; i < statusNames.length; i++)
+              Tab(
+                icon: Icon(statusIcon[i]),
+                text: statusNames[i],
+              ),
+          ],
+          labelStyle: TextStyle(fontSize: 17),
+          unselectedLabelStyle: TextStyle(fontSize: 16),
+          indicatorColor: Colors.white,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.blue[100],
         ),
       ),
       body: TabBarView(
         controller: _tabController,
-        children: tabData.keys.map((tab) {
-          return PekerjaanList(
-            pekerjaans: tabData[tab] ?? [],
-            tabController: _tabController,
-            tabData: tabData,
-          );
-        }).toList(),
+        children: [
+          for (var status in statusNames)
+            StatusPekerjaan(
+              futurePekerjaan: futurePekerjaan,
+              status: status,
+            ),
+        ],
       ),
+    );
+  }
+}
+
+class StatusPekerjaan extends StatelessWidget {
+  const StatusPekerjaan({
+    Key? key,
+    required this.futurePekerjaan,
+    required this.status,
+  }) : super(key: key);
+
+  final Future<List<dynamic>> futurePekerjaan;
+  final String status;
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<List<dynamic>>(
+      future: futurePekerjaan,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return Center(child: Text('No data available.'));
+        } else if (snapshot.hasData) {
+          final filteredList = snapshot.data!
+              .where((pekerjaan) => pekerjaan['status'] == status)
+              .toList();
+
+          return PekerjaanList(
+            status: status,
+            pekerjaanData: filteredList,
+          );
+        } else {
+          return Center(child: Text('No data available.'));
+        }
+      },
     );
   }
 }
 
 class PekerjaanList extends StatelessWidget {
-  final List<String> pekerjaans;
-  final TabController tabController;
-  final Map<String, List<String>> tabData;
+  final String status;
+  final List<dynamic> pekerjaanData;
 
-  const PekerjaanList({
-    Key? key,
-    required this.pekerjaans,
-    required this.tabController,
-    required this.tabData,
-  }) : super(key: key);
+  PekerjaanList({required this.status, required this.pekerjaanData});
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 10),
-      child: ListView.builder(
-        itemCount: pekerjaans.length,
-        itemBuilder: (context, index) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 10),
-            child: Card(
-              elevation: 3,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
+    return ListView.builder(
+      itemCount: pekerjaanData.length,
+      itemBuilder: (context, index) {
+        return GestureDetector(
+          onTap: () {
+            // Get.to(ListTask(idpekerjaan: pekerjaanData[index]['idpekerjaan']));
+          },
+          child: Card(
+            color: GlobalColors.mainColor,
+            child: ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(5),
+                decoration: BoxDecoration(
+                  color: Colors.amber,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.work,
+                  size: 30,
+                  color: Colors.white,
+                ),
               ),
-              child: ListTile(
-                title: Text(
-                  pekerjaans[index],
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-                subtitle: Text(
-                  'Project Manager',
-                  style: TextStyle(fontSize: 12),
-                ),
-                leading: CircleAvatar(
-                  backgroundColor: Colors.blue, // Warna lingkaran sebelah kiri
-                  child: Icon(Icons.work,
-                      color: Colors.white), // Ikon di dalam lingkaran
-                ),
-                trailing: IconButton(
-                  icon: Icon(Icons.more_vert), // Ikon di sebelah kanan
-                  onPressed: () {},
-                ),
-                onTap: () {
-                  Get.toNamed('list_task');
-                },
+              title: Text(
+                pekerjaanData[index]['nama_pekerjaan'].length > 20
+                    ? '${pekerjaanData[index]['nama_pekerjaan'].substring(0, 20)}...'
+                    : pekerjaanData[index]['nama_pekerjaan'],
+                style: TextStyle(color: Colors.white),
+              ),
+              subtitle: Text(
+                "PM : " + pekerjaanData[index]['PM'],
+                style: const TextStyle(color: Colors.white),
+              ),
+              trailing: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    "Deadline",
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  Text(
+                    pekerjaanData[index]['tanggal_selesai'],
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ],
               ),
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }
-
-// Sample task lists for demonstration purposes
-List<String> OnProgress = [
-  'Pekerjaan 1 - To Do',
-  'Pekerjaan 2 - To Do',
-  'Pekerjaan 1 - To Do',
-  'Pekerjaan 2 - To Do',
-  'Pekerjaan 1 - To Do',
-  'Pekerjaan 2 - To Do',
-  'Pekerjaan 1 - To Do',
-  'Pekerjaan 2 - To Do',
-  'Pekerjaan 1 - To Do',
-  'Pekerjaan 2 - To Do',
-  'Pekerjaan 1 - To Do',
-  'Pekerjaan 2 - To Do',
-  'Pekerjaan 1 - To Do',
-  'Pekerjaan 2 - To Do',
-  'Pekerjaan 1 - To Do',
-  'Pekerjaan 2 - To Do',
-  'Pekerjaan 1 - To Do',
-  'Pekerjaan 2 - To Do',
-
-  // Add more Pekerjaans as needed
-];
-
-List<String> Selesai = [
-  'Pekerjaan 3 - In Progress',
-  'Pekerjaan 4 - In Progress',
-  // Add more Pekerjaans as needed
-];
-
-List<String> Pending = [
-  'Pekerjaan 5 - Done',
-  'Pekerjaan 6 - Done',
-  // Add more Pekerjaans as needed
-];
-List<String> Cancel = [
-  'Pekerjaan 5 - Done',
-  'Pekerjaan 6 - Done',
-  // Add more Pekerjaans as needed
-];
-List<String> Bast = [
-  'Pekerjaan 5 - Done',
-  'Pekerjaan 6 - Done',
-  // Add more Pekerjaans as needed
-];
-List<String> Support = [
-  'Pekerjaan 5 - Done',
-  'Pekerjaan 6 - Done',
-  // Add more Pekerjaans as needed
-];
-
-List category = [
-  "On Progress",
-  "Selesai",
-  "Pending",
-  "Cancel",
-  "Support",
-  "Bast"
-];
-List names = [
-  "Total Pekerjaan",
-  "Target Bulan Ini",
-  "Task Selesai",
-];
-
-List<Color> colors = [
-  Colors.orangeAccent,
-  Colors.green,
-  Colors.redAccent,
-];
-
-List<Icon> nameIcon = const [
-  Icon(
-    Icons.work,
-    size: 30,
-    color: Colors.white,
-  ),
-  Icon(
-    Icons.calendar_today,
-    size: 30,
-    color: Colors.white,
-  ),
-  Icon(
-    Icons.check_circle,
-    size: 30,
-    color: Colors.white,
-  ),
-];

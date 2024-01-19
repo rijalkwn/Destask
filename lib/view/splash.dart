@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:destask/utils/global_colors.dart';
 import 'package:destask/view/Menu/bottom_nav.dart';
 import 'package:flutter/material.dart';
 
@@ -13,7 +14,7 @@ class Splash extends StatelessWidget {
           builder: (BuildContext context) => const BottomNav()));
     });
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: GlobalColors.backColor,
       body: Padding(
         padding: const EdgeInsets.all(40.0),
         child: Center(

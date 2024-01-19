@@ -1,6 +1,10 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:destask/controller/pekerjaan_controller.dart';
+import 'package:destask/model/pekerjaan_model.dart';
+import 'package:destask/utils/global_colors.dart';
+import 'package:destask/view/Pekerjaan/pekerjaan.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
@@ -15,11 +19,14 @@ class Beranda extends StatefulWidget {
 
 class _BerandaState extends State<Beranda> {
   var isLogin = false;
+  PekerjaanController pekerjaanController = PekerjaanController();
+  late Future<List> futurePekerjaan;
 
   @override
   void initState() {
     super.initState();
     startLaunching();
+    futurePekerjaan = pekerjaanController.getOnProgress();
   }
 
   startLaunching() async {
@@ -39,60 +46,6 @@ class _BerandaState extends State<Beranda> {
     // });
   }
 
-  List names = [
-    "Total Pekerjaan",
-    "Target Bulan Ini",
-    "Task Selesai",
-  ];
-
-  List<Color> colors = [
-    Colors.amberAccent,
-    Colors.greenAccent,
-    Colors.purple,
-  ];
-
-  List<Icon> nameIcon = const [
-    Icon(
-      Icons.work,
-      size: 30,
-      color: Colors.white,
-    ),
-    Icon(
-      Icons.calendar_today,
-      size: 30,
-      color: Colors.white,
-    ),
-    Icon(
-      Icons.check_circle,
-      size: 30,
-      color: Colors.white,
-    ),
-  ];
-  List pekerjaan = [
-    "Lorem Ipsum sadajsdn sdskadas asdans as",
-    "Lorem sds adsdasda sdda a asdsa asaas asdadadsdas",
-    "ffijic wjiejfie fejiejf efei jfwijfw",
-    "Lo isdiaj ajdisjd aisdi asdjisad asidaid asdasi",
-    "eurhce rija lkruna aaksd asdasda adaaa asa",
-    "Lorem Ipsum sadajsdn sdskadas asdans as",
-  ];
-
-  List status = [
-    "ON PROGRESS",
-    "ON PROGRESS",
-    "ON PROGRESS",
-    "ON PROGRESS",
-    "ON PROGRESS",
-    "ON PROGRESS",
-  ];
-  List PM = [
-    "Rijal Kurniawan",
-    "Agung Nugraha",
-    "Rijal Kurniawan",
-    "Agung Nugraha",
-    "Rijal Kurniawan",
-    "Agung Nugraha",
-  ];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -314,7 +267,6 @@ class _BerandaState extends State<Beranda> {
       child: Container(
         padding: EdgeInsets.only(top: 15),
         decoration: const BoxDecoration(
-          //gunakan global color
           color: Colors.white,
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(20),
@@ -322,25 +274,38 @@ class _BerandaState extends State<Beranda> {
           ),
         ),
         child: SingleChildScrollView(
-          child: Column(
-            children: [
-              Container(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
+          child: FutureBuilder<List<dynamic>>(
+            future: futurePekerjaan,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(
+                  child: CircularProgressIndicator(),
+                );
+              } else if (snapshot.hasError) {
+                return Center(
+                  child: Text('Error: ${snapshot.error}'),
+                );
+              } else {
+                List<dynamic> pekerjaan = snapshot.data as List<dynamic>;
+                return Column(
                   children: [
-                    Text(
-                      "ON PROGRESS",
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.normal,
+                    Container(
+                      child: Text(
+                        "ON PROGRESS",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: GlobalColors
+                              .textColor, // Choose your desired text color
+                        ),
+                        textAlign: TextAlign.center,
                       ),
                     ),
+                    _ListOfJob(pekerjaan: pekerjaan),
                   ],
-                ),
-              ),
-              _ListOfJob(pekerjaan: pekerjaan, status: status, PM: PM),
-            ],
+                );
+              }
+            },
           ),
         ),
       ),
@@ -350,15 +315,11 @@ class _BerandaState extends State<Beranda> {
 
 class _ListOfJob extends StatelessWidget {
   const _ListOfJob({
-    super.key,
+    Key? key,
     required this.pekerjaan,
-    required this.status,
-    required this.PM,
-  });
+  }) : super(key: key);
 
-  final List pekerjaan;
-  final List status;
-  final List PM;
+  final List<dynamic> pekerjaan;
 
   @override
   Widget build(BuildContext context) {
@@ -369,20 +330,19 @@ class _ListOfJob extends StatelessWidget {
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         itemBuilder: (context, index) {
-          //card berbentuk listtile dengan tiap card dapat di tap
+          var namaPekerjaan = pekerjaan[index].nama_pekerjaan;
+          var PM = pekerjaan[index].PM;
           return GestureDetector(
             onTap: () {
               Get.toNamed('/list_task');
             },
             child: Card(
-              color: PM[index] == "Rijal Kurniawan"
-                  ? Colors.blue
-                  : Colors.blue[200],
+              color: PM == "Rijal Kurniawan" ? Colors.blue : Colors.blue[200],
               child: ListTile(
                 leading: Container(
                   padding: const EdgeInsets.all(5),
                   decoration: BoxDecoration(
-                    color: Colors.blueAccent,
+                    color: Colors.amber,
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
@@ -391,18 +351,30 @@ class _ListOfJob extends StatelessWidget {
                     color: Colors.white,
                   ),
                 ),
-                trailing: Container(
-                  child: Text(
-                    status[index],
-                    textAlign: TextAlign.end,
-                  ),
-                ),
                 title: Text(
-                  pekerjaan[index].length > 20
-                      ? '${pekerjaan[index].substring(0, 20)}...'
-                      : pekerjaan[index],
+                  namaPekerjaan.length > 20
+                      ? '${namaPekerjaan.substring(0, 20)}...'
+                      : namaPekerjaan,
+                  style: TextStyle(color: Colors.white),
                 ),
-                subtitle: Text("PM : " + PM[index]),
+                subtitle: Text(
+                  "PM : " + PM,
+                  style: const TextStyle(color: Colors.white),
+                ),
+                trailing: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      "Deadline",
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                    Text(
+                      pekerjaan[index].tanggal_selesai,
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                  ],
+                ),
               ),
             ),
           );
@@ -463,3 +435,29 @@ String _getMonth(int month) {
       return '';
   }
 }
+
+List<Color> colors = [
+  Colors.amberAccent,
+  Colors.greenAccent,
+  Colors.purple,
+];
+
+List<String> names = ['Total Pekerjaan', 'Target Bulan Ini', 'Task Selesai'];
+
+List<Icon> nameIcon = const [
+  Icon(
+    Icons.work,
+    size: 30,
+    color: Colors.white,
+  ),
+  Icon(
+    Icons.calendar_today,
+    size: 30,
+    color: Colors.white,
+  ),
+  Icon(
+    Icons.check_circle,
+    size: 30,
+    color: Colors.white,
+  ),
+];
