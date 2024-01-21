@@ -1,21 +1,19 @@
-import 'package:destask/controller/pekerjaan_controller.dart';
 import 'package:destask/controller/task_controller.dart';
 import 'package:destask/utils/global_colors.dart';
+import 'package:destask/view/Beranda/Task/my_date_time_picker.dart';
+import 'package:destask/view/Pekerjaan/pekerjaan.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import 'my_date_time_picker.dart';
-
-class AddTask extends StatefulWidget {
+class EditTask extends StatefulWidget {
   @override
-  State<AddTask> createState() => _AddTaskState();
+  State<EditTask> createState() => _EditTaskState();
 }
 
-class _AddTaskState extends State<AddTask> {
+class _EditTaskState extends State<EditTask> {
   final TextEditingController _taskNameController = TextEditingController();
   final TextEditingController _taskDetailController = TextEditingController();
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  late String idpekerjaan;
+  final GlobalKey<FormState> _keyForm = GlobalKey<FormState>();
 
   //date picker
   DateTime? _selectedDateStart;
@@ -51,25 +49,41 @@ class _AddTaskState extends State<AddTask> {
     }
   }
 
+  Future<Map<String, dynamic>> fetchData() async {
+    final String idTask = Get.parameters['idtask'] ?? '';
+    TaskController taskController = TaskController();
+    Map<String, dynamic> task = await taskController.getTaskById(idTask);
+    return task;
+  }
+
+  var idPekerjaan = null;
+
   @override
   void initState() {
     super.initState();
-    idpekerjaan = Get.parameters['idpekerjaan'] ?? '';
+    fetchData().then((data) {
+      setState(() {
+        idPekerjaan = data['idpekerjaan'] ?? '';
+        _taskNameController.text = data['nama_task'] ?? '';
+        _taskDetailController.text = data['detail_task'] ?? '';
+        _selectedDateStart = DateTime.parse(data['tanggal_mulai'] ?? '');
+        _selectedDateEnd = DateTime.parse(data['tanggal_selesai'] ?? '');
+      });
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final String idTask = Get.parameters['idtask'] ?? '';
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: GlobalColors.mainColor,
-        title: Text('Tambahkan Task', style: TextStyle(color: Colors.white)),
-        iconTheme: IconThemeData(color: Colors.white),
+        title: Text('Edit Task'),
       ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Form(
-            key: _formKey,
+            key: _keyForm,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -113,22 +127,21 @@ class _AddTaskState extends State<AddTask> {
                 SizedBox(height: 16),
                 InkWell(
                   onTap: () async {
-                    if (_formKey.currentState!.validate()) {
-                      // Hanya menjalankan aksi jika formulir valid
-                      TaskController taskController = TaskController();
-                      bool addedSuccessfully = await taskController.addTask(
-                        idpekerjaan,
-                        _taskNameController.text,
-                        _taskDetailController.text,
-                        _selectedDateStart ?? DateTime.now(),
-                        _selectedDateEnd ?? DateTime.now(),
-                      );
+                    TaskController taskController = TaskController();
 
-                      if (addedSuccessfully) {
-                        Get.toNamed('/task/$idpekerjaan');
-                      } else {
-                        //stay on the same page
-                      }
+                    bool addedSuccessfully = await taskController.editTask(
+                      idPekerjaan,
+                      idTask,
+                      _taskNameController.text,
+                      _taskDetailController.text,
+                      _selectedDateStart ?? DateTime.now(),
+                      _selectedDateEnd ?? DateTime.now(),
+                    );
+
+                    if (addedSuccessfully) {
+                      Get.offAndToNamed('/task/$idPekerjaan');
+                    } else {
+                      print('Error adding task');
                     }
                   },
                   child: Container(
@@ -138,7 +151,7 @@ class _AddTaskState extends State<AddTask> {
                     ),
                     padding: const EdgeInsets.all(16.0),
                     child: Text(
-                      'Simpan',
+                      'Update',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: Colors.white,

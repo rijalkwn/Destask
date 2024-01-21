@@ -4,6 +4,7 @@ import 'package:destask/utils/global_colors.dart';
 import 'package:destask/view/Beranda/Task/add_task.dart';
 import 'package:destask/view/Menu/bottom_nav.dart';
 import 'package:destask/view/Pekerjaan/pekerjaan.dart';
+import 'package:destask/view/testing.dart';
 import 'package:flutter/material.dart';
 
 class Splash extends StatelessWidget {

@@ -86,7 +86,7 @@ class _PekerjaanState extends State<Pekerjaan>
             : null,
         bottom: TabBar(
           controller: _tabController,
-          isScrollable: true,
+          isScrollable: false,
           labelPadding: EdgeInsets.symmetric(horizontal: 10),
           tabs: [
             for (var i = 0; i < statusNames.length; i++)
@@ -165,48 +165,53 @@ class PekerjaanList extends StatelessWidget {
     return ListView.builder(
       itemCount: pekerjaan.length,
       itemBuilder: (context, index) {
-        return Card(
-          color: GlobalColors.mainColor,
-          child: ListTile(
-            leading: Container(
-              padding: const EdgeInsets.all(5),
-              decoration: BoxDecoration(
-                color: Colors.amber,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.work,
-                size: 30,
-                color: Colors.white,
-              ),
-            ),
-            title: Text(
-              pekerjaan[index]['nama_pekerjaan'].length > 20
-                  ? '${pekerjaan[index]['nama_pekerjaan'].substring(0, 20)}...'
-                  : pekerjaan[index]['nama_pekerjaan'],
-              style: TextStyle(color: Colors.white),
-            ),
-            subtitle: Text(
-              "PM : " + pekerjaan[index]['PM'],
-              style: const TextStyle(color: Colors.white),
-            ),
-            trailing: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  "Deadline",
-                  style: const TextStyle(color: Colors.white),
+        return Padding(
+          padding: const EdgeInsets.only(top: 3, left: 5, right: 5),
+          child: Card(
+            color: pekerjaan[index]['PM'] == "Rijal Kurniawan"
+                ? Colors.green
+                : GlobalColors.mainColor,
+            child: ListTile(
+              leading: Container(
+                padding: const EdgeInsets.all(5),
+                decoration: BoxDecoration(
+                  color: Colors.amber,
+                  shape: BoxShape.circle,
                 ),
-                Text(
-                  pekerjaan[index]['tanggal_selesai'],
-                  style: const TextStyle(color: Colors.white),
+                child: const Icon(
+                  Icons.work,
+                  size: 30,
+                  color: Colors.white,
                 ),
-              ],
+              ),
+              title: Text(
+                pekerjaan[index]['nama_pekerjaan'].length > 20
+                    ? '${pekerjaan[index]['nama_pekerjaan'].substring(0, 20)}...'
+                    : pekerjaan[index]['nama_pekerjaan'],
+                style: TextStyle(color: Colors.white),
+              ),
+              subtitle: Text(
+                "PM : " + pekerjaan[index]['PM'],
+                style: const TextStyle(color: Colors.white),
+              ),
+              trailing: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    "Deadline",
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  Text(
+                    pekerjaan[index]['tanggal_selesai'],
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ],
+              ),
+              onTap: () {
+                Get.toNamed('/task/${pekerjaan[index]['idpekerjaan']}');
+              },
             ),
-            onTap: () {
-              Get.toNamed('/task/${pekerjaan[index]['idpekerjaan']}');
-            },
           ),
         );
       },

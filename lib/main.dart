@@ -1,5 +1,6 @@
 import 'package:destask/view/Beranda/Task/detail_task.dart';
 import 'package:destask/view/Beranda/Task/add_task.dart';
+import 'package:destask/view/Beranda/Task/edit_task.dart';
 import 'package:destask/view/Beranda/Task/task.dart';
 import 'package:destask/view/Beranda/beranda.dart';
 import 'package:destask/view/KPI/KPI.dart';
@@ -15,15 +16,13 @@ import 'package:destask/view/lupa_password.dart';
 import 'package:destask/view/splash.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get/get_instance/src/bindings_interface.dart';
 import 'package:get/route_manager.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
       .then((_) {
-    runApp(MyApp());
+    runApp(const MyApp());
   });
 }
 
@@ -35,26 +34,28 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       initialRoute: '/',
       getPages: [
-        GetPage(name: '/', page: () => BottomNav()),
-        GetPage(name: '/bottomnav', page: () => BottomNav()),
-        GetPage(name: '/login', page: () => Login()),
-        GetPage(name: '/lo', page: () => Lo()),
-        GetPage(name: '/lupa_password', page: () => LupaPassword()),
-        GetPage(name: '/beranda', page: () => Beranda()),
-        GetPage(name: '/notifikasi', page: () => Notifikasi()),
+        GetPage(name: '/', page: () => const BottomNav()),
+        GetPage(name: '/bottomnav', page: () => const BottomNav()),
+        GetPage(name: '/login', page: () => const Login()),
+        GetPage(name: '/lo', page: () => const Lo()),
+        GetPage(name: '/lupa_password', page: () => const LupaPassword()),
+        GetPage(name: '/beranda', page: () => const Beranda()),
+        GetPage(name: '/notifikasi', page: () => const Notifikasi()),
         GetPage(
-          name: '/task/:idpekerjaan', // Add a dynamic segment for idpekerjaan
+          name: '/task/:idpekerjaan',
           page: () => Task(),
         ),
-        GetPage(name: '/add_task', page: () => AddTask()),
+        GetPage(name: '/add_task/:idpekerjaan', page: () => AddTask()),
+        GetPage(name: '/edit_task/:idtask', page: () => EditTask()),
+        GetPage(name: '/delete_task/:idtask', page: () => EditTask()),
         GetPage(name: '/detail_task', page: () => DetailTask()),
-        GetPage(name: '/pekerjaan', page: () => Pekerjaan()),
+        GetPage(name: '/pekerjaan', page: () => const Pekerjaan()),
         GetPage(name: '/kpi', page: () => KPI()),
-        GetPage(name: '/pengaturan', page: () => Pengaturan()),
+        GetPage(name: '/pengaturan', page: () => const Pengaturan()),
         GetPage(name: '/edit_profil', page: () => Profil()),
-        GetPage(name: '/ganti_password', page: () => GantiPassword()),
+        GetPage(name: '/ganti_password', page: () => const GantiPassword()),
       ],
-      home: Splash(),
+      home: const Splash(),
     );
   }
 }

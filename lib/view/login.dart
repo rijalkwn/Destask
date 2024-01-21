@@ -43,14 +43,6 @@ class _LoginState extends State<Login> {
         prefs.setString("level", response['data']['level']);
         //token
         prefs.setString("token", response['token']);
-        // Saat login, simpan waktu kedaluwarsa dalam preferensi
-        String expString = response['payload']['expired']; // Misalnya: "10"
-        int expint = int.parse(expString);
-        DateTime expTime = DateTime.now().add(Duration(seconds: expint));
-        DateTime currentTime = DateTime.now();
-        Duration tokenDuration = expTime.difference(currentTime);
-        int expired = tokenDuration.inSeconds;
-        prefs.setInt("expired", expired);
 
         setState(() {
           visible = false;

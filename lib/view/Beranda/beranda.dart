@@ -1,13 +1,10 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:destask/controller/pekerjaan_controller.dart';
-import 'package:destask/model/pekerjaan_model.dart';
 import 'package:destask/utils/global_colors.dart';
-import 'package:destask/view/Pekerjaan/pekerjaan.dart';
+import 'package:destask/view/login.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Beranda extends StatefulWidget {
@@ -32,18 +29,19 @@ class _BerandaState extends State<Beranda> {
   startLaunching() async {
     final prefs = await SharedPreferences.getInstance();
     var token = prefs.getString("token");
+    print(token);
     if (token != null) {
       setState(() {
         isLogin = true;
       });
     }
 
-    // Timer(const Duration(seconds: 1), () {
-    //   if (!isLogin) {
-    //     Navigator.of(context).pushReplacement(MaterialPageRoute(
-    //         builder: (BuildContext context) => const Login()));
-    //   }
-    // });
+    Timer(const Duration(seconds: 1), () {
+      if (!isLogin) {
+        Navigator.of(context).pushReplacement(MaterialPageRoute(
+            builder: (BuildContext context) => const Login()));
+      }
+    });
   }
 
   @override
@@ -54,15 +52,15 @@ class _BerandaState extends State<Beranda> {
         padding: const EdgeInsets.only(top: 25),
         child: Column(
           children: [
-            _Header(),
-            _JobList(),
+            _header(),
+            _joblist(),
           ],
         ),
       ),
     );
   }
 
-  Container _Header() {
+  Container _header() {
     DateTime currentDate = DateTime.now();
     String dayOfWeek = _getDayOfWeek(currentDate.weekday);
     String formattedDate =
@@ -78,7 +76,7 @@ class _BerandaState extends State<Beranda> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
+              const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
@@ -114,7 +112,7 @@ class _BerandaState extends State<Beranda> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       padding: EdgeInsets.all(10),
-                      child: Icon(
+                      child: const Icon(
                         Icons.notifications,
                         color: Colors.white,
                       ),
@@ -125,12 +123,12 @@ class _BerandaState extends State<Beranda> {
                       child: Container(
                         width: 25,
                         height: 25,
-                        padding: EdgeInsets.all(4),
-                        decoration: BoxDecoration(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
                           color: Colors.red,
                           shape: BoxShape.circle,
                         ),
-                        child: Align(
+                        child: const Align(
                           alignment: Alignment.center,
                           child: Text(
                             '1',
@@ -147,7 +145,7 @@ class _BerandaState extends State<Beranda> {
               ),
             ],
           ),
-          SizedBox(
+          const SizedBox(
             height: 10,
           ),
           Row(
@@ -155,12 +153,12 @@ class _BerandaState extends State<Beranda> {
             children: [
               Text(
                 '$dayOfWeek,',
-                style: TextStyle(fontSize: 18, color: Colors.white),
+                style: const TextStyle(fontSize: 18, color: Colors.white),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               Text(
-                '$formattedDate',
-                style: TextStyle(fontSize: 18, color: Colors.white),
+                formattedDate,
+                style: const TextStyle(fontSize: 18, color: Colors.white),
               ),
             ],
           ),
@@ -198,8 +196,8 @@ class _BerandaState extends State<Beranda> {
                             child: Container(
                               width: 25,
                               height: 25,
-                              padding: EdgeInsets.all(5),
-                              decoration: BoxDecoration(
+                              padding: const EdgeInsets.all(5),
+                              decoration: const BoxDecoration(
                                 shape: BoxShape.circle,
                                 color: Colors.red,
                               ),
@@ -207,7 +205,7 @@ class _BerandaState extends State<Beranda> {
                                 alignment: Alignment.center,
                                 child: Text(
                                   (index + 19).toString(),
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 12,
                                   ),
@@ -262,7 +260,7 @@ class _BerandaState extends State<Beranda> {
     );
   }
 
-  Expanded _JobList() {
+  Expanded _joblist() {
     return Expanded(
       child: Container(
         padding: EdgeInsets.only(top: 15),
