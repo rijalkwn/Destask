@@ -31,7 +31,7 @@ class _BottomNavState extends State<BottomNav> {
         backgroundColor: Colors.white,
         showUnselectedLabels: true,
         selectedItemColor: GlobalColors.mainColor,
-        iconSize: 24,
+        iconSize: 28,
         selectedFontSize: 18,
         unselectedFontSize: 16,
         unselectedItemColor: Colors.grey[700],

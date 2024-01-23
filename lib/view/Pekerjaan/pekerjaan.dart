@@ -25,7 +25,7 @@ class _PekerjaanState extends State<Pekerjaan>
     'Bast',
     'Support',
   ];
-  //icon
+
   final List<IconData> statusIcon = [
     Icons.work,
     Icons.check_circle,
@@ -56,6 +56,9 @@ class _PekerjaanState extends State<Pekerjaan>
                 controller: searchController,
                 style: TextStyle(color: Colors.white),
                 autofocus: true,
+                onChanged: (value) {
+                  setState(() {});
+                },
                 decoration: InputDecoration(
                   hintText: 'Search...',
                   hintStyle: TextStyle(color: Colors.white60),
@@ -64,7 +67,11 @@ class _PekerjaanState extends State<Pekerjaan>
                     icon: Icon(Icons.clear, color: Colors.white),
                     onPressed: () {
                       setState(() {
-                        searchController.clear();
+                        if (searchController.text.isNotEmpty) {
+                          searchController.clear();
+                        } else {
+                          isSearchBarVisible = false;
+                        }
                       });
                     },
                   ),
@@ -109,6 +116,7 @@ class _PekerjaanState extends State<Pekerjaan>
             StatusPekerjaan(
               futurePekerjaan: futurePekerjaan,
               status: status,
+              searchQuery: searchController.text,
             ),
         ],
       ),
@@ -121,10 +129,12 @@ class StatusPekerjaan extends StatelessWidget {
     Key? key,
     required this.futurePekerjaan,
     required this.status,
+    required this.searchQuery,
   }) : super(key: key);
 
   final Future<List<dynamic>> futurePekerjaan;
   final String status;
+  final String searchQuery;
 
   @override
   Widget build(BuildContext context) {
@@ -139,7 +149,11 @@ class StatusPekerjaan extends StatelessWidget {
           return Center(child: Text('No data available.'));
         } else if (snapshot.hasData) {
           final filteredList = snapshot.data!
-              .where((pekerjaan) => pekerjaan['status'] == status)
+              .where((pekerjaan) =>
+                  pekerjaan['status'] == status &&
+                  pekerjaan['nama_pekerjaan']
+                      .toLowerCase()
+                      .contains(searchQuery.toLowerCase()))
               .toList();
 
           return PekerjaanList(
@@ -204,7 +218,8 @@ class PekerjaanList extends StatelessWidget {
                   ),
                   Text(
                     pekerjaan[index]['tanggal_selesai'],
-                    style: const TextStyle(color: Colors.white),
+                    style: const TextStyle(
+                        color: Colors.white, fontFamily: 'Poppins'),
                   ),
                 ],
               ),

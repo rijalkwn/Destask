@@ -1,12 +1,13 @@
 import 'dart:convert';
 import 'package:destask/utils/constant_api.dart';
 import 'package:destask/view/Menu/bottom_nav.dart';
+import 'package:destask/view/lo.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-class LoginController {
+class AuthController {
   Future login(
     TextEditingController _usernameController,
     TextEditingController _passwordController,
@@ -55,5 +56,17 @@ class LoginController {
         duration: const Duration(seconds: 2),
       );
     }
+  }
+
+  Future logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+    Get.offAll(() => const Lo());
+    Get.snackbar(
+      "Success",
+      "Logout Success",
+      backgroundColor: Colors.green,
+      duration: const Duration(seconds: 2),
+    );
   }
 }

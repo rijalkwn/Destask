@@ -1,13 +1,10 @@
 import 'dart:convert';
 
-import 'package:destask/controller/login_controller.dart';
+import 'package:destask/controller/auth_controller.dart';
 import 'package:destask/utils/constant_api.dart';
 import 'package:destask/utils/global_colors.dart';
-import 'package:destask/view/Menu/bottom_nav.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 
 class Lo extends StatefulWidget {
   const Lo({super.key});
@@ -114,8 +111,8 @@ class _LoState extends State<Lo> {
                                 isLoading = true;
                               });
                               if (_formKey.currentState!.validate()) {
-                                LoginController loginController =
-                                    LoginController();
+                                AuthController loginController =
+                                    AuthController();
                                 await loginController.login(
                                     _usernameController, _passwordController);
                               }

@@ -1,3 +1,4 @@
+import 'package:destask/view/Beranda/Informasi/pekerjaan_selesai.dart';
 import 'package:destask/view/Beranda/Task/detail_task.dart';
 import 'package:destask/view/Beranda/Task/add_task.dart';
 import 'package:destask/view/Beranda/Task/edit_task.dart';
@@ -40,6 +41,9 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/lo', page: () => const Lo()),
         GetPage(name: '/lupa_password', page: () => const LupaPassword()),
         GetPage(name: '/beranda', page: () => const Beranda()),
+        GetPage(name: '/pekerjaan_selesai', page: () => PekerjaanSelesai()),
+        GetPage(name: '/target_bulan_ini', page: () => PekerjaanSelesai()),
+        GetPage(name: '/task_selesai', page: () => PekerjaanSelesai()),
         GetPage(name: '/notifikasi', page: () => const Notifikasi()),
         GetPage(
           name: '/task/:idpekerjaan',
@@ -55,6 +59,7 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/edit_profil', page: () => Profil()),
         GetPage(name: '/ganti_password', page: () => const GantiPassword()),
       ],
+      theme: ThemeData(fontFamily: 'Poppins'),
       home: const Splash(),
     );
   }

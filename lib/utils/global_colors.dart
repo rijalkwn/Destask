@@ -7,3 +7,7 @@ class GlobalColors {
   static HexColor textColor = HexColor('#4F4F4F');
   static HexColor greyColor = HexColor('#ede9e8');
 }
+
+class GlobalFontFamily {
+  static String fontName = 'Poppins';
+}

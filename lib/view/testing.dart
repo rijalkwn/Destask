@@ -129,11 +129,10 @@ class _TestingState extends State<Testing> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          '$dayOfWeek,',
+                          '$dayOfWeek, ',
                           style: const TextStyle(
                               fontSize: 18, color: Colors.white),
                         ),
-                        const SizedBox(height: 20),
                         Text(
                           formattedDate,
                           style: const TextStyle(
@@ -141,29 +140,6 @@ class _TestingState extends State<Testing> {
                         ),
                       ],
                     ),
-                    // Container(
-                    //   margin: const EdgeInsets.only(top: 5, bottom: 20),
-                    //   width: MediaQuery.of(context).size.width,
-                    //   height: 45,
-                    //   decoration: BoxDecoration(
-                    //     color: Colors.white,
-                    //     borderRadius: BorderRadius.circular(10),
-                    //   ),
-                    //   child: TextFormField(
-                    //     decoration: const InputDecoration(
-                    //       border: InputBorder.none,
-                    //       prefixIcon: Icon(
-                    //         Icons.search,
-                    //         color: Colors.grey,
-                    //       ),
-                    //       hintText: "Search here...",
-                    //       hintStyle: TextStyle(
-                    //         color: Colors.grey,
-                    //         fontSize: 18,
-                    //       ),
-                    //     ),
-                    //   ),
-                    // ),
                   ],
                 ),
               ),
@@ -192,24 +168,8 @@ class _TestingState extends State<Testing> {
                     } else {
                       List<dynamic> pekerjaan = snapshot.data as List<dynamic>;
                       return Padding(
-                        padding: const EdgeInsets.only(top: 80),
-                        child: Column(
-                          children: [
-                            Container(
-                              child: Text(
-                                "ON PROGRESS",
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: GlobalColors
-                                      .textColor, // Choose your desired text color
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                            _ListOfJob(pekerjaan: pekerjaan),
-                          ],
-                        ),
+                        padding: const EdgeInsets.only(top: 70),
+                        child: _ListOfJob(pekerjaan: pekerjaan),
                       );
                     }
                   },
@@ -224,9 +184,10 @@ class _TestingState extends State<Testing> {
             right: 0,
             child: Center(
               child: Padding(
-                padding: const EdgeInsets.all(8.0),
+                padding: const EdgeInsets.only(
+                    top: 0, bottom: 10, left: 10, right: 10),
                 child: Container(
-                  width: screenWidth / 1.2,
+                  width: screenWidth / 1.1,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(20),
                     color: Colors.lightBlue[300],
@@ -254,25 +215,37 @@ class _TestingState extends State<Testing> {
                                 padding: EdgeInsets.all(
                                     10), // Padding around the badge content
                               ),
-                              child: Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  color: colors[index],
-                                  borderRadius: BorderRadius.circular(15),
+                              child: InkWell(
+                                onTap: () {
+                                  if (index == 0) {
+                                    Get.toNamed('/pekerjaan_selesai');
+                                  } else if (index == 1) {
+                                    Get.toNamed('/target_bulan_ini');
+                                  } else if (index == 2) {
+                                    Get.toNamed('/task_selesai');
+                                  }
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: colors[index],
+                                    borderRadius: BorderRadius.circular(15),
+                                  ),
+                                  child: nameIcon[index],
                                 ),
-                                child: nameIcon[index],
                               ),
-                            ),
-                            const SizedBox(
-                              height: 10,
                             ),
                             Text(
                               names[index],
+                              textAlign: TextAlign.center,
                               style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
                                 color: Colors.white,
                               ),
+                            ),
+                            const SizedBox(
+                              height: 10,
                             ),
                           ],
                         );
@@ -301,65 +274,103 @@ class _ListOfJob extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.only(left: 10, right: 10),
-      child: ListView.builder(
-        itemCount: pekerjaan.length,
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemBuilder: (context, index) {
-          var namaPekerjaan = pekerjaan[index].nama_pekerjaan;
-          var PM = pekerjaan[index].PM;
-          return InkWell(
-            onTap: () {
-              Get.toNamed('/task/${pekerjaan[index].idpekerjaan}');
-            },
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: Card(
-                color: PM == "Rijal Kurniawan"
-                    ? Colors.green
-                    : GlobalColors.mainColor,
-                child: ListTile(
-                  leading: Container(
-                    padding: const EdgeInsets.all(5),
-                    decoration: BoxDecoration(
-                      color: Colors.amber,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.work,
-                      size: 30,
-                      color: Colors.white,
-                    ),
-                  ),
-                  title: Text(
-                    namaPekerjaan.length > 20
-                        ? '${namaPekerjaan.substring(0, 20)}...'
-                        : namaPekerjaan,
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  subtitle: Text(
-                    "PM : " + PM,
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                  trailing: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        "Deadline",
-                        style: const TextStyle(color: Colors.white),
+      child: Column(
+        children: [
+          // Container(
+          //   margin: const EdgeInsets.only(top: 5, bottom: 20),
+          //   width: MediaQuery.of(context).size.width,
+          //   height: 45,
+          //   decoration: BoxDecoration(
+          //     color: GlobalColors.mainColor,
+          //     borderRadius: BorderRadius.circular(10),
+          //   ),
+          //   child: TextFormField(
+          //     decoration: const InputDecoration(
+          //       border: InputBorder.none,
+          //       prefixIcon: Icon(
+          //         Icons.search,
+          //         color: Colors.white,
+          //       ),
+          //       hintText: "Search here...",
+          //       hintStyle: TextStyle(
+          //         color: Colors.white,
+          //         fontSize: 18,
+          //       ),
+          //     ),
+          //   ),
+          // ),
+          Container(
+            child: Text(
+              "ON PROGRESS",
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: GlobalColors.textColor, // Choose your desired text color
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          ListView.builder(
+            itemCount: pekerjaan.length,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemBuilder: (context, index) {
+              var namaPekerjaan = pekerjaan[index].nama_pekerjaan;
+              var PM = pekerjaan[index].PM;
+              return GestureDetector(
+                onTap: () {
+                  Get.toNamed('/task/${pekerjaan[index].idpekerjaan}');
+                },
+                child: Card(
+                  color: PM == "Rijal Kurniawan"
+                      ? Colors.green
+                      : GlobalColors.mainColor,
+                  child: ListTile(
+                    leading: Container(
+                      padding: const EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                        color: Colors.amber,
+                        shape: BoxShape.circle,
                       ),
-                      Text(
-                        pekerjaan[index].tanggal_selesai,
-                        style: const TextStyle(color: Colors.white),
+                      child: const Icon(
+                        Icons.work,
+                        size: 30,
+                        color: Colors.white,
                       ),
-                    ],
+                    ),
+                    title: Hero(
+                      tag: pekerjaan[index].idpekerjaan,
+                      child: Text(
+                        namaPekerjaan.length > 20
+                            ? '${namaPekerjaan.substring(0, 20)}...'
+                            : namaPekerjaan,
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                    subtitle: Text(
+                      "PM : " + PM,
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                    trailing: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          "Deadline",
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                        Text(
+                          pekerjaan[index].tanggal_selesai,
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ),
-          );
-        },
+              );
+            },
+          ),
+        ],
       ),
     );
   }
@@ -371,7 +382,11 @@ List<Color> colors = [
   Colors.purple,
 ];
 
-List<String> names = ['Total Pekerjaan', 'Target Bulan Ini', 'Task Selesai'];
+List<String> names = [
+  'Pekerjaan\nSelesai',
+  'Target\nBulan Ini',
+  'Task\nSelesai'
+];
 
 List<Icon> nameIcon = const [
   Icon(
