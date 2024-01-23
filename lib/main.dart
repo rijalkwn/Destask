@@ -10,7 +10,6 @@ import 'package:destask/view/Notifikasi/notifikasi.dart';
 import 'package:destask/view/Pekerjaan/pekerjaan.dart';
 import 'package:destask/view/Pengaturan/pengaturan.dart';
 import 'package:destask/view/Pengaturan/profil.dart';
-import 'package:destask/view/calender.dart';
 import 'package:destask/view/ganti_password.dart';
 import 'package:destask/view/login.dart';
 import 'package:destask/view/lupa_password.dart';
@@ -57,6 +56,6 @@ class MyApp extends StatelessWidget {
           GetPage(name: '/edit_profil', page: () => Profil()),
           GetPage(name: '/ganti_password', page: () => const GantiPassword()),
         ],
-        home: CalendarApp());
+        home: const BottomNav());
   }
 }
