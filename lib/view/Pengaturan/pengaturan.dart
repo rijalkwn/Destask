@@ -1,10 +1,9 @@
 import 'package:destask/controller/auth_controller.dart';
 import 'package:destask/utils/global_colors.dart';
 import 'package:destask/view/Pengaturan/profil.dart';
-import 'package:destask/view/lo.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:quickalert/quickalert.dart';
 
 class Pengaturan extends StatefulWidget {
   const Pengaturan({super.key});
@@ -65,6 +64,10 @@ class _PengaturanState extends State<Pengaturan> {
               child: ListTile(
                 iconColor: Colors.black,
                 title: Text('Ganti Password'),
+                leading: Icon(
+                  Icons.vpn_key_rounded,
+                  size: 20,
+                ),
                 trailing: Icon(
                   Icons.keyboard_arrow_right,
                   size: 15,
@@ -78,13 +81,31 @@ class _PengaturanState extends State<Pengaturan> {
             Card(
               child: ListTile(
                 title: Text('Logout'),
+                leading: Icon(
+                  Icons.logout_outlined,
+                  size: 20,
+                ),
                 trailing: Icon(
                   Icons.keyboard_arrow_right,
                   size: 15,
                 ),
                 onTap: () async {
                   AuthController authController = AuthController();
-                  await authController.logout();
+                  bool cekLogout = await authController.logout();
+                  if (cekLogout) {
+                    QuickAlert.show(
+                      context: context,
+                      type: QuickAlertType.success,
+                      text: 'Logout Berhasil!',
+                    );
+                  } else {
+                    QuickAlert.show(
+                      context: context,
+                      type: QuickAlertType.error,
+                      title: 'Oops...',
+                      text: 'Logout Gagal, Silahkan Coba Lagi!',
+                    );
+                  }
                 },
               ),
             ),

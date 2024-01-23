@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:destask/utils/constant_api.dart';
 import 'package:destask/view/Menu/bottom_nav.dart';
-import 'package:destask/view/lo.dart';
+import 'package:destask/view/login.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
@@ -27,46 +27,25 @@ class AuthController {
         prefs.setString("level", response['data']['level']);
         prefs.setString("token", response['token']);
 
-        Get.snackbar(
-          "Success",
-          "Login Success",
-          backgroundColor: Colors.green,
-          duration: const Duration(seconds: 1),
-        );
-
         if (response['data']['level'] == "admin") {
           Get.offAll(() => const BottomNav());
         } else if (response['data']['level'] == "user") {
           Get.offAll(() => const BottomNav());
         }
+        return true;
       } else {
-        Get.snackbar(
-          "Error",
-          "Failed to login!! Please try again",
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 3),
-        );
+        print(res.statusCode);
+        return false;
       }
     } catch (e) {
-      // tampilkan snackbar
-      Get.snackbar(
-        "Error",
-        "Exception occurred",
-        backgroundColor: Colors.red,
-        duration: const Duration(seconds: 2),
-      );
+      print(e);
+      return false;
     }
   }
 
   Future logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
-    Get.offAll(() => const Lo());
-    Get.snackbar(
-      "Success",
-      "Logout Success",
-      backgroundColor: Colors.green,
-      duration: const Duration(seconds: 2),
-    );
+    Get.offAll(() => const Login());
   }
 }

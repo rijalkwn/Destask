@@ -3,6 +3,7 @@ import 'package:destask/controller/task_controller.dart';
 import 'package:destask/utils/global_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:quickalert/quickalert.dart';
 
 import 'my_date_time_picker.dart';
 
@@ -125,7 +126,11 @@ class _AddTaskState extends State<AddTask> {
                       );
 
                       if (addedSuccessfully) {
-                        Get.toNamed('/task/$idpekerjaan');
+                        QuickAlert.show(
+                          context: context,
+                          type: QuickAlertType.success,
+                          text: 'Task Berhasil Ditambahkan',
+                        );
                       } else {
                         //stay on the same page
                       }

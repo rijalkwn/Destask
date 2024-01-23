@@ -1,5 +1,5 @@
 import 'package:destask/utils/global_colors.dart';
-import 'package:destask/view/lo.dart';
+import 'package:destask/view/login.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mailer/mailer.dart';
@@ -42,8 +42,8 @@ class _LupaPasswordState extends State<LupaPassword> {
         actions: [
           TextButton(
               onPressed: () {
-                Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(builder: (BuildContext context) => Lo()));
+                Navigator.of(context).pushReplacement(MaterialPageRoute(
+                    builder: (BuildContext context) => const Login()));
               },
               child: Text("Kembali ke halaman login"))
         ],

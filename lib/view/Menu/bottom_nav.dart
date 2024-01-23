@@ -4,7 +4,6 @@ import 'package:destask/view/Beranda/beranda.dart';
 import 'package:destask/view/KPI/KPI.dart';
 import 'package:destask/view/Pekerjaan/pekerjaan.dart';
 import 'package:destask/view/Pengaturan/pengaturan.dart';
-import 'package:destask/view/testing.dart';
 import 'package:flutter/material.dart';
 
 class BottomNav extends StatefulWidget {
@@ -17,7 +16,7 @@ class BottomNav extends StatefulWidget {
 class _BottomNavState extends State<BottomNav> {
   int _bottomNavCurrentIndex = 0;
   final List<Widget> _container = [
-    Testing(),
+    Beranda(),
     Pekerjaan(),
     KPI(),
     Pengaturan(),

@@ -1,221 +1,188 @@
-import 'dart:convert';
-
+import 'package:destask/controller/auth_controller.dart';
 import 'package:destask/utils/constant_api.dart';
 import 'package:destask/utils/global_colors.dart';
-import 'package:destask/view/Menu/bottom_nav.dart';
-import 'package:destask/view/lupa_password.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http;
+import 'package:quickalert/quickalert.dart';
 
 class Login extends StatefulWidget {
-  const Login({Key? key}) : super(key: key);
+  const Login({super.key});
 
   @override
   State<Login> createState() => _LoginState();
 }
 
 class _LoginState extends State<Login> {
-  final TextEditingController usernameController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
-  bool visible = false;
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   bool isLoading = false;
   bool _obsecuretext = true;
   final String sUrl = "$baseURL/api/UserAuthentication";
 
-  //fungsi cek login
-  _cekLogin() async {
-    setState(() {
-      visible = true;
-      isLoading = true;
-    });
-    final prefs = await SharedPreferences.getInstance();
-
-    var params =
-        "?username=${usernameController.text}&password=${passwordController.text}";
-    try {
-      var res = await http.post(Uri.parse(sUrl + params));
-      if (res.statusCode == 200) {
-        var response = json.decode(res.body);
-        prefs.setString("id_user", response['data']['id_user']);
-        prefs.setString("username", response['data']['username']);
-        prefs.setString("level", response['data']['level']);
-        //token
-        prefs.setString("token", response['token']);
-
-        setState(() {
-          visible = false;
-        });
-        //tampilkan snackbar
-        Get.snackbar(
-          "Success",
-          "Login Success",
-          backgroundColor: Colors.green,
-          duration: const Duration(seconds: 1),
-        );
-        if (response['data']['level'] == "admin") {
-          Get.offAll(() => const BottomNav());
-        } else if (response['data']['level'] == "user") {
-          Get.offAll(() => const BottomNav());
-        }
-      } else {
-        setState(() {
-          visible = false;
-        });
-        //tamplikan snackbar
-        Get.snackbar(
-          "Error",
-          "Failed to login!! Please try again",
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 3),
-        );
-      }
-
-      setState(() {
-        isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        visible = false;
-      });
-      //tampilkan snackbar
-      Get.snackbar(
-        "Error",
-        "Exception occurred",
-        backgroundColor: Colors.red,
-        duration: const Duration(seconds: 2),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: GlobalColors.backColor,
+      backgroundColor: GlobalColors.secondColor,
       body: SingleChildScrollView(
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(45.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                alignment: Alignment.center,
-                child: Image.asset('assets/img/logo.png'),
-              ),
-              const SizedBox(
-                height: 100,
-              ),
-              Text(
-                'Login',
-                style: TextStyle(
-                  color: GlobalColors.textColor,
-                  fontSize: 18,
-                  fontWeight: FontWeight.normal,
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.1,
                 ),
-              ),
-              SizedBox(
-                height: 30,
-              ),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: usernameController,
-                      decoration: InputDecoration(
-                        labelText: 'Username',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.person),
-                        hintText: 'Masukan Username',
-                        filled: true,
-                        fillColor: GlobalColors.backColor,
+                Card(
+                  color: Colors.white,
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        children: [
+                          Container(
+                            margin: EdgeInsets.only(
+                                top: MediaQuery.of(context).size.height * 0.08,
+                                bottom:
+                                    MediaQuery.of(context).size.height * 0.1),
+                            child: Image.asset(
+                              'assets/img/logo.png',
+                            ),
+                          ),
+                          SizedBox(height: 20),
+                          TextFormField(
+                            controller: _usernameController,
+                            decoration: InputDecoration(
+                              labelText: 'Username',
+                              contentPadding: EdgeInsets.symmetric(
+                                  vertical: 5, horizontal: 15),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              prefixIcon: Icon(Icons.person),
+                              filled: true,
+                              fillColor: Colors.white,
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Username harus diisi';
+                              }
+                              return null;
+                            },
+                          ),
+                          SizedBox(height: 10),
+                          TextFormField(
+                            controller: _passwordController,
+                            obscureText: _obsecuretext,
+                            decoration: InputDecoration(
+                              labelText: 'Password',
+                              contentPadding: EdgeInsets.symmetric(
+                                  vertical: 5, horizontal: 15),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              prefixIcon: Icon(Icons.lock),
+                              suffixIcon: GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    _obsecuretext = !_obsecuretext;
+                                  });
+                                },
+                                child: _obsecuretext
+                                    ? const Icon(Icons.visibility_off)
+                                    : const Icon(Icons.visibility),
+                              ),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Password harus diisi';
+                              }
+                              return null;
+                            },
+                          ),
+                          SizedBox(height: 20),
+                          InkWell(
+                            onTap: () async {
+                              setState(() {
+                                isLoading = true;
+                              });
+                              if (_formKey.currentState!.validate()) {
+                                AuthController loginController =
+                                    AuthController();
+                                bool cekLogin = await loginController.login(
+                                    _usernameController, _passwordController);
+                                if (cekLogin) {
+                                  QuickAlert.show(
+                                    context: context,
+                                    type: QuickAlertType.success,
+                                    text: 'Login Berhasil!',
+                                  );
+                                } else {
+                                  QuickAlert.show(
+                                    context: context,
+                                    type: QuickAlertType.error,
+                                    title: 'Oops...',
+                                    text: 'Login Gagal, Silahkan Coba Lagi!',
+                                  );
+                                }
+                              }
+                              setState(() {
+                                isLoading = false;
+                              });
+                            },
+                            child: Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(vertical: 15),
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color:
+                                    Colors.blue, // Ganti warna sesuai kebutuhan
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Text(
+                                'Login',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                          //lupa password
+                          TextButton(
+                            onPressed: () {
+                              Get.toNamed('/lupa_password');
+                            },
+                            child: Text(
+                              'Lupa Password?',
+                              style: TextStyle(
+                                  color: GlobalColors.textColor,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.normal,
+                                  decoration: TextDecoration.underline),
+                            ),
+                          ),
+                          SizedBox(height: 20),
+                          //versi aplikasi
+                          Text(
+                            'Versi 1.0.0',
+                            style: TextStyle(
+                              color: GlobalColors.textColor,
+                              fontSize: 16,
+                              fontWeight: FontWeight.normal,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                ],
-              ),
-              const SizedBox(
-                height: 20,
-              ),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: passwordController,
-                      obscureText: _obsecuretext,
-                      decoration: InputDecoration(
-                          labelText: 'Password',
-                          border: OutlineInputBorder(),
-                          prefixIcon: Icon(Icons.lock),
-                          suffixIcon: GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  _obsecuretext = !_obsecuretext;
-                                });
-                              },
-                              child: _obsecuretext
-                                  ? const Icon(Icons.visibility_off)
-                                  : const Icon(Icons.visibility)),
-                          hintText: "Masukan Password"),
-                      validator: (value) {
-                        if (value!.isEmpty) {
-                          return 'Password tidak boleh kosong';
-                        }
-                        return null;
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(
-                height: 30,
-              ),
-              GestureDetector(
-                onTap: () {
-                  _cekLogin();
-                },
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 15),
-                  // margin: const EdgeInsets.symmetric(horizontal: 20),
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: Colors.blue, // Ganti warna sesuai kebutuhan
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: isLoading
-                      ? const CircularProgressIndicator()
-                      : const Text(
-                          'Login',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
                 ),
-              ),
-              const SizedBox(
-                height: 10,
-              ),
-              //lupa password
-              GestureDetector(
-                onTap: () {
-                  Get.to(() => const LupaPassword());
-                },
-                child: const Text(
-                  'Lupa Password?',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 18,
-                    fontWeight: FontWeight.normal,
-                    decoration: TextDecoration.underline,
-                  ),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

@@ -6,6 +6,7 @@ import 'package:destask/utils/global_colors.dart';
 import 'package:destask/view/Pekerjaan/pekerjaan.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:quickalert/quickalert.dart';
 
 class Task extends StatefulWidget {
   @override
@@ -26,37 +27,6 @@ class _TaskState extends State<Task> with SingleTickerProviderStateMixin {
     Map<String, dynamic> pekerjaan =
         await pekerjaanController.getPekejaanById(idPekerjaan);
     return pekerjaan;
-  }
-
-  Future<bool> _showDeleteConfirmationDialog(BuildContext context) async {
-    Completer<bool> completer = Completer<bool>();
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Konfirmasi Hapus'),
-          content: Text('Apakah Anda yakin ingin menghapus task ini?'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(false); // User chose to cancel
-                completer.complete(false);
-              },
-              child: Text('Batal'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(true); // User chose to delete
-                completer.complete(true);
-              },
-              child: Text('Hapus'),
-            ),
-          ],
-        );
-      },
-    );
-    return completer.future;
   }
 
   @override
@@ -280,9 +250,18 @@ class TaskList extends StatelessWidget {
                       if (deletedSuccessfully) {
                         // Refresh halaman
                         Get.offAndToNamed('/task/$idPekerjaan');
+                        QuickAlert.show(
+                          context: context,
+                          type: QuickAlertType.success,
+                          text: 'Task berhasil dihapus!',
+                        );
                       } else {
-                        // Handle deletion failure
-                        print('Gagal menghapus task');
+                        QuickAlert.show(
+                          context: context,
+                          type: QuickAlertType.error,
+                          title: 'Oops...',
+                          text: 'Task gagal dihapus, silahkan coba lagi!',
+                        );
                       }
                     },
                     icon: Icon(

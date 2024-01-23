@@ -95,23 +95,10 @@ class TaskController {
       );
 
       if (response.statusCode == 201) {
-        Get.snackbar(
-          "Berhasil",
-          "Berhasil menambahkan task",
-          snackPosition: SnackPosition.TOP,
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-        );
+        Get.toNamed('/task/$idPekerjaan');
         return true;
       } else {
         print('Error adding task: ${response.body}');
-        Get.snackbar(
-          "Error",
-          "Gagal menambahkan task",
-          snackPosition: SnackPosition.TOP,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
         return false;
       }
     } catch (e) {
@@ -121,7 +108,7 @@ class TaskController {
   }
 
   Future editTask(
-    String idPekejaan,
+    String idPekerjaan,
     String idTask,
     String taskName,
     String taskDetail,
@@ -142,23 +129,10 @@ class TaskController {
       );
 
       if (response.statusCode == 200) {
-        Get.snackbar(
-          "Berhasil",
-          "Berhasil mengubah task",
-          snackPosition: SnackPosition.TOP,
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-        );
+        Get.offAndToNamed('/task/$idPekerjaan');
         return true;
       } else {
         print('Error editing task: ${response.body}');
-        Get.snackbar(
-          "Error",
-          "Gagal mengubah task",
-          snackPosition: SnackPosition.TOP,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
         return false;
       }
     } catch (e) {
@@ -176,23 +150,9 @@ class TaskController {
           headers: {'Authorization': 'Bearer $token'});
 
       if (response.statusCode == 200) {
-        Get.snackbar(
-          "Berhasil",
-          "Berhasil menghapus task",
-          snackPosition: SnackPosition.TOP,
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-        );
         return true;
       } else {
         print('Error deleting task: ${response.body}');
-        Get.snackbar(
-          "Error",
-          "Gagal menghapus task",
-          snackPosition: SnackPosition.TOP,
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
         return false;
       }
     } catch (e) {

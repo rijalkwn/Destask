@@ -4,6 +4,7 @@ import 'package:destask/view/Beranda/Task/my_date_time_picker.dart';
 import 'package:destask/view/Pekerjaan/pekerjaan.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:quickalert/quickalert.dart';
 
 class EditTask extends StatefulWidget {
   @override
@@ -139,9 +140,18 @@ class _EditTaskState extends State<EditTask> {
                     );
 
                     if (addedSuccessfully) {
-                      Get.offAndToNamed('/task/$idPekerjaan');
+                      QuickAlert.show(
+                        context: context,
+                        type: QuickAlertType.success,
+                        text: 'Task berhasil diupdate!',
+                      );
                     } else {
-                      print('Error adding task');
+                      QuickAlert.show(
+                        context: context,
+                        type: QuickAlertType.error,
+                        title: 'Oops...',
+                        text: 'Task gagal diupdate, silahkan coba lagi!',
+                      );
                     }
                   },
                   child: Container(

@@ -1,15 +1,15 @@
 import 'dart:async';
 
+import 'package:badges/badges.dart';
 import 'package:destask/controller/pekerjaan_controller.dart';
 import 'package:destask/utils/global_colors.dart';
 import 'package:destask/view/login.dart';
 import 'package:flutter/material.dart';
+import 'package:badges/badges.dart' as badges;
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Beranda extends StatefulWidget {
-  const Beranda({super.key});
-
   @override
   State<Beranda> createState() => _BerandaState();
 }
@@ -29,7 +29,6 @@ class _BerandaState extends State<Beranda> {
   startLaunching() async {
     final prefs = await SharedPreferences.getInstance();
     var token = prefs.getString("token");
-    print(token);
     if (token != null) {
       setState(() {
         isLogin = true;
@@ -46,170 +45,77 @@ class _BerandaState extends State<Beranda> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.blueAccent,
-      body: Padding(
-        padding: const EdgeInsets.only(top: 25),
-        child: Column(
-          children: [
-            _header(),
-            _joblist(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Container _header() {
+    double screenHeight = MediaQuery.of(context).size.height;
+    double screenWidth = MediaQuery.of(context).size.width;
     DateTime currentDate = DateTime.now();
     String dayOfWeek = _getDayOfWeek(currentDate.weekday);
     String formattedDate =
         "${currentDate.day} ${_getMonth(currentDate.month)} ${currentDate.year}";
-    return Container(
-      padding: const EdgeInsets.only(left: 15, right: 15),
-      decoration: const BoxDecoration(
-        //gunakan global color
-        color: Colors.blueAccent,
-      ),
-      child: Column(
+    return Scaffold(
+      body: Stack(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Hi, Rijal Kurniawan",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1,
-                      wordSpacing: 2,
-                      color: Colors.white,
-                    ),
-                  ),
-                  Text(
-                    "Selamat Datang Di Destask",
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                      letterSpacing: 1,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
-              ),
-              GestureDetector(
-                onTap: () {
-                  Get.toNamed('/notifikasi');
-                },
-                child: Stack(
+          // Kotak Merah
+          Positioned(
+            top: 0,
+            left: 0,
+            child: Container(
+              width: screenWidth,
+              height: screenHeight / 3,
+              color: GlobalColors.mainColor,
+              child: Padding(
+                padding: const EdgeInsets.only(left: 20, right: 20, top: 45),
+                child: Column(
                   children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.lightBlue[300],
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      padding: EdgeInsets.all(10),
-                      child: const Icon(
-                        Icons.notifications,
-                        color: Colors.white,
-                      ),
-                    ),
-                    Positioned(
-                      right: 0,
-                      top: 0,
-                      child: Container(
-                        width: 25,
-                        height: 25,
-                        padding: const EdgeInsets.all(4),
-                        decoration: const BoxDecoration(
-                          color: Colors.red,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Align(
-                          alignment: Alignment.center,
-                          child: Text(
-                            '1',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(
-            height: 10,
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                '$dayOfWeek,',
-                style: const TextStyle(fontSize: 18, color: Colors.white),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                formattedDate,
-                style: const TextStyle(fontSize: 18, color: Colors.white),
-              ),
-            ],
-          ),
-          Padding(
-            padding: EdgeInsets.only(left: 10, right: 10),
-            child: GridView.builder(
-              itemCount: names.length,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                childAspectRatio: 1.1,
-              ),
-              itemBuilder: (context, index) {
-                return Column(
-                  children: [
-                    Stack(
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Container(
-                          height: 50,
-                          width: 50,
-                          decoration: BoxDecoration(
-                            color: colors[index],
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Center(
-                            child: nameIcon[index],
-                          ),
-                        ),
-                        Positioned(
-                          top: 0,
-                          right: 0,
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
-                            child: Container(
-                              width: 25,
-                              height: 25,
-                              padding: const EdgeInsets.all(5),
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Colors.red,
+                        const Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Hi, Rijal Kurniawan",
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1,
+                                wordSpacing: 2,
+                                color: Colors.white,
                               ),
-                              child: Align(
-                                alignment: Alignment.center,
-                                child: Text(
-                                  (index + 19).toString(),
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 12,
-                                  ),
-                                ),
+                            ),
+                            Text(
+                              "Selamat Datang Di Destask",
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w400,
+                                letterSpacing: 1,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            Get.toNamed('/notifikasi');
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.blue[300],
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: const EdgeInsets.all(8.0),
+                            child: badges.Badge(
+                              badgeContent: Text(
+                                '3',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                              badgeStyle: BadgeStyle(
+                                  badgeColor: Colors.red, // Red circle color
+                                  elevation: 4, // No shadow
+                                  padding: EdgeInsets.only(
+                                      top: 5, bottom: 5, left: 5, right: 5)),
+                              child: Icon(
+                                Icons.notifications,
+                                color: Colors.white,
                               ),
                             ),
                           ),
@@ -219,93 +125,138 @@ class _BerandaState extends State<Beranda> {
                     const SizedBox(
                       height: 10,
                     ),
-                    Text(
-                      names[index],
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          '$dayOfWeek, ',
+                          style: const TextStyle(
+                              fontSize: 18, color: Colors.white),
+                        ),
+                        Text(
+                          formattedDate,
+                          style: const TextStyle(
+                              fontSize: 18, color: Colors.white),
+                        ),
+                      ],
                     ),
                   ],
-                );
-              },
+                ),
+              ),
             ),
           ),
-          Container(
-            margin: const EdgeInsets.only(top: 5, bottom: 20),
-            width: MediaQuery.of(context).size.width,
-            height: 45,
-            decoration: BoxDecoration(
+          // Kotak Biru
+          Positioned(
+            top: screenHeight / 4.1,
+            left: 0,
+            child: Container(
+              width: screenWidth,
+              height: screenHeight * 3 / 4,
               color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: TextFormField(
-              decoration: const InputDecoration(
-                border: InputBorder.none,
-                prefixIcon: Icon(
-                  Icons.search,
-                  color: Colors.grey,
+              child: SingleChildScrollView(
+                child: FutureBuilder<List<dynamic>>(
+                  future: futurePekerjaan,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    } else if (snapshot.hasError) {
+                      return Center(
+                        child: Text('Error: ${snapshot.error}'),
+                      );
+                    } else {
+                      List<dynamic> pekerjaan = snapshot.data as List<dynamic>;
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 70),
+                        child: _ListOfJob(pekerjaan: pekerjaan),
+                      );
+                    }
+                  },
                 ),
-                hintText: "Search here...",
-                hintStyle: TextStyle(
-                  color: Colors.grey,
-                  fontSize: 18,
+              ),
+            ),
+          ),
+          // Kotak Kuning di Tengah
+          Positioned(
+            top: screenHeight / 6 - 8.0,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.only(
+                    top: 0, bottom: 10, left: 10, right: 10),
+                child: Container(
+                  width: screenWidth / 1.1,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    color: Colors.lightBlue[300],
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 3),
+                    child: GridView.builder(
+                      itemCount: names.length,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 3,
+                        childAspectRatio: 1.1,
+                      ),
+                      itemBuilder: (context, index) {
+                        return Column(
+                          children: [
+                            badges.Badge(
+                              badgeContent: Text('3',
+                                  style: TextStyle(color: Colors.white)),
+                              badgeStyle: BadgeStyle(
+                                badgeColor: Colors.red, // Red circle color
+                                elevation: 0, // No shadow
+                                padding: EdgeInsets.all(
+                                    10), // Padding around the badge content
+                              ),
+                              child: InkWell(
+                                onTap: () {
+                                  if (index == 0) {
+                                    Get.toNamed('/pekerjaan_selesai');
+                                  } else if (index == 1) {
+                                    Get.toNamed('/target_bulan_ini');
+                                  } else if (index == 2) {
+                                    Get.toNamed('/task_selesai');
+                                  }
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: colors[index],
+                                    borderRadius: BorderRadius.circular(15),
+                                  ),
+                                  child: nameIcon[index],
+                                ),
+                              ),
+                            ),
+                            Text(
+                              names[index],
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 10,
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
                 ),
               ),
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Expanded _joblist() {
-    return Expanded(
-      child: Container(
-        padding: EdgeInsets.only(top: 15),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
-          ),
-        ),
-        child: SingleChildScrollView(
-          child: FutureBuilder<List<dynamic>>(
-            future: futurePekerjaan,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return Center(
-                  child: CircularProgressIndicator(),
-                );
-              } else if (snapshot.hasError) {
-                return Center(
-                  child: Text('Error: ${snapshot.error}'),
-                );
-              } else {
-                List<dynamic> pekerjaan = snapshot.data as List<dynamic>;
-                return Column(
-                  children: [
-                    Container(
-                      child: Text(
-                        "ON PROGRESS",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: GlobalColors
-                              .textColor, // Choose your desired text color
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                    _ListOfJob(pekerjaan: pekerjaan),
-                  ],
-                );
-              }
-            },
-          ),
-        ),
       ),
     );
   }
@@ -323,64 +274,137 @@ class _ListOfJob extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.only(left: 10, right: 10),
-      child: ListView.builder(
-        itemCount: pekerjaan.length,
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemBuilder: (context, index) {
-          var namaPekerjaan = pekerjaan[index].nama_pekerjaan;
-          var PM = pekerjaan[index].PM;
-          return InkWell(
-            onTap: () {
-              Get.toNamed('/task/${pekerjaan[index].idpekerjaan}');
-            },
-            child: Card(
-              color: PM == "Rijal Kurniawan" ? Colors.blue : Colors.blue[200],
-              child: ListTile(
-                leading: Container(
-                  padding: const EdgeInsets.all(5),
-                  decoration: BoxDecoration(
-                    color: Colors.amber,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.work,
-                    size: 30,
-                    color: Colors.white,
-                  ),
-                ),
-                title: Text(
-                  namaPekerjaan.length > 20
-                      ? '${namaPekerjaan.substring(0, 20)}...'
-                      : namaPekerjaan,
-                  style: TextStyle(color: Colors.white),
-                ),
-                subtitle: Text(
-                  "PM : " + PM,
-                  style: const TextStyle(color: Colors.white),
-                ),
-                trailing: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      "Deadline",
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                    Text(
-                      pekerjaan[index].tanggal_selesai,
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                  ],
-                ),
+      child: Column(
+        children: [
+          // Container(
+          //   margin: const EdgeInsets.only(top: 5, bottom: 20),
+          //   width: MediaQuery.of(context).size.width,
+          //   height: 45,
+          //   decoration: BoxDecoration(
+          //     color: GlobalColors.mainColor,
+          //     borderRadius: BorderRadius.circular(10),
+          //   ),
+          //   child: TextFormField(
+          //     decoration: const InputDecoration(
+          //       border: InputBorder.none,
+          //       prefixIcon: Icon(
+          //         Icons.search,
+          //         color: Colors.white,
+          //       ),
+          //       hintText: "Search here...",
+          //       hintStyle: TextStyle(
+          //         color: Colors.white,
+          //         fontSize: 18,
+          //       ),
+          //     ),
+          //   ),
+          // ),
+          Container(
+            child: Text(
+              "ON PROGRESS",
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: GlobalColors.textColor, // Choose your desired text color
               ),
+              textAlign: TextAlign.center,
             ),
-          );
-        },
+          ),
+          ListView.builder(
+            itemCount: pekerjaan.length,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemBuilder: (context, index) {
+              var namaPekerjaan = pekerjaan[index].nama_pekerjaan;
+              var PM = pekerjaan[index].PM;
+              return GestureDetector(
+                onTap: () {
+                  Get.toNamed('/task/${pekerjaan[index].idpekerjaan}');
+                },
+                child: Card(
+                  color: PM == "Rijal Kurniawan"
+                      ? Colors.green
+                      : GlobalColors.mainColor,
+                  child: ListTile(
+                    leading: Container(
+                      padding: const EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                        color: Colors.amber,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.work,
+                        size: 30,
+                        color: Colors.white,
+                      ),
+                    ),
+                    title: Hero(
+                      tag: pekerjaan[index].idpekerjaan,
+                      child: Text(
+                        namaPekerjaan.length > 20
+                            ? '${namaPekerjaan.substring(0, 20)}...'
+                            : namaPekerjaan,
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                    subtitle: Text(
+                      "PM : " + PM,
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                    trailing: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          "Deadline",
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                        Text(
+                          pekerjaan[index].tanggal_selesai,
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
 }
+
+List<Color> colors = [
+  Colors.amber,
+  Colors.green,
+  Colors.purple,
+];
+
+List<String> names = [
+  'Pekerjaan\nSelesai',
+  'Target\nBulan Ini',
+  'Task\nSelesai'
+];
+
+List<Icon> nameIcon = const [
+  Icon(
+    Icons.work,
+    size: 30,
+    color: Colors.white,
+  ),
+  Icon(
+    Icons.calendar_today,
+    size: 30,
+    color: Colors.white,
+  ),
+  Icon(
+    Icons.check_circle,
+    size: 30,
+    color: Colors.white,
+  ),
+];
 
 String _getDayOfWeek(int day) {
   switch (day) {
@@ -433,29 +457,3 @@ String _getMonth(int month) {
       return '';
   }
 }
-
-List<Color> colors = [
-  Colors.amberAccent,
-  Colors.greenAccent,
-  Colors.purple,
-];
-
-List<String> names = ['Total Pekerjaan', 'Target Bulan Ini', 'Task Selesai'];
-
-List<Icon> nameIcon = const [
-  Icon(
-    Icons.work,
-    size: 30,
-    color: Colors.white,
-  ),
-  Icon(
-    Icons.calendar_today,
-    size: 30,
-    color: Colors.white,
-  ),
-  Icon(
-    Icons.check_circle,
-    size: 30,
-    color: Colors.white,
-  ),
-];
