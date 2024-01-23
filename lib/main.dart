@@ -59,8 +59,7 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/edit_profil', page: () => Profil()),
         GetPage(name: '/ganti_password', page: () => const GantiPassword()),
       ],
-      theme: ThemeData(fontFamily: 'Poppins'),
-      home: const Splash(),
+      home: const BottomNav(),
     );
   }
 }
