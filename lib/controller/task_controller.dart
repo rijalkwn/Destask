@@ -63,11 +63,11 @@ class TaskController {
         List<dynamic> tasks = List<dynamic>.from(list.map((e) => e));
         return tasks;
       } else {
-        // Handle error
+        print(response.statusCode);
         return [];
       }
     } catch (e) {
-      // Handle exception
+      print(e);
       return [];
     }
   }

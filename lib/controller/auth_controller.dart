@@ -27,9 +27,9 @@ class AuthController {
         prefs.setString("level", response['data']['level']);
         prefs.setString("token", response['token']);
 
-        if (response['data']['level'] == "admin") {
+        if (response['data']['level'] == "supervisor") {
           Get.offAll(() => const BottomNav());
-        } else if (response['data']['level'] == "user") {
+        } else if (response['data']['level'] == "staff") {
           Get.offAll(() => const BottomNav());
         }
         return true;
@@ -44,8 +44,13 @@ class AuthController {
   }
 
   Future logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
-    Get.offAll(() => const Login());
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
+      Get.offAll(() => const Login());
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 }

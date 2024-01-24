@@ -1,34 +1,30 @@
-import 'dart:async';
-
 import 'package:destask/controller/pekerjaan_controller.dart';
 import 'package:destask/controller/task_controller.dart';
+import 'package:destask/model/task_model.dart';
 import 'package:destask/utils/global_colors.dart';
-import 'package:destask/view/Pekerjaan/pekerjaan.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:quickalert/quickalert.dart';
+import 'package:table_calendar/table_calendar.dart';
 
 class Task extends StatefulWidget {
+  const Task({Key? key}) : super(key: key);
+
   @override
-  _TaskState createState() => _TaskState();
+  State<Task> createState() => _TaskState();
 }
 
 class _TaskState extends State<Task> with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final TaskController taskController = Get.put(TaskController());
+  CalendarFormat _calendarFormat = CalendarFormat.week;
+  DateTime _focusedDay = DateTime.now();
+  DateTime? _selectedDay;
+  final TaskController _taskController = TaskController();
   TextEditingController searchController = TextEditingController();
-  String namaPekerjaan = '';
   bool isSearchBarVisible = false;
-  String searchQuery = ''; // Added for search functionality
-
-  Future<Map<String, dynamic>> fetchData() async {
-    final String idPekerjaan = Get.parameters['idpekerjaan'] ?? '';
-    PekerjaanController pekerjaanController = PekerjaanController();
-    Map<String, dynamic> pekerjaan =
-        await pekerjaanController.getPekejaanById(idPekerjaan);
-    return pekerjaan;
-  }
-
+  String searchQuery = '';
+  String namaPekerjaan = '';
   @override
   void initState() {
     super.initState();
@@ -40,9 +36,331 @@ class _TaskState extends State<Task> with SingleTickerProviderStateMixin {
     });
   }
 
+  Future<Map<String, dynamic>> fetchData() async {
+    final String idPekerjaan = Get.parameters['idpekerjaan'] ?? '';
+    PekerjaanController pekerjaanController = PekerjaanController();
+    Map<String, dynamic> pekerjaan =
+        await pekerjaanController.getPekejaanById(idPekerjaan);
+    return pekerjaan;
+  }
+
+  List<dynamic> _getTaskForDay(DateTime selectedDay) {
+    return [];
+  }
+
+  FutureBuilder<List<dynamic>> _buildTaskForDay(DateTime selectedDay) {
+    final String idPekerjaan = Get.parameters['idpekerjaan'] ?? '';
+    return FutureBuilder<List<dynamic>>(
+      future: _taskController.getTasksByPekerjaanId(idPekerjaan),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          // Loading state
+          return CircularProgressIndicator(
+            color: Colors.white,
+          );
+        } else if (snapshot.hasError) {
+          // Error state
+          return Text('Error: ${snapshot.error}');
+        } else if (snapshot.hasData || snapshot.data!.isEmpty) {
+          // Success state
+          List<dynamic> tasks = snapshot.data ?? [];
+          List<dynamic> tasksForDay = tasks.where((task) {
+            DateTime startDate = DateTime.parse(task['tanggal_mulai']);
+            DateTime endDate = DateTime.parse(task['tanggal_selesai']);
+            return selectedDay.isAtSameMomentAs(startDate) ||
+                selectedDay.isAtSameMomentAs(endDate) ||
+                (selectedDay.isAfter(startDate) &&
+                    selectedDay.isBefore(endDate));
+          }).toList();
+
+          return ListView.builder(
+            itemCount: tasksForDay.length,
+            itemBuilder: (context, index) {
+              return Padding(
+                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 1),
+                child: Card(
+                  color: GlobalColors.mainColor,
+                  child: ListTile(
+                    title: Text(tasksForDay[index]['nama_task'],
+                        style: TextStyle(color: Colors.white)),
+                    subtitle: Text(tasksForDay[index]['detail_task'],
+                        style: TextStyle(color: Colors.white)),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          onPressed: () {
+                            Get.toNamed(
+                                '/edit_task/' + tasksForDay[index]['idtask']);
+                          },
+                          icon: Icon(
+                            Icons.edit,
+                            color: Colors.white,
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () async {
+                            bool deletedSuccessfully = await _taskController
+                                .deleteTask(tasksForDay[index]['idtask']);
+                            if (deletedSuccessfully) {
+                              // Refresh halaman
+                              Get.offAndToNamed('/task/$idPekerjaan');
+                              QuickAlert.show(
+                                context: context,
+                                type: QuickAlertType.success,
+                                text: 'Task berhasil dihapus!',
+                              );
+                            } else {
+                              QuickAlert.show(
+                                context: context,
+                                type: QuickAlertType.error,
+                                title: 'Oops...',
+                                text: 'Task gagal dihapus, silahkan coba lagi!',
+                              );
+                            }
+                          },
+                          icon: Icon(
+                            Icons.delete,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          );
+        } else {
+          // no data
+          return Center(
+            child: Text(
+              'Tidak ada task untuk hari ini!',
+              style: TextStyle(color: Colors.black),
+            ),
+          );
+        }
+      },
+    );
+  }
+
+  //today
+  FutureBuilder<List<dynamic>> _buildTaskForPlanningDay(DateTime selectedDay) {
+    final String idPekerjaan = Get.parameters['idpekerjaan'] ?? '';
+    return FutureBuilder<List<dynamic>>(
+      future: _taskController.getTasksByPekerjaanId(idPekerjaan),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          // Loading state
+          return CircularProgressIndicator(
+            color: Colors.white,
+          );
+        } else if (snapshot.hasError) {
+          // Error state
+          return Text('Error: ${snapshot.error}');
+        } else if (snapshot.hasData || snapshot.data!.isEmpty) {
+          // Success state
+          List<dynamic> tasks = snapshot.data ?? [];
+          List<dynamic> tasksForDay = tasks.where((task) {
+            DateTime startDate = DateTime.parse(task['tanggal_mulai']);
+            DateTime endDate = DateTime.parse(task['tanggal_selesai']);
+            return selectedDay.isAtSameMomentAs(startDate) ||
+                selectedDay.isAtSameMomentAs(endDate) ||
+                (selectedDay.isAfter(startDate) &&
+                    selectedDay.isBefore(endDate));
+          }).toList();
+
+          return ListView.builder(
+            itemCount: tasksForDay.length,
+            itemBuilder: (context, index) {
+              return Padding(
+                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 1),
+                child: Card(
+                  color: GlobalColors.mainColor,
+                  child: ListTile(
+                    title: Text(tasksForDay[index]['nama_task'],
+                        style: TextStyle(color: Colors.white)),
+                    subtitle: Text(tasksForDay[index]['detail_task'],
+                        style: TextStyle(color: Colors.white)),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          onPressed: () {
+                            Get.toNamed(
+                                '/edit_task/' + tasksForDay[index]['idtask']);
+                          },
+                          icon: Icon(
+                            Icons.edit,
+                            color: Colors.white,
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () async {
+                            bool deletedSuccessfully = await _taskController
+                                .deleteTask(tasksForDay[index]['idtask']);
+                            if (deletedSuccessfully) {
+                              // Refresh halaman
+                              Get.offAndToNamed('/task/$idPekerjaan');
+                              QuickAlert.show(
+                                context: context,
+                                type: QuickAlertType.success,
+                                text: 'Task berhasil dihapus!',
+                              );
+                            } else {
+                              QuickAlert.show(
+                                context: context,
+                                type: QuickAlertType.error,
+                                title: 'Oops...',
+                                text: 'Task gagal dihapus, silahkan coba lagi!',
+                              );
+                            }
+                          },
+                          icon: Icon(
+                            Icons.delete,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          );
+        } else {
+          // no data
+          return Center(
+            child: Text(
+              'Tidak ada task untuk hari ini!',
+              style: TextStyle(color: Colors.black),
+            ),
+          );
+        }
+      },
+    );
+  }
+
+  //overdue
+  FutureBuilder<List<dynamic>> _buildTaskForOverdueDay(DateTime selectedDay) {
+    final String idPekerjaan = Get.parameters['idpekerjaan'] ?? '';
+    return FutureBuilder<List<dynamic>>(
+      future: _taskController.getTasksByPekerjaanId(idPekerjaan),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          // Loading state
+          return CircularProgressIndicator(
+            color: Colors.white,
+          );
+        } else if (snapshot.hasError) {
+          // Error state
+          return Text('Error: ${snapshot.error}');
+        } else if (snapshot.hasData || snapshot.data!.isEmpty) {
+          // Success state
+          List<dynamic> tasks = snapshot.data ?? [];
+          List<dynamic> tasksForDay = tasks.where((task) {
+            DateTime startDate = DateTime.parse(task['tanggal_mulai']);
+            DateTime endDate = DateTime.parse(task['tanggal_selesai']);
+            return selectedDay.isAtSameMomentAs(startDate) ||
+                selectedDay.isAtSameMomentAs(endDate) ||
+                (selectedDay.isAfter(startDate) &&
+                    selectedDay.isBefore(endDate));
+          }).toList();
+
+          return ListView.builder(
+            itemCount: tasksForDay.length,
+            itemBuilder: (context, index) {
+              return Padding(
+                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 1),
+                child: Card(
+                  color: GlobalColors.mainColor,
+                  child: ListTile(
+                    title: Text(tasksForDay[index]['nama_task'],
+                        style: TextStyle(color: Colors.white)),
+                    subtitle: Text(tasksForDay[index]['detail_task'],
+                        style: TextStyle(color: Colors.white)),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          onPressed: () {
+                            Get.toNamed(
+                                '/edit_task/' + tasksForDay[index]['idtask']);
+                          },
+                          icon: Icon(
+                            Icons.edit,
+                            color: Colors.white,
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () async {
+                            bool deletedSuccessfully = await _taskController
+                                .deleteTask(tasksForDay[index]['idtask']);
+                            if (deletedSuccessfully) {
+                              // Refresh halaman
+                              Get.offAndToNamed('/task/$idPekerjaan');
+                              QuickAlert.show(
+                                context: context,
+                                type: QuickAlertType.success,
+                                text: 'Task berhasil dihapus!',
+                              );
+                            } else {
+                              QuickAlert.show(
+                                context: context,
+                                type: QuickAlertType.error,
+                                title: 'Oops...',
+                                text: 'Task gagal dihapus, silahkan coba lagi!',
+                              );
+                            }
+                          },
+                          icon: Icon(
+                            Icons.delete,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          );
+        } else {
+          // no data
+          return Center(
+            child: Text(
+              'Tidak ada task untuk hari ini!',
+              style: TextStyle(color: Colors.black),
+            ),
+          );
+        }
+      },
+    );
+  }
+
+  void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
+    setState(() {
+      _selectedDay = selectedDay;
+      _focusedDay = focusedDay;
+    });
+  }
+
+  bool _selectedDayPredicate(DateTime day) {
+    return isSameDay(_selectedDay, day);
+  }
+
+  //firstday
+  // final DateTime _firstDayPlanning = DateTime.now().add(Duration(days: 1));
+  // final DateTime _firstDayToday = DateTime.now().subtract(Duration(days: 3));
+  // final DateTime _firstDayOverdue = DateTime.utc(2000, 01, 01);
+
+  //lastday
+  // final DateTime _lastDayPlanning = DateTime.utc(2030, 12, 31);
+  // final DateTime _lastDayToday = DateTime.now().add(Duration(days: 3));
+  // final DateTime _lastDayOverdue = DateTime.now().subtract(Duration(days: 1));
+
   @override
   Widget build(BuildContext context) {
-    final String idPekerjaan = Get.parameters['idpekerjaan'] ?? '';
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blueAccent,
@@ -76,16 +394,13 @@ class _TaskState extends State<Task> with SingleTickerProviderStateMixin {
                   ),
                 ),
               )
-            : Hero(
-                tag: namaPekerjaan,
-                child: Text(
-                  namaPekerjaan != ''
-                      ? (namaPekerjaan.length > 20
-                          ? '${namaPekerjaan.substring(0, 20)}...'
-                          : namaPekerjaan)
-                      : '',
-                  style: TextStyle(color: Colors.white),
-                ),
+            : Text(
+                namaPekerjaan != ''
+                    ? (namaPekerjaan.length > 20
+                        ? '${namaPekerjaan.substring(0, 20)}...'
+                        : namaPekerjaan)
+                    : '',
+                style: TextStyle(color: Colors.white),
               ),
         actions: !isSearchBarVisible
             ? [
@@ -102,179 +417,147 @@ class _TaskState extends State<Task> with SingleTickerProviderStateMixin {
             : null,
         bottom: TabBar(
           controller: _tabController,
-          labelPadding: EdgeInsets.symmetric(horizontal: 10),
+          labelColor: Colors.white,
+          indicatorColor: Colors.black,
+          unselectedLabelColor: Colors.white,
           tabs: [
             Tab(text: 'Planning'),
-            Tab(text: 'Hari Ini'),
-            Tab(text: 'OverDue'),
+            Tab(text: 'Today'),
+            Tab(text: 'Overdue'),
           ],
-          labelStyle: TextStyle(fontSize: 17),
-          unselectedLabelStyle: TextStyle(fontSize: 16),
-          indicatorColor: Colors.white,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.blue[100],
         ),
       ),
       body: TabBarView(
         controller: _tabController,
         children: [
-          //planning
-          FutureBuilder<List<dynamic>>(
-            future: taskController.getTasksByPekerjaanId(idPekerjaan),
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                List<dynamic> planningTask = snapshot.data!.where((task) {
-                  DateTime tanggalMulai = DateTime.parse(task['tanggal_mulai']);
-                  return tanggalMulai.isAfter(DateTime.now());
-                }).toList();
-                return TaskList(
-                    tasks: planningTask,
-                    taskController: taskController,
-                    searchQuery: searchQuery);
-              } else {
-                return Center(
-                  child: CircularProgressIndicator(),
-                );
-              }
-            },
+          //Planning
+          Column(
+            children: [
+              TableCalendar(
+                locale: 'id_ID',
+                firstDay: DateTime.now().subtract(Duration(days: 1)),
+                lastDay: DateTime.utc(2030, 12, 31),
+                focusedDay: _focusedDay,
+                calendarFormat: CalendarFormat.week,
+                selectedDayPredicate: (day) {
+                  return isSameDay(_selectedDay, day);
+                },
+                onDaySelected: _onDaySelected,
+                startingDayOfWeek: StartingDayOfWeek.monday,
+                eventLoader: _getTaskForDay,
+                headerStyle: HeaderStyle(
+                  formatButtonVisible: false,
+                ),
+                calendarStyle: const CalendarStyle(
+                  outsideDaysVisible: false,
+                  todayDecoration:
+                      BoxDecoration(color: Colors.blue, shape: BoxShape.circle),
+                  weekendTextStyle: TextStyle(color: Colors.red),
+                ),
+                onFormatChanged: (format) {
+                  if (_calendarFormat != format) {
+                    setState(() {
+                      _calendarFormat = format;
+                    });
+                  }
+                },
+                onPageChanged: (focusedDay) {
+                  _focusedDay = focusedDay;
+                },
+              ),
+              Expanded(
+                child: _buildTaskForPlanningDay(_selectedDay ?? DateTime.now()),
+              ),
+            ],
           ),
-          //hari ini
-          FutureBuilder<List<dynamic>>(
-            future: taskController.getTasksByPekerjaanId(idPekerjaan),
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                List<dynamic> todayTask = snapshot.data!.where((task) {
-                  DateTime tanggalMulai = DateTime.parse(task['tanggal_mulai']);
-                  DateTime tanggalSelesai =
-                      DateTime.parse(task['tanggal_selesai']);
-                  return tanggalMulai.isBefore(DateTime.now()) &&
-                      tanggalSelesai.isAfter(DateTime.now());
-                }).toList();
-                return TaskList(
-                    tasks: todayTask,
-                    taskController: taskController,
-                    searchQuery: searchQuery);
-              } else {
-                return Center(
-                  child: CircularProgressIndicator(),
-                );
-              }
-            },
+          //Today
+          Column(
+            children: [
+              TableCalendar(
+                locale: 'id_ID',
+                firstDay: DateTime.now().subtract(Duration(days: 3)),
+                lastDay: DateTime.now().add(Duration(days: 3)),
+                focusedDay: _focusedDay,
+                calendarFormat: CalendarFormat.week,
+                selectedDayPredicate: (day) {
+                  return isSameDay(_selectedDay, day);
+                },
+                onDaySelected: _onDaySelected,
+                startingDayOfWeek: StartingDayOfWeek.monday,
+                eventLoader: _getTaskForDay,
+                headerStyle: HeaderStyle(
+                  formatButtonVisible: false,
+                ),
+                calendarStyle: const CalendarStyle(
+                  outsideDaysVisible: false,
+                  selectedDecoration: BoxDecoration(
+                    color: Colors.green,
+                    shape: BoxShape.circle,
+                  ),
+                  todayDecoration:
+                      BoxDecoration(color: Colors.blue, shape: BoxShape.circle),
+                  weekendTextStyle: TextStyle(color: Colors.red),
+                ),
+                onFormatChanged: (format) {
+                  if (_calendarFormat != format) {
+                    setState(() {
+                      _calendarFormat = format;
+                    });
+                  }
+                },
+                onPageChanged: (focusedDay) {
+                  _focusedDay = focusedDay;
+                },
+              ),
+              Expanded(child: _buildTaskForDay(_selectedDay ?? DateTime.now())),
+            ],
           ),
-          //overdue
-          FutureBuilder<List<dynamic>>(
-            future: taskController.getTasksByPekerjaanId(idPekerjaan),
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                List<dynamic> overdueTask = snapshot.data!.where((task) {
-                  DateTime tanggalSelesai =
-                      DateTime.parse(task['tanggal_selesai']);
-                  return tanggalSelesai.isBefore(DateTime.now());
-                }).toList();
-                return TaskList(
-                    tasks: overdueTask,
-                    taskController: taskController,
-                    searchQuery: searchQuery);
-              } else {
-                return Center(
-                  child: CircularProgressIndicator(),
-                );
-              }
-            },
+          //Overdue
+          Column(
+            children: [
+              TableCalendar(
+                locale: 'id_ID',
+                firstDay: DateTime.utc(2000, 01, 01),
+                lastDay: DateTime.now().add(Duration(days: 1)),
+                focusedDay: _focusedDay,
+                calendarFormat: CalendarFormat.week,
+                selectedDayPredicate: (day) {
+                  return isSameDay(_selectedDay, day);
+                },
+                onDaySelected: _onDaySelected,
+                startingDayOfWeek: StartingDayOfWeek.monday,
+                eventLoader: _getTaskForDay,
+                headerStyle: HeaderStyle(
+                  formatButtonVisible: false,
+                ),
+                calendarStyle: const CalendarStyle(
+                  outsideDaysVisible: false,
+                  selectedDecoration: BoxDecoration(
+                    color: Colors.green,
+                    shape: BoxShape.circle,
+                  ),
+                  todayDecoration:
+                      BoxDecoration(color: Colors.blue, shape: BoxShape.circle),
+                  weekendTextStyle: TextStyle(color: Colors.red),
+                ),
+                onFormatChanged: (format) {
+                  if (_calendarFormat != format) {
+                    setState(() {
+                      _calendarFormat = format;
+                    });
+                  }
+                },
+                onPageChanged: (focusedDay) {
+                  _focusedDay = focusedDay;
+                },
+              ),
+              Expanded(
+                  child:
+                      _buildTaskForOverdueDay(_selectedDay ?? DateTime.now())),
+            ],
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Get.toNamed('/add_task/$idPekerjaan');
-        },
-        backgroundColor: GlobalColors.mainColor,
-        shape: CircleBorder(),
-        child: Icon(Icons.add, color: Colors.white),
-      ),
-    );
-  }
-}
-
-class TaskList extends StatelessWidget {
-  final List<dynamic> tasks;
-  final TaskController taskController;
-  final String searchQuery;
-
-  TaskList(
-      {required this.tasks,
-      required this.taskController,
-      required this.searchQuery});
-
-  @override
-  Widget build(BuildContext context) {
-    final String idPekerjaan = Get.parameters['idpekerjaan'] ?? '';
-    final filteredList = tasks.where((task) =>
-        task['nama_task'].toLowerCase().contains(searchQuery.toLowerCase()) ||
-        task['detail_task'].toLowerCase().contains(searchQuery.toLowerCase()));
-
-    return ListView.builder(
-      itemCount: filteredList.length,
-      itemBuilder: (context, index) {
-        var task = filteredList.elementAt(index);
-        return Padding(
-          padding: const EdgeInsets.only(left: 8.0, right: 8.0, top: 8.0),
-          child: Card(
-            color: GlobalColors.mainColor,
-            child: ListTile(
-              contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              title: Text(
-                task['nama_task'],
-                style: TextStyle(color: Colors.white),
-              ),
-              subtitle: Text(
-                task['detail_task'],
-                style: TextStyle(color: Colors.white),
-              ),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    onPressed: () {
-                      Get.toNamed('/edit_task/' + task['idtask']);
-                    },
-                    icon: Icon(
-                      Icons.edit,
-                      color: Colors.white,
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () async {
-                      bool deletedSuccessfully =
-                          await taskController.deleteTask(task['idtask']);
-                      if (deletedSuccessfully) {
-                        // Refresh halaman
-                        Get.offAndToNamed('/task/$idPekerjaan');
-                        QuickAlert.show(
-                          context: context,
-                          type: QuickAlertType.success,
-                          text: 'Task berhasil dihapus!',
-                        );
-                      } else {
-                        QuickAlert.show(
-                          context: context,
-                          type: QuickAlertType.error,
-                          title: 'Oops...',
-                          text: 'Task gagal dihapus, silahkan coba lagi!',
-                        );
-                      }
-                    },
-                    icon: Icon(
-                      Icons.delete,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
     );
   }
 }

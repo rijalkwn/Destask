@@ -15,6 +15,7 @@ import 'package:destask/view/login.dart';
 import 'package:destask/view/lupa_password.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/route_manager.dart';
 
 void main() {
@@ -56,6 +57,12 @@ class MyApp extends StatelessWidget {
           GetPage(name: '/edit_profil', page: () => Profil()),
           GetPage(name: '/ganti_password', page: () => const GantiPassword()),
         ],
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [Locale('en', 'US'), Locale('id', 'ID')],
         home: const BottomNav());
   }
 }

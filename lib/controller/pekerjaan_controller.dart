@@ -55,7 +55,6 @@ class PekerjaanController {
   Future<List<dynamic>> getOnProgress() async {
     try {
       var token = await getToken();
-      print(token);
       var response = await http.get(
         Uri.parse(url),
         headers: {'Authorization': 'Bearer $token'},
