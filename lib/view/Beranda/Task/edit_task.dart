@@ -128,30 +128,31 @@ class _EditTaskState extends State<EditTask> {
                 SizedBox(height: 16),
                 InkWell(
                   onTap: () async {
-                    TaskController taskController = TaskController();
-
-                    bool addedSuccessfully = await taskController.editTask(
-                      idPekerjaan,
-                      idTask,
-                      _taskNameController.text,
-                      _taskDetailController.text,
-                      _selectedDateStart ?? DateTime.now(),
-                      _selectedDateEnd ?? DateTime.now(),
-                    );
-
-                    if (addedSuccessfully) {
-                      QuickAlert.show(
-                        context: context,
-                        type: QuickAlertType.success,
-                        text: 'Task berhasil diupdate!',
+                    if (_keyForm.currentState!.validate()) {
+                      TaskController taskController = TaskController();
+                      bool addedSuccessfully = await taskController.editTask(
+                        idPekerjaan,
+                        idTask,
+                        _taskNameController.text,
+                        _taskDetailController.text,
+                        _selectedDateStart ?? DateTime.now(),
+                        _selectedDateEnd ?? DateTime.now(),
                       );
-                    } else {
-                      QuickAlert.show(
-                        context: context,
-                        type: QuickAlertType.error,
-                        title: 'Oops...',
-                        text: 'Task gagal diupdate, silahkan coba lagi!',
-                      );
+
+                      if (addedSuccessfully) {
+                        QuickAlert.show(
+                          context: context,
+                          type: QuickAlertType.success,
+                          text: 'Task berhasil diupdate!',
+                        );
+                      } else {
+                        QuickAlert.show(
+                          context: context,
+                          type: QuickAlertType.error,
+                          title: 'Oops...',
+                          text: 'Task gagal diupdate, silahkan coba lagi!',
+                        );
+                      }
                     }
                   },
                   child: Container(

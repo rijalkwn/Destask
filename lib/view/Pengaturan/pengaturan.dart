@@ -1,24 +1,71 @@
 import 'package:destask/controller/auth_controller.dart';
+import 'package:destask/controller/profile_controller.dart';
 import 'package:destask/utils/global_colors.dart';
-import 'package:destask/view/Pengaturan/profil.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:quickalert/quickalert.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Pengaturan extends StatefulWidget {
-  const Pengaturan({super.key});
-
   @override
-  State<Pengaturan> createState() => _PengaturanState();
+  _PengaturanState createState() => _PengaturanState();
 }
 
 class _PengaturanState extends State<Pengaturan> {
+  String nama = '';
+  String email = '';
+  String id = '';
+
+  Future<String?> showData() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    var iduser = pref.getString('id_user');
+    return iduser;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    showData().then((iduser) {
+      if (iduser != null) {
+        fetchData(iduser);
+      } else {
+        print('id_user is null');
+      }
+    });
+  }
+
+  Future<void> fetchData(String iduser) async {
+    try {
+      if (iduser != null) {
+        ProfileController profileController = ProfileController();
+        Map<String, dynamic>? datauser =
+            await profileController.getProfileById(iduser);
+        if (datauser != null) {
+          setState(() {
+            id = datauser['id_user'] ?? '';
+            nama = datauser['nama'] ?? '';
+            email = datauser['email'] ?? '';
+          });
+        } else {
+          print('User data is null or empty');
+        }
+      } else {
+        print('id_user is null');
+      }
+    } catch (e) {
+      print('Error fetching data: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text('User Settings'),
+      ),
       body: Container(
         padding: const EdgeInsets.all(10),
-        color: GlobalColors.backColor,
+        color: Colors.white,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -27,18 +74,16 @@ class _PengaturanState extends State<Pengaturan> {
               child: Column(
                 children: [
                   CircleAvatar(
-                    radius: 40,
-                    backgroundImage: NetworkImage(
-                        'https://placekitten.com/200/200'), // Ganti dengan URL foto profil pengguna
+                    radius: 40, // Ganti dengan URL foto profil pengguna
                   ),
                   SizedBox(height: 10),
                   Text(
-                    "Rijal Kurniawan",
+                    nama,
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 5),
                   Text(
-                    "admin@mail.com",
+                    email,
                     style: TextStyle(fontSize: 16, color: Colors.grey),
                   ),
                 ],
@@ -47,7 +92,7 @@ class _PengaturanState extends State<Pengaturan> {
             // Edit Profile Button
             GestureDetector(
               onTap: () {
-                Get.to(() => Profil());
+                Get.toNamed('/edit_profile/$id');
               },
               child: Container(
                 padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),

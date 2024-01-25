@@ -9,7 +9,7 @@ import 'package:destask/view/Menu/bottom_nav.dart';
 import 'package:destask/view/Notifikasi/notifikasi.dart';
 import 'package:destask/view/Pekerjaan/pekerjaan.dart';
 import 'package:destask/view/Pengaturan/pengaturan.dart';
-import 'package:destask/view/Pengaturan/profil.dart';
+import 'package:destask/view/Pengaturan/edit_profile.dart';
 import 'package:destask/view/ganti_password.dart';
 import 'package:destask/view/login.dart';
 import 'package:destask/view/lupa_password.dart';
@@ -53,8 +53,8 @@ class MyApp extends StatelessWidget {
           GetPage(name: '/detail_task', page: () => DetailTask()),
           GetPage(name: '/pekerjaan', page: () => const Pekerjaan()),
           GetPage(name: '/kpi', page: () => KPI()),
-          GetPage(name: '/pengaturan', page: () => const Pengaturan()),
-          GetPage(name: '/edit_profil', page: () => Profil()),
+          GetPage(name: '/pengaturan', page: () => Pengaturan()),
+          GetPage(name: '/edit_profile/:id_user', page: () => EditProfile()),
           GetPage(name: '/ganti_password', page: () => const GantiPassword()),
         ],
         localizationsDelegates: const [

@@ -158,19 +158,22 @@ class _BerandaState extends State<Beranda> {
                   future: futurePekerjaan,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Center(
-                        child: CircularProgressIndicator(),
-                      );
+                      return Center(child: CircularProgressIndicator());
                     } else if (snapshot.hasError) {
-                      return Center(
-                        child: Text('Error: ${snapshot.error}'),
+                      return Center(child: Text('Error: ${snapshot.error}'));
+                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 300),
+                        child: Center(child: Text('No data available.')),
                       );
-                    } else {
+                    } else if (snapshot.hasData) {
                       List<dynamic> pekerjaan = snapshot.data as List<dynamic>;
                       return Padding(
                         padding: const EdgeInsets.only(top: 70),
                         child: _ListOfJob(pekerjaan: pekerjaan),
                       );
+                    } else {
+                      return Center(child: Text('No data available.'));
                     }
                   },
                 ),

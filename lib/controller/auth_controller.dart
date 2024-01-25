@@ -9,13 +9,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthController {
   Future login(
-    TextEditingController _usernameController,
-    TextEditingController _passwordController,
+    TextEditingController identitasController,
+    TextEditingController passwordController,
   ) async {
-    final String url = "$baseURL/api/UserAuthentication";
+    const String url = "$baseURL/authAPI";
     final prefs = await SharedPreferences.getInstance();
     var params =
-        "?username=${_usernameController.text}&password=${_passwordController.text}";
+        "?identitas=${identitasController.text}&password=${passwordController.text}";
 
     try {
       var res = await http.post(Uri.parse(url + params));
@@ -24,14 +24,10 @@ class AuthController {
         var response = json.decode(res.body);
         prefs.setString("id_user", response['data']['id_user']);
         prefs.setString("username", response['data']['username']);
-        prefs.setString("level", response['data']['level']);
+        prefs.setString("nama", response['data']['nama']);
+        prefs.setString("email", response['data']['email']);
         prefs.setString("token", response['token']);
-
-        if (response['data']['level'] == "supervisor") {
-          Get.offAll(() => const BottomNav());
-        } else if (response['data']['level'] == "staff") {
-          Get.offAll(() => const BottomNav());
-        }
+        Get.offAll(() => BottomNav());
         return true;
       } else {
         print(res.statusCode);

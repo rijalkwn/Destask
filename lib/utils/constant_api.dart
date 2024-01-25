@@ -6,9 +6,9 @@
 // const baseURL = 'http://192.168.1.13/testing/public'; //wifi kost agung
 // const baseURL = 'http://10.137.41.46/testing/public'; //wifi ap
 // const baseURL = 'http://10.137.13.150/testing/public'; //wifi lab
-const baseURL = 'http://192.168.233.66/testing/public'; //wifi hp
+// const baseURL = 'http://192.168.233.66/testing/public'; //wifi hp
 // const baseURL =
 //     'http://10.107.54.211/testing/public'; //wifi undipconnect perpus
 
 //RealDestask
-// const baseURL = 'http://192.168.233.66/destask/public';
+const baseURL = 'http://192.168.233.66/Destask/public';

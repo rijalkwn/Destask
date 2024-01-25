@@ -1,5 +1,4 @@
 import 'package:destask/controller/auth_controller.dart';
-import 'package:destask/utils/constant_api.dart';
 import 'package:destask/utils/global_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -13,12 +12,11 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
-  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _identitasController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   bool isLoading = false;
   bool _obsecuretext = true;
-  final String sUrl = "$baseURL/api/UserAuthentication";
 
   @override
   Widget build(BuildContext context) {
@@ -54,9 +52,9 @@ class _LoginState extends State<Login> {
                           ),
                           SizedBox(height: 20),
                           TextFormField(
-                            controller: _usernameController,
+                            controller: _identitasController,
                             decoration: InputDecoration(
-                              labelText: 'Username',
+                              labelText: 'Username or Email',
                               contentPadding: EdgeInsets.symmetric(
                                   vertical: 5, horizontal: 15),
                               border: OutlineInputBorder(
@@ -68,7 +66,7 @@ class _LoginState extends State<Login> {
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Username harus diisi';
+                                return 'Username or Email harus diisi';
                               }
                               return null;
                             },
@@ -104,16 +102,18 @@ class _LoginState extends State<Login> {
                             },
                           ),
                           SizedBox(height: 20),
-                          InkWell(
+                          GestureDetector(
                             onTap: () async {
                               setState(() {
                                 isLoading = true;
                               });
                               if (_formKey.currentState!.validate()) {
-                                AuthController loginController =
+                                AuthController authController =
                                     AuthController();
-                                bool cekLogin = await loginController.login(
-                                    _usernameController, _passwordController);
+                                bool cekLogin = await authController.login(
+                                  _identitasController,
+                                  _passwordController,
+                                );
                                 if (cekLogin) {
                                   QuickAlert.show(
                                     context: context,
