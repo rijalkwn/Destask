@@ -13,9 +13,19 @@ class Pekerjaan extends StatefulWidget {
 class _PekerjaanState extends State<Pekerjaan>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  bool isSearchBarVisible = false;
   late Future<List<dynamic>> futurePekerjaan;
   TextEditingController searchController = TextEditingController();
   PekerjaanController pekerjaanController = PekerjaanController();
+
+  final List<String> statusId = [
+    '1',
+    '2',
+    '3',
+    '4',
+    '5',
+    '6',
+  ];
 
   final List<String> statusNames = [
     'On Progress',
@@ -23,7 +33,7 @@ class _PekerjaanState extends State<Pekerjaan>
     'Pending',
     'Cancel',
     'Bast',
-    'Support',
+    'Support'
   ];
 
   final List<IconData> statusIcon = [
@@ -41,8 +51,6 @@ class _PekerjaanState extends State<Pekerjaan>
     _tabController = TabController(length: 6, vsync: this);
     futurePekerjaan = PekerjaanController().getAllPekerjaan();
   }
-
-  bool isSearchBarVisible = false;
 
   @override
   Widget build(BuildContext context) {
@@ -93,7 +101,7 @@ class _PekerjaanState extends State<Pekerjaan>
             : null,
         bottom: TabBar(
           controller: _tabController,
-          isScrollable: false,
+          isScrollable: true,
           labelPadding: EdgeInsets.symmetric(horizontal: 10),
           tabs: [
             for (var i = 0; i < statusNames.length; i++)
@@ -112,7 +120,7 @@ class _PekerjaanState extends State<Pekerjaan>
       body: TabBarView(
         controller: _tabController,
         children: [
-          for (var status in statusNames)
+          for (var status in statusId)
             StatusPekerjaan(
               futurePekerjaan: futurePekerjaan,
               status: status,
@@ -150,7 +158,7 @@ class StatusPekerjaan extends StatelessWidget {
         } else if (snapshot.hasData) {
           final filteredList = snapshot.data!
               .where((pekerjaan) =>
-                  pekerjaan['status'] == status &&
+                  pekerjaan['id_status_pekerjaan'] == status &&
                   pekerjaan['nama_pekerjaan']
                       .toLowerCase()
                       .contains(searchQuery.toLowerCase()))
@@ -182,9 +190,7 @@ class PekerjaanList extends StatelessWidget {
         return Padding(
           padding: const EdgeInsets.only(top: 3, left: 5, right: 5),
           child: Card(
-            color: pekerjaan[index]['PM'] == "Rijal Kurniawan"
-                ? Colors.green
-                : GlobalColors.mainColor,
+            color: GlobalColors.mainColor,
             child: ListTile(
               leading: Container(
                 padding: const EdgeInsets.all(5),
@@ -205,26 +211,21 @@ class PekerjaanList extends StatelessWidget {
                 style: TextStyle(color: Colors.white),
               ),
               subtitle: Text(
-                "PM : " + pekerjaan[index]['PM'],
-                style: const TextStyle(color: Colors.white),
+                "Persentase Selesai : ${pekerjaan[index]['persentase_selesai']}%",
+                style: TextStyle(color: Colors.white),
               ),
-              trailing: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    "Deadline",
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                  Text(
-                    pekerjaan[index]['tanggal_selesai'],
-                    style: const TextStyle(
-                        color: Colors.white, fontFamily: 'Poppins'),
-                  ),
-                ],
+              trailing: GestureDetector(
+                onTap: () {
+                  Get.toNamed(
+                      '/detail_pekerjaan/${pekerjaan[index]['id_pekerjaan']}');
+                },
+                child: Icon(
+                  Icons.density_small,
+                  color: Colors.white,
+                ),
               ),
               onTap: () {
-                Get.toNamed('/task/${pekerjaan[index]['idpekerjaan']}');
+                Get.toNamed('/task/${pekerjaan[index]['id_pekerjaan']}');
               },
             ),
           ),

@@ -7,12 +7,13 @@ import 'package:destask/view/Beranda/beranda.dart';
 import 'package:destask/view/KPI/KPI.dart';
 import 'package:destask/view/Menu/bottom_nav.dart';
 import 'package:destask/view/Notifikasi/notifikasi.dart';
+import 'package:destask/view/Pekerjaan/detail_pekerjaan.dart';
 import 'package:destask/view/Pekerjaan/pekerjaan.dart';
 import 'package:destask/view/Pengaturan/pengaturan.dart';
 import 'package:destask/view/Pengaturan/edit_profile.dart';
-import 'package:destask/view/ganti_password.dart';
-import 'package:destask/view/login.dart';
-import 'package:destask/view/lupa_password.dart';
+import 'package:destask/view/Auth/ganti_password.dart';
+import 'package:destask/view/Auth/login.dart';
+import 'package:destask/view/Auth/lupa_password.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -52,6 +53,9 @@ class MyApp extends StatelessWidget {
           GetPage(name: '/delete_task/:idtask', page: () => EditTask()),
           GetPage(name: '/detail_task', page: () => DetailTask()),
           GetPage(name: '/pekerjaan', page: () => const Pekerjaan()),
+          // GetPage(
+          //     name: '/detail_pekerjaan/:idpekerjaan',
+          //     page: () => const DetailPekerjaan()),
           GetPage(name: '/kpi', page: () => KPI()),
           GetPage(name: '/pengaturan', page: () => Pengaturan()),
           GetPage(name: '/edit_profile/:id_user', page: () => EditProfile()),

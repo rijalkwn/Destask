@@ -34,16 +34,24 @@ class PekerjaanController {
   }
 
   //get pekerjaan by id
-  Future<Map<String, dynamic>> getPekejaanById(String idPekerjaan) async {
+  Future<Map<String, dynamic>> getPekerjaanById(String idPekerjaan) async {
     try {
       var token = await getToken();
       var response = await http.get(
         Uri.parse('$url/$idPekerjaan'),
         headers: {'Authorization': 'Bearer $token'},
       );
+
       if (response.statusCode == 200) {
-        Map<String, dynamic> pekerjaan = json.decode(response.body);
-        return pekerjaan;
+        List<dynamic> responseData = json.decode(response.body);
+
+        if (responseData.isNotEmpty) {
+          // Access the first element of the array
+          Map<String, dynamic> pekerjaan = responseData[0];
+          return pekerjaan;
+        } else {
+          return {};
+        }
       } else {
         return {};
       }
@@ -62,7 +70,7 @@ class PekerjaanController {
       if (response.statusCode == 200) {
         Iterable list = json.decode(response.body);
         List<dynamic> pekerjaan = List<dynamic>.from(list
-            .where((element) => element['status'] == "On Progress")
+            .where((element) => element['id_status_pekerjaan'] == "1")
             .map((e) => PekerjaanModel.fromJson(e)));
         return pekerjaan;
       } else {

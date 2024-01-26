@@ -60,9 +60,6 @@ class _PengaturanState extends State<Pengaturan> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('User Settings'),
-      ),
       body: Container(
         padding: const EdgeInsets.all(10),
         color: Colors.white,
@@ -74,7 +71,8 @@ class _PengaturanState extends State<Pengaturan> {
               child: Column(
                 children: [
                   CircleAvatar(
-                    radius: 40, // Ganti dengan URL foto profil pengguna
+                    radius: 40,
+                    backgroundImage: AssetImage('assets/img/logo.png'),
                   ),
                   SizedBox(height: 10),
                   Text(

@@ -73,11 +73,20 @@ class TaskController {
 
   //fungsi add task
   Future addTask(
-    String idPekerjaan,
-    String taskName,
-    String taskDetail,
-    DateTime tanggalMulai,
-    DateTime tanggalSelesai,
+    String id_task,
+    String id_pekerjaan,
+    String id_user,
+    String id_status_task,
+    String id_kategori_task,
+    String tgl_planing,
+    String tgl_selesai,
+    String tgl_verifikasi_diterima,
+    String status_verifikasi,
+    String persentase_selesai,
+    String deskripsi_task,
+    String alasan_verifikasi,
+    String bukti_selesai,
+    String tautan_task,
   ) async {
     try {
       var token = await getToken();
@@ -85,16 +94,25 @@ class TaskController {
         Uri.parse(url),
         headers: {'Authorization': 'Bearer $token'},
         body: {
-          'idpekerjaan': idPekerjaan,
-          'nama_task': taskName,
-          'detail_task': taskDetail,
-          'tanggal_mulai': tanggalMulai.toString(),
-          'tanggal_selesai': tanggalSelesai.toString(),
+          'id_task': id_task,
+          'id_pekerjaan': id_pekerjaan,
+          'id_user': id_user,
+          'id_status_task': id_status_task,
+          'id_kategori_task': id_kategori_task,
+          'tgl_planing': tgl_planing,
+          'tgl_selesai': tgl_selesai,
+          'tgl_verifikasi_diterima': tgl_verifikasi_diterima,
+          'status_verifikasi': status_verifikasi,
+          'persentase_selesai': persentase_selesai,
+          'deskripsi_task': deskripsi_task,
+          'alasan_verifikasi': alasan_verifikasi,
+          'bukti_selesai': bukti_selesai,
+          'tautan_task': tautan_task,
         },
       );
 
       if (response.statusCode == 201) {
-        Get.toNamed('/task/$idPekerjaan');
+        Get.toNamed('/task/$id_pekerjaan');
         return true;
       } else {
         print('Error adding task: ${response.body}');

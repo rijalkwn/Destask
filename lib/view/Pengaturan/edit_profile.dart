@@ -2,6 +2,7 @@ import 'package:destask/controller/profile_controller.dart';
 import 'package:destask/utils/global_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:quickalert/quickalert.dart';
 
 class EditProfile extends StatefulWidget {
@@ -15,6 +16,8 @@ class _EditProfileState extends State<EditProfile> {
   TextEditingController _usernameController = TextEditingController();
   TextEditingController _usergroupController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final ImagePicker _imagePicker = ImagePicker();
+  XFile? _pickedImage;
 
   Future<Map<String, dynamic>> fetchData() async {
     var iduser = Get.parameters['iduser'] ?? '';
@@ -22,6 +25,22 @@ class _EditProfileState extends State<EditProfile> {
     Map<String, dynamic> profile =
         await profileController.getProfileById(iduser);
     return profile;
+  }
+
+  // Function to pick an image from the gallery
+  Future<void> _pickImage() async {
+    try {
+      final pickedImage =
+          await _imagePicker.pickImage(source: ImageSource.gallery);
+
+      if (pickedImage != null) {
+        setState(() {
+          _pickedImage = pickedImage;
+        });
+      }
+    } catch (e) {
+      print('Error picking image: $e');
+    }
   }
 
   @override
@@ -159,14 +178,14 @@ class _EditProfileState extends State<EditProfile> {
       child: Column(
         children: [
           CircleAvatar(
-            radius: 40, // Ganti dengan URL foto profil pengguna
+            radius: 40,
+            //   backgroundImage: _pickedImage != null
+            //       ? FileImage(File(_pickedImage!.path))
+            //       : AssetImage('assets/img/logo.png'),
           ),
           SizedBox(height: 8),
           TextButton(
-            onPressed: () {
-              // Tambahkan logika pengambilan foto atau pilih foto dari galeri di sini
-              // Sesuaikan dengan kebutuhan Anda
-            },
+            onPressed: _pickImage,
             child: Text('Ganti Foto'),
           ),
         ],

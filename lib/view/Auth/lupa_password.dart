@@ -1,5 +1,5 @@
 import 'package:destask/utils/global_colors.dart';
-import 'package:destask/view/login.dart';
+import 'package:destask/view/Auth/login.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mailer/mailer.dart';
