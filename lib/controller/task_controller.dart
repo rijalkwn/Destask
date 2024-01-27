@@ -54,8 +54,9 @@ class TaskController {
 
   Future<List<dynamic>> getTasksByPekerjaanId(String idPekerjaan) async {
     try {
+      const urlx = '$baseURL/api/taskbypekerjaan';
       var token = await getToken();
-      var response = await http.get(Uri.parse('$url?idpekerjaan=$idPekerjaan'),
+      var response = await http.get(Uri.parse('$urlx/$idPekerjaan'),
           headers: {'Authorization': 'Bearer $token'});
       if (response.statusCode == 200) {
         Iterable list = json.decode(response.body);
