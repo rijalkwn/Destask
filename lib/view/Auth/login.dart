@@ -133,24 +133,30 @@ class _LoginState extends State<Login> {
                                 isLoading = false;
                               });
                             },
-                            child: Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.symmetric(vertical: 15),
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                color:
-                                    Colors.blue, // Ganti warna sesuai kebutuhan
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: const Text(
-                                'Login',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
+                            child: isLoading
+                                ? CircularProgressIndicator(
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.blue),
+                                  )
+                                : Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 15),
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                      color: Colors
+                                          .blue, // Ganti warna sesuai kebutuhan
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: const Text(
+                                      'Login',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
                           ),
                           //lupa password
                           TextButton(

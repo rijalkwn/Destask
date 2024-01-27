@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:destask/controller/profile_controller.dart';
 import 'package:destask/utils/global_colors.dart';
 import 'package:flutter/material.dart';
@@ -16,8 +18,9 @@ class _EditProfileState extends State<EditProfile> {
   TextEditingController _usernameController = TextEditingController();
   TextEditingController _usergroupController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  final ImagePicker _imagePicker = ImagePicker();
-  XFile? _pickedImage;
+  File? Image;
+  //nama image
+  String? fileImageName;
 
   Future<Map<String, dynamic>> fetchData() async {
     var iduser = Get.parameters['iduser'] ?? '';
@@ -27,19 +30,18 @@ class _EditProfileState extends State<EditProfile> {
     return profile;
   }
 
-  // Function to pick an image from the gallery
+  //pick image
   Future<void> _pickImage() async {
     try {
-      final pickedImage =
-          await _imagePicker.pickImage(source: ImageSource.gallery);
-
-      if (pickedImage != null) {
-        setState(() {
-          _pickedImage = pickedImage;
-        });
-      }
+      final ImagePicker picker = ImagePicker();
+      final XFile? imagePicked =
+          await picker.pickImage(source: ImageSource.gallery);
+      Image = File(imagePicked!.path);
+      setState(() {
+        fileImageName = imagePicked.name;
+      });
     } catch (e) {
-      print('Error picking image: $e');
+      print(e);
     }
   }
 
@@ -178,15 +180,30 @@ class _EditProfileState extends State<EditProfile> {
       child: Column(
         children: [
           CircleAvatar(
-            radius: 40,
-            //   backgroundImage: _pickedImage != null
-            //       ? FileImage(File(_pickedImage!.path))
-            //       : AssetImage('assets/img/logo.png'),
+            radius: 100,
+            backgroundImage: Image != null
+                ? FileImage(Image!)
+                : AssetImage('assets/img/logo.png') as ImageProvider,
           ),
           SizedBox(height: 8),
-          TextButton(
-            onPressed: _pickImage,
-            child: Text('Ganti Foto'),
+          GestureDetector(
+            onTap: () async {
+              await _pickImage();
+            },
+            child: Container(
+              padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 25),
+              decoration: BoxDecoration(
+                color: GlobalColors.mainColor,
+                borderRadius: BorderRadius.circular(15.0),
+              ),
+              child: Text(
+                'Ubah Foto',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16.0,
+                ),
+              ),
+            ),
           ),
         ],
       ),

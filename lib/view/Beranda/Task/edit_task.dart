@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:destask/controller/status_task_controller.dart';
 import 'package:destask/controller/task_controller.dart';
 import 'package:destask/utils/global_colors.dart';
 import 'package:destask/view/Beranda/Task/my_date_time_picker.dart';
@@ -105,6 +106,7 @@ class _EditTaskState extends State<EditTask> {
         _persentaseSelesaiController.text = data['persentase_selesai'] ?? '';
         fileName = data['bukti_selesai'] ?? '';
       });
+      statusTask = StatusTaskController().getAllStatusTask();
     });
   }
 

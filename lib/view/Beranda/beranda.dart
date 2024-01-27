@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:badges/badges.dart';
 import 'package:destask/controller/pekerjaan_controller.dart';
+import 'package:destask/controller/personil_controller.dart';
 import 'package:destask/controller/profile_controller.dart';
 import 'package:destask/utils/global_colors.dart';
 import 'package:destask/view/Auth/login.dart';
@@ -21,7 +22,7 @@ class _BerandaState extends State<Beranda> {
   late Future<List> futurePekerjaan;
   late String nama = '';
 
-  Future<String?> showData() async {
+  Future<void> getUser() async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     var iduser = pref.getString('id_user');
     //ubah ke int
@@ -38,8 +39,8 @@ class _BerandaState extends State<Beranda> {
   void initState() {
     super.initState();
     startLaunching();
-    showData();
-    futurePekerjaan = pekerjaanController.getOnProgress();
+    getUser();
+    futurePekerjaan = pekerjaanController.getOnProgressUser();
   }
 
   startLaunching() async {

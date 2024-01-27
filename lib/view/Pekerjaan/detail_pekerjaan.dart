@@ -1,131 +1,140 @@
-// import 'package:flutter/material.dart';
-// import 'package:get/get.dart';
-// import 'package:destask/controller/pekerjaan_controller.dart';
+import 'package:destask/controller/pekerjaan_controller.dart';
+import 'package:destask/view/Pekerjaan/pekerjaan.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 
-// class DetailPekerjaan extends StatefulWidget {
-//   const DetailPekerjaan({Key? key}) : super(key: key);
+class DetailPekerjaan extends StatefulWidget {
+  const DetailPekerjaan({Key? key}) : super(key: key);
 
-//   @override
-//   State<DetailPekerjaan> createState() => _DetailPekerjaanState();
-// }
+  @override
+  State<DetailPekerjaan> createState() => _DetailPekerjaanState();
+}
 
-// class _DetailPekerjaanState extends State<DetailPekerjaan> {
-//   final String idPekerjaan = Get.parameters['idpekerjaan'] ?? '';
-//   String idpekerjaan = '';
-//   String namapekerjaan = '';
-//   String deskripsipekerjaan = '';
-//   String targetwaktuselesai = '';
-//   String persentaseselesai = '';
-//   String namapelanggan = '';
-//   String jenislayanan = '';
-//   String nominalharga = '';
-//   String deskripsipekerjaan = '';
-//   String targetwaktuselesai = '';
-//   String persentaseselesai = '';
+class _DetailPekerjaanState extends State<DetailPekerjaan> {
+  String idPekerjaan = '';
+  String idStatusPekerjaan = '';
+  String idKategoriPekerjaan = '';
+  String idPersonil = '';
+  String namaPekerjaan = '';
+  String pelanggan = '';
+  String jenisLayanan = '';
+  String nominalHarga = '';
+  String deskripsiPekerjaan = '';
+  String targetWaktuSelesai = '';
+  String persentaseSelesai = '';
+  String waktuSelesai = '';
 
-//   @override
-//   void initState() {
-//     super.initState();
-//     fetchData().then((data) {
-//       setState(() {
-//         idpekerjaan = data['idpekerjaan'] ?? '';
-//         namapekerjaan = data['nama_task'] ?? '';
-//         deskripsipekerjaan = data['deskripsi_task'] ?? '';
-//         targetwaktuselesai = data['target_waktu_selesai'] ?? '';
-//         persentaseselesai = data['persentase_selesai'] ?? '';
-//         namapelanggan = data['nama_pelanggan'] ?? '';
-//         jenislayanan = data['jenis_layanan'] ?? '';
-//         nominalharga = data['nominal_harga'] ?? '';
-//         deskripsipekerjaan = data['deskripsi_pekerjaan'] ?? '';
-//         targetwaktuselesai = data['target_waktu_selesai'] ?? '';
-//         persentaseselesai = data['persentase_selesai'] ?? '';
-//       });
-//     });
-//   }
+  Future<void> detailPekerjaan() async {
+    try {
+      final String idpekerjaan = Get.parameters['idpekerjaan'] ?? '';
+      PekerjaanController pekerjaanController = PekerjaanController();
+      Map<String, dynamic> pekerjaan =
+          await pekerjaanController.getPekerjaanById(idpekerjaan);
+      setState(() {
+        idPekerjaan = pekerjaan['id_pekerjaan'] ?? '';
+        idStatusPekerjaan = pekerjaan['id_status_pekerjaan'] ?? '';
+        idKategoriPekerjaan = pekerjaan['id_kategori_pekerjaan'] ?? '';
+        idPersonil = pekerjaan['id_personil'] ?? '';
+        namaPekerjaan = pekerjaan['nama_pekerjaan'] ?? '';
+        pelanggan = pekerjaan['pelanggan'] ?? '';
+        jenisLayanan = pekerjaan['jenis_layanan'] ?? '';
+        nominalHarga = pekerjaan['nominal_harga'] ?? '';
+        deskripsiPekerjaan = pekerjaan['deskripsi_pekerjaan'] ?? '';
+        targetWaktuSelesai = pekerjaan['target_waktu_selesai'] ?? '';
+        persentaseSelesai = pekerjaan['persentase_selesai'] ?? '';
+        waktuSelesai = pekerjaan['waktu_selesai'] ?? '';
+      });
+    } catch (e) {
+      print('Error detail pekerjaan: $e');
+    }
+  }
 
-//   Future<Map<String, dynamic>> fetchData() async {
-//     final String idPekerjaan = Get.parameters['idpekerjaan'] ?? '';
-//     PekerjaanController pekerjaanController = PekerjaanController();
-//     Map<String, dynamic> pekerjaan =
-//         await pekerjaanController.getPekerjaanById(idPekerjaan);
-//     return pekerjaan;
-//   }
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    detailPekerjaan();
+  }
 
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text('Detail Pekerjaan'),
-//       ),
-//       body: FutureBuilder<Map<String, dynamic>>(
-//         future: fetchData(),
-//         builder: (context, snapshot) {
-//           if (snapshot.connectionState == ConnectionState.waiting) {
-//             return Center(child: CircularProgressIndicator());
-//           } else if (snapshot.hasError) {
-//             return Center(child: Text('Error: ${snapshot.error}'));
-//           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-//             return Center(child: Text('No data available'));
-//           } else {
-//             Map<String, dynamic> pekerjaan = snapshot.data!;
-//             return buildJobDetailCard(pekerjaan);
-//           }
-//         },
-//       ),
-//     );
-//   }
+  // ... (kode sebelumnya)
 
-//   Widget buildJobDetailCard(Map<String, dynamic> pekerjaan) {
-//     return Card(
-//       margin: EdgeInsets.all(10),
-//       child: Column(
-//         crossAxisAlignment: CrossAxisAlignment.start,
-//         children: [
-//           ListTile(
-//             title: Text(
-//               'ID Pekerjaan: ${pekerjaan["id_pekerjaan"]}',
-//               style: TextStyle(fontWeight: FontWeight.bold),
-//             ),
-//             subtitle: Text('Nama Pekerjaan: ${pekerjaan["nama_pekerjaan"]}'),
-//           ),
-//           Divider(),
-//           Padding(
-//             padding: EdgeInsets.all(10),
-//             child: DataTable(
-//               columns: [
-//                 DataColumn(label: Text('Field')),
-//                 DataColumn(label: Text('Value')),
-//               ],
-//               rows: [
-//                 DataRow(cells: [
-//                   DataCell(Text('Pelanggan')),
-//                   DataCell(Text('${pekerjaan["pelanggan"]}')),
-//                 ]),
-//                 DataRow(cells: [
-//                   DataCell(Text('Jenis Layanan')),
-//                   DataCell(Text('${pekerjaan["jenis_layanan"]}')),
-//                 ]),
-//                 DataRow(cells: [
-//                   DataCell(Text('Nominal Harga')),
-//                   DataCell(Text('${pekerjaan["nominal_harga"]}')),
-//                 ]),
-//                 DataRow(cells: [
-//                   DataCell(Text('Deskripsi Pekerjaan')),
-//                   DataCell(Text('${pekerjaan["deskripsi_pekerjaan"]}')),
-//                 ]),
-//                 DataRow(cells: [
-//                   DataCell(Text('Target Waktu Selesai')),
-//                   DataCell(Text('${pekerjaan["target_waktu_selesai"]}')),
-//                 ]),
-//                 DataRow(cells: [
-//                   DataCell(Text('Persentase Selesai')),
-//                   DataCell(Text('${pekerjaan["persentase_selesai"]}')),
-//                 ]),
-//               ],
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(namaPekerjaan ?? ''),
+      ),
+      body: Container(
+        padding: EdgeInsets.all(16.0),
+        child: Table(
+          columnWidths: {
+            0: FlexColumnWidth(1),
+            1: FlexColumnWidth(2),
+          },
+          children: [
+            _buildTableRow('ID Pekerjaan', idPekerjaan),
+            _buildTableRow('ID Status Pekerjaan', idStatusPekerjaan),
+            _buildTableRow('ID Kategori Pekerjaan', idKategoriPekerjaan),
+            _buildTableRow('ID Personil', idPersonil),
+            _buildTableRow('Nama Pekerjaan', namaPekerjaan),
+            _buildTableRow('Pelanggan', pelanggan),
+            _buildTableRow('Jenis Layanan', jenisLayanan),
+            _buildTableRow('Nominal Harga', _formatRupiah(nominalHarga)),
+            _buildTableRow('Deskripsi Pekerjaan', deskripsiPekerjaan),
+            _buildTableRow(
+                'Target Waktu Selesai', _formatDatetime(targetWaktuSelesai)),
+            _buildTableRow('Persentase Selesai', persentaseSelesai),
+            _buildTableRow('Waktu Selesai', _formatDatetime(waktuSelesai)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  TableRow _buildTableRow(String label, dynamic value) {
+    return TableRow(
+      children: [
+        TableCell(
+          child: Container(
+            padding: EdgeInsets.symmetric(vertical: 8.0),
+            child: Text(
+              label,
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+        ),
+        TableCell(
+          child: Container(
+            padding: EdgeInsets.symmetric(vertical: 8.0),
+            child: Text(value.toString()),
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _formatDatetime(String datetimeString) {
+    try {
+      DateTime datetime = DateTime.parse(datetimeString);
+      String formattedDate = DateFormat('d MMMM y', 'id_ID').format(datetime);
+      return formattedDate;
+    } catch (e) {
+      print('Error parsing date: $e');
+      return datetimeString;
+    }
+  }
+
+  String _formatRupiah(String amount) {
+    try {
+      int nominal = int.parse(amount);
+      return NumberFormat.currency(
+        locale: 'id_ID',
+        symbol: 'Rp',
+      ).format(nominal);
+    } catch (e) {
+      print('Error parsing amount: $e');
+      return amount;
+    }
+  }
+}

@@ -185,7 +185,7 @@ class _TaskState extends State<Task> {
               // Check conditions and update color accordingly
               if (today.isAfter(targetDate) &&
                       taskData['persentase_selesai'] != 100 ||
-                  taskData['id_status_task'] != '1') {
+                  taskData['id_status_task'] != '2') {
                 cardColor = Colors.red;
               } else if (today.isBefore(planningDate)) {
                 cardColor = Colors.orange;
@@ -194,7 +194,7 @@ class _TaskState extends State<Task> {
                 cardColor = Colors.blue;
               } else if (today.isAfter(targetDate) &&
                       taskData['persentase_selesai'] == 100 ||
-                  taskData['id_status_task'] == '1') {
+                  taskData['id_status_task'] == '2') {
                 cardColor = Colors.green;
               }
               return Card(
@@ -208,32 +208,49 @@ class _TaskState extends State<Task> {
                     'Persentase : ${taskData['persentase_selesai']}%',
                     style: TextStyle(color: Colors.white),
                   ),
-                  trailing: GestureDetector(
-                    onTap: () async {
-                      TaskController taskController = TaskController();
-                      bool cekDelete =
-                          await taskController.deleteTask(taskData['id_task']);
-                      if (cekDelete) {
-                        Get.snackbar(
-                          'Sukses',
-                          'Task berhasil dihapus',
-                          backgroundColor: Colors.green,
-                          colorText: Colors.white,
-                        );
-                        fetchData();
-                      } else {
-                        Get.snackbar(
-                          'Gagal',
-                          'Task gagal dihapus',
-                          backgroundColor: Colors.red,
-                          colorText: Colors.white,
-                        );
-                      }
-                    },
-                    child: Icon(
-                      Icons.delete,
-                      color: Colors.white,
-                    ),
+                  trailing: Row(
+                    children: [
+                      //edit
+                      GestureDetector(
+                        onTap: () {
+                          Get.toNamed('/edit_task',
+                              arguments: taskData['id_task']);
+                        },
+                        child: Icon(
+                          Icons.edit,
+                          color: Colors.white,
+                        ),
+                      ),
+                      SizedBox(width: 10),
+                      //delete
+                      GestureDetector(
+                        onTap: () async {
+                          TaskController taskController = TaskController();
+                          bool cekDelete = await taskController
+                              .deleteTask(taskData['id_task']);
+                          if (cekDelete) {
+                            Get.snackbar(
+                              'Sukses',
+                              'Task berhasil dihapus',
+                              backgroundColor: Colors.green,
+                              colorText: Colors.white,
+                            );
+                            fetchData();
+                          } else {
+                            Get.snackbar(
+                              'Gagal',
+                              'Task gagal dihapus',
+                              backgroundColor: Colors.red,
+                              colorText: Colors.white,
+                            );
+                          }
+                        },
+                        child: Icon(
+                          Icons.delete,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
                   ),
                   onTap: () {
                     Get.toNamed('/detail_task', arguments: taskData);

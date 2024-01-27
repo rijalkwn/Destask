@@ -71,7 +71,7 @@ class _PengaturanState extends State<Pengaturan> {
               child: Column(
                 children: [
                   CircleAvatar(
-                    radius: 40,
+                    radius: 100,
                     backgroundImage: AssetImage('assets/img/logo.png'),
                   ),
                   SizedBox(height: 10),
@@ -87,21 +87,24 @@ class _PengaturanState extends State<Pengaturan> {
                 ],
               ),
             ),
-            // Edit Profile Button
-            GestureDetector(
-              onTap: () {
-                Get.toNamed('/edit_profile/$id');
-              },
-              child: Container(
-                padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-                decoration: BoxDecoration(
-                  color: GlobalColors.mainColor,
-                  borderRadius: BorderRadius.circular(50),
+            //edit profile
+            Card(
+              child: ListTile(
+                iconColor: Colors.black,
+                title: Text('Edit Profil'),
+                leading: Icon(
+                  Icons.person_2,
+                  size: 20,
                 ),
-                child: Icon(Icons.edit, color: Colors.white),
+                trailing: Icon(
+                  Icons.keyboard_arrow_right,
+                  size: 15,
+                ),
+                onTap: () {
+                  Get.toNamed('/edit_profile/$id');
+                },
               ),
             ),
-            SizedBox(height: 10),
             // Change Password
             Card(
               child: ListTile(

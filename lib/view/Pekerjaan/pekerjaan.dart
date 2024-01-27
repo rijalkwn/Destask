@@ -49,7 +49,7 @@ class _PekerjaanState extends State<Pekerjaan>
   void initState() {
     super.initState();
     _tabController = TabController(length: 6, vsync: this);
-    futurePekerjaan = PekerjaanController().getAllPekerjaan();
+    futurePekerjaan = PekerjaanController().getAllPekerjaanUser();
   }
 
   @override
