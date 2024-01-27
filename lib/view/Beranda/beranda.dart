@@ -78,10 +78,10 @@ class _BerandaState extends State<Beranda> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text("Hi, " + nama,
-                  style: TextStyle(fontSize: 18, color: Colors.white)),
+                  style: TextStyle(fontSize: 20, color: Colors.white)),
               Text('Selamat Datang di Destask',
                   style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 16,
                       fontWeight: FontWeight.w400,
                       color: Colors.white)),
             ],

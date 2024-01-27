@@ -14,7 +14,7 @@ class Pengaturan extends StatefulWidget {
 class _PengaturanState extends State<Pengaturan> {
   String nama = '';
   String email = '';
-  String id = '';
+  String id_user = '';
 
   Future<String?> showData() async {
     SharedPreferences pref = await SharedPreferences.getInstance();
@@ -42,7 +42,7 @@ class _PengaturanState extends State<Pengaturan> {
             await profileController.getProfileById(iduser);
         if (datauser != null) {
           setState(() {
-            id = datauser['id_user'] ?? '';
+            id_user = datauser['id_user'] ?? '';
             nama = datauser['nama'] ?? '';
             email = datauser['email'] ?? '';
           });
@@ -101,7 +101,7 @@ class _PengaturanState extends State<Pengaturan> {
                   size: 15,
                 ),
                 onTap: () {
-                  Get.toNamed('/edit_profile/$id');
+                  Get.toNamed('/edit_profile/$id_user');
                 },
               ),
             ),

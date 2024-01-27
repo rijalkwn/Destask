@@ -13,6 +13,12 @@ Future getToken() async {
   return token;
 }
 
+Future getIdUser() async {
+  final prefs = await SharedPreferences.getInstance();
+  var idUser = prefs.getString("id_user");
+  return idUser;
+}
+
 class TaskController {
   Future<List<dynamic>> getAllTask() async {
     try {
@@ -52,6 +58,7 @@ class TaskController {
     }
   }
 
+  //get task by pekerjaan
   Future<List<dynamic>> getTasksByPekerjaanId(String idPekerjaan) async {
     try {
       const urlx = '$baseURL/api/taskbypekerjaan';
@@ -61,6 +68,30 @@ class TaskController {
       if (response.statusCode == 200) {
         Iterable list = json.decode(response.body);
         List<dynamic> tasks = List<dynamic>.from(list.map((e) => e));
+        return tasks;
+      } else {
+        print(response.statusCode);
+        return [];
+      }
+    } catch (e) {
+      print(e);
+      return [];
+    }
+  }
+
+  //get task by user dan pekerjaan
+  Future<List<dynamic>> getTasksByUserPekerjaan(String idPekerjaan) async {
+    try {
+      const urlx = '$baseURL/api/taskbyuser';
+      var token = await getToken();
+      var idUser = await getIdUser();
+      var response = await http.get(Uri.parse('$urlx/$idUser'),
+          headers: {'Authorization': 'Bearer $token'});
+      if (response.statusCode == 200) {
+        Iterable list = json.decode(response.body);
+        List<dynamic> tasks = List<dynamic>.from(list
+            .where((element) => element['id_pekerjaan'] == idPekerjaan)
+            .map((e) => e));
         return tasks;
       } else {
         print(response.statusCode);

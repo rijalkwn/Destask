@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:quickalert/quickalert.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class EditProfile extends StatefulWidget {
   @override
@@ -21,9 +22,14 @@ class _EditProfileState extends State<EditProfile> {
   File? Image;
   //nama image
   String? fileImageName;
+  Future getIdUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    var idUser = prefs.getString("id_user");
+    return idUser;
+  }
 
   Future<Map<String, dynamic>> fetchData() async {
-    var iduser = Get.parameters['iduser'] ?? '';
+    var iduser = await getIdUser();
     ProfileController profileController = ProfileController();
     Map<String, dynamic> profile =
         await profileController.getProfileById(iduser);

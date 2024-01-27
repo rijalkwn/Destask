@@ -1,8 +1,11 @@
 import 'package:destask/controller/pekerjaan_controller.dart';
+import 'package:destask/controller/personil_controller.dart';
 import 'package:destask/controller/task_controller.dart';
 import 'package:destask/utils/global_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_launcher_icons/utils.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class Task extends StatefulWidget {
@@ -13,6 +16,7 @@ class Task extends StatefulWidget {
 }
 
 class _TaskState extends State<Task> {
+  final String idPekerjaan = Get.parameters['idpekerjaan'] ?? '';
   late DateTime _focusedDay;
   DateTime? _selectedDay;
   bool isSearchBarVisible = false;
@@ -20,7 +24,8 @@ class _TaskState extends State<Task> {
   late List<dynamic> tasksList;
   String namaPekerjaan = '';
   String id_pekerjaan = '';
-
+  bool isPM = false;
+  late bool PM;
   @override
   void initState() {
     super.initState();
@@ -30,17 +35,51 @@ class _TaskState extends State<Task> {
     fetchData();
   }
 
+  Future getIdUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    var idUser = prefs.getString("id_user");
+    return idUser;
+  }
+
+  //cek user pm apa bukan berdasarkan pekerjaan id
+  Future<bool> cekPM() async {
+    var idUser = await getIdUser();
+    PekerjaanController pekerjaanController = PekerjaanController();
+    var dataPekerjaan = await pekerjaanController.getPekerjaanById(idPekerjaan);
+    String idPersonil = dataPekerjaan['id_personil'];
+    PersonilController personilController = PersonilController();
+    var dataPersonil = await personilController.getPersonilById(idPersonil);
+
+    // Make sure 'id_user_pm' is of type String or handle type conversion accordingly
+    String idUserPM = dataPersonil[0]['id_user_pm'];
+
+    if (idUser == idUserPM) {
+      return true;
+    }
+    return false;
+  }
+
   Future<void> fetchData() async {
-    final String idPekerjaan = Get.parameters['idpekerjaan'] ?? '';
+    //cek PM
+    PM = await cekPM();
     TaskController taskController = TaskController();
-    tasksList = await taskController.getTasksByPekerjaanId(idPekerjaan);
+    List task_PM = await taskController.getTasksByPekerjaanId(idPekerjaan);
+    List task_nonPM = await taskController.getTasksByUserPekerjaan(idPekerjaan);
     PekerjaanController pekerjaanController = PekerjaanController();
     Map<String, dynamic> pekerjaan =
         await pekerjaanController.getPekerjaanById(idPekerjaan);
     setState(() {
       namaPekerjaan = pekerjaan['nama_pekerjaan'] ?? '';
       id_pekerjaan = pekerjaan['id_pekerjaan'] ?? '';
-      tasksList = tasksList;
+      if (PM) {
+        setState(() {
+          tasksList = task_PM;
+        });
+      } else {
+        setState(() {
+          tasksList = task_nonPM;
+        });
+      }
     });
   }
 
