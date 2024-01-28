@@ -55,7 +55,7 @@ class _EditTaskState extends State<EditTask> {
     });
   }
 
-  Future<void> _selectDateStart(BuildContext context) async {
+  void _selectDateStart(BuildContext context) async {
     final DateTime? pickedDate = await showDatePicker(
       context: context,
       initialDate: _selectedDateStart ?? DateTime.now(),
@@ -70,7 +70,7 @@ class _EditTaskState extends State<EditTask> {
     }
   }
 
-  Future<void> _selectDateEnd(BuildContext context) async {
+  void _selectDateEnd(BuildContext context) async {
     final DateTime? pickedDate = await showDatePicker(
       context: context,
       initialDate: _selectedDateEnd ?? DateTime.now(),
@@ -85,7 +85,7 @@ class _EditTaskState extends State<EditTask> {
     }
   }
 
-  Future<Map<String, dynamic>> fetchData() async {
+  Future fetchData() async {
     final String idTask = Get.parameters['idtask'] ?? '';
     TaskController taskController = TaskController();
     Map<String, dynamic> task = await taskController.getTaskById(idTask);

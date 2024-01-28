@@ -17,47 +17,28 @@ class Beranda extends StatefulWidget {
 }
 
 class _BerandaState extends State<Beranda> {
-  var isLogin = false;
   PekerjaanController pekerjaanController = PekerjaanController();
   late Future<List> futurePekerjaan;
-  late String nama = '';
-
-  Future<void> getUser() async {
-    SharedPreferences pref = await SharedPreferences.getInstance();
-    var iduser = pref.getString('id_user');
-    //ubah ke int
-    iduser = iduser.toString();
-    ProfileController profileController = ProfileController();
-    Map<String, dynamic>? datauser =
-        await profileController.getProfileById(iduser);
-    setState(() {
-      nama = datauser['nama'] ?? '';
-    });
-  }
+  String nama = '';
 
   @override
   void initState() {
     super.initState();
     startLaunching();
-    getUser();
     futurePekerjaan = pekerjaanController.getOnProgressUser();
   }
 
+  //cek login with token
   startLaunching() async {
     final prefs = await SharedPreferences.getInstance();
     var token = prefs.getString("token");
-    if (token != null) {
-      setState(() {
-        isLogin = true;
-      });
-    }
-
-    Timer(const Duration(seconds: 1), () {
-      if (!isLogin) {
-        Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (BuildContext context) => const Login()));
-      }
+    var namaUser = prefs.getString("nama").toString();
+    setState(() {
+      nama = namaUser;
     });
+    if (token == null) {
+      Get.offAll('/login');
+    }
   }
 
   @override

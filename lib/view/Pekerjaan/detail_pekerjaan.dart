@@ -25,7 +25,7 @@ class _DetailPekerjaanState extends State<DetailPekerjaan> {
   String persentaseSelesai = '';
   String waktuSelesai = '';
 
-  Future<void> detailPekerjaan() async {
+  void detailPekerjaan() async {
     try {
       final String idpekerjaan = Get.parameters['idpekerjaan'] ?? '';
       PekerjaanController pekerjaanController = PekerjaanController();

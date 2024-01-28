@@ -28,7 +28,7 @@ class _DetailTaskState extends State<DetailTask> {
   String buktiSelesai = '';
   String tautanTask = '';
 
-  Future<void> detailTask() async {
+  detailTask() async {
     try {
       final String idtask = Get.parameters['idtask'] ?? '';
       TaskController taskController = TaskController();

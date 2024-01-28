@@ -35,7 +35,7 @@ class PekerjaanController {
   }
 
   //get pekerjaan by id
-  Future<Map<String, dynamic>> getPekerjaanById(String idPekerjaan) async {
+  Future getPekerjaanById(String idPekerjaan) async {
     try {
       var token = await getToken();
       var response = await http.get(

@@ -20,15 +20,16 @@ class _EditProfileState extends State<EditProfile> {
   TextEditingController _usergroupController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   File? Image;
-  //nama image
   String? fileImageName;
-  Future getIdUser() async {
+
+  //get user
+  getIdUser() async {
     final prefs = await SharedPreferences.getInstance();
     var idUser = prefs.getString("id_user");
     return idUser;
   }
 
-  Future<Map<String, dynamic>> fetchData() async {
+  fetchData() async {
     var iduser = await getIdUser();
     ProfileController profileController = ProfileController();
     Map<String, dynamic> profile =

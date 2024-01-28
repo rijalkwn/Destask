@@ -16,33 +16,30 @@ class Task extends StatefulWidget {
 }
 
 class _TaskState extends State<Task> {
-  final String idPekerjaan = Get.parameters['idpekerjaan'] ?? '';
-  late DateTime _focusedDay;
-  DateTime? _selectedDay;
-  bool isSearchBarVisible = false;
   TextEditingController searchController = TextEditingController();
-  late List<dynamic> tasksList;
+  bool isSearchBarVisible = false;
+
+  final String idPekerjaan = Get.parameters['idpekerjaan'] ?? '';
   String namaPekerjaan = '';
   String id_pekerjaan = '';
+
+  late DateTime _focusedDay;
+  DateTime? _selectedDay;
+
+  //pm
   bool isPM = false;
   late bool PM;
-  @override
-  void initState() {
-    super.initState();
-    _focusedDay = DateTime.now();
-    _selectedDay = _focusedDay;
-    tasksList = [];
-    fetchData();
-  }
 
-  Future getIdUser() async {
+  late List<dynamic> tasksList;
+
+  getIdUser() async {
     final prefs = await SharedPreferences.getInstance();
     var idUser = prefs.getString("id_user");
     return idUser;
   }
 
   //cek user pm apa bukan berdasarkan pekerjaan id
-  Future<bool> cekPM() async {
+  cekPM() async {
     var idUser = await getIdUser();
     PekerjaanController pekerjaanController = PekerjaanController();
     var dataPekerjaan = await pekerjaanController.getPekerjaanById(idPekerjaan);
@@ -63,7 +60,9 @@ class _TaskState extends State<Task> {
     //cek PM
     PM = await cekPM();
     TaskController taskController = TaskController();
+    //untuk pm
     List task_PM = await taskController.getTasksByPekerjaanId(idPekerjaan);
+    //untuk non pm
     List task_nonPM = await taskController.getTasksByUserPekerjaan(idPekerjaan);
     PekerjaanController pekerjaanController = PekerjaanController();
     Map<String, dynamic> pekerjaan =
@@ -83,7 +82,7 @@ class _TaskState extends State<Task> {
     });
   }
 
-  List<dynamic> _getTaskForDay(DateTime selectedDay, List<dynamic> tasks) {
+  _getTaskForDay(DateTime selectedDay, List<dynamic> tasks) {
     return tasks.where((task) {
       DateTime taskPlaning = DateTime.parse(task['tgl_planing']);
       DateTime taskSelesai = DateTime.parse(task['tgl_selesai']);
@@ -101,6 +100,15 @@ class _TaskState extends State<Task> {
 
   bool _selectedDayPredicate(DateTime day) {
     return isSameDay(_selectedDay, day);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _focusedDay = DateTime.now();
+    _selectedDay = _focusedDay;
+    tasksList = [];
+    fetchData();
   }
 
   @override

@@ -5,21 +5,21 @@ import 'package:destask/view/Auth/login.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:quickalert/quickalert.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class AuthController {
-  Future login(
-    TextEditingController identitasController,
-    TextEditingController passwordController,
-  ) async {
-    const String url = "$baseURL/authAPI";
-    final prefs = await SharedPreferences.getInstance();
-    var params =
-        "?identitas=${identitasController.text}&password=${passwordController.text}";
+const String url = "$baseURL/authAPI";
 
+class AuthController {
+  Future login(String identitasController, String passwordController,
+      bool isCaptcha) async {
     try {
-      var res = await http.post(Uri.parse(url + params));
-      print(res.body);
+      final prefs = await SharedPreferences.getInstance();
+
+      var res = await http.post(Uri.parse(url), body: {
+        'identitas': identitasController,
+        'password': passwordController,
+      });
       if (res.statusCode == 200) {
         var response = json.decode(res.body);
         prefs.setString("id_user", response['data']['id_user']);
@@ -27,7 +27,6 @@ class AuthController {
         prefs.setString("nama", response['data']['nama']);
         prefs.setString("email", response['data']['email']);
         prefs.setString("token", response['token']);
-        Get.offAll(() => BottomNav());
         return true;
       } else {
         print(res.statusCode);
@@ -46,6 +45,25 @@ class AuthController {
       Get.offAll(() => const Login());
       return true;
     } catch (e) {
+      return false;
+    }
+  }
+
+  Future checkEmailExist(String email) async {
+    try {
+      final String url = "$baseURL/user";
+      var res = await http.get(Uri.parse(url));
+      if (res.statusCode == 200) {
+        Iterable list = json.decode(res.body);
+        List<dynamic> users = List<dynamic>.from(list.map((e) => e));
+        bool emailExists = users.any((user) => user['email'] == email);
+        return emailExists;
+      } else {
+        print(res.statusCode);
+        return false;
+      }
+    } catch (e) {
+      print(e);
       return false;
     }
   }

@@ -16,7 +16,7 @@ class _PengaturanState extends State<Pengaturan> {
   String email = '';
   String id_user = '';
 
-  Future<String?> showData() async {
+  getData() async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     var iduser = pref.getString('id_user');
     return iduser;
@@ -25,7 +25,7 @@ class _PengaturanState extends State<Pengaturan> {
   @override
   void initState() {
     super.initState();
-    showData().then((iduser) {
+    getData().then((iduser) {
       if (iduser != null) {
         fetchData(iduser);
       } else {
@@ -34,13 +34,13 @@ class _PengaturanState extends State<Pengaturan> {
     });
   }
 
-  Future<void> fetchData(String iduser) async {
+  void fetchData(String iduser) async {
     try {
-      if (iduser != null) {
+      if (iduser.isNotEmpty) {
         ProfileController profileController = ProfileController();
-        Map<String, dynamic>? datauser =
+        Map<String, dynamic> datauser =
             await profileController.getProfileById(iduser);
-        if (datauser != null) {
+        if (datauser.isNotEmpty) {
           setState(() {
             id_user = datauser['id_user'] ?? '';
             nama = datauser['nama'] ?? '';

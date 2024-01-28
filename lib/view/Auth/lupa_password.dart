@@ -1,3 +1,4 @@
+import 'package:destask/controller/auth_controller.dart';
 import 'package:destask/utils/global_colors.dart';
 import 'package:destask/view/Auth/login.dart';
 import 'package:flutter/material.dart';
@@ -16,8 +17,17 @@ class _LupaPasswordState extends State<LupaPassword> {
   final _FormKey = GlobalKey<FormState>();
   TextEditingController emailController = TextEditingController();
   bool isLoading = false;
+  List user = [];
+
+  //cek email
+  Future<bool> cekEmail(String email) async {
+    AuthController authController = AuthController();
+    bool isEmailExist = await authController.checkEmailExist(email);
+    return isEmailExist;
+  }
+
   //Mengirim email ke untuk mendapatkan link ganti password
-  Future<void> sendMail(String recipientEmail) async {
+  sendMail(String recipientEmail) async {
     String email = 'newstar23135@gmail.com';
     String password = 'hmwjllvbbdnepdpd';
     //recipent addressnya masih dump karena belum ada data user aktual!!!!
@@ -65,6 +75,12 @@ class _LupaPasswordState extends State<LupaPassword> {
             return alert;
           });
     }
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
   }
 
   @override
@@ -124,17 +140,40 @@ class _LupaPasswordState extends State<LupaPassword> {
                             ),
                             validator: (value) {
                               if (value!.isEmpty) {
-                                return 'Email tidak boleh kosong';
+                                return "Masukan Email!";
+                              } else {
+                                return null;
                               }
-                              return null;
                             },
                           ),
 
                           SizedBox(height: 20),
                           InkWell(
-                            onTap: () {
+                            onTap: () async {
                               if (_FormKey.currentState!.validate()) {
-                                sendMail(emailController.text);
+                                bool isExist =
+                                    await cekEmail(emailController.text);
+                                if (isExist) {
+                                  sendMail(emailController.text);
+                                } else {
+                                  AlertDialog alert = AlertDialog(
+                                    title: Text("Email tidak terdaftar"),
+                                    content:
+                                        Text("Silahkan cek kembali email anda"),
+                                    actions: [
+                                      TextButton(
+                                          onPressed: () {
+                                            Navigator.of(context).pop();
+                                          },
+                                          child: Text("OK"))
+                                    ],
+                                  );
+                                  showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return alert;
+                                      });
+                                }
                               }
                             },
                             child: isLoading

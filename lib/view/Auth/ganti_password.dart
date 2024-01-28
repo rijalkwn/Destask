@@ -1,3 +1,4 @@
+import 'package:destask/controller/ganti_password_controller.dart';
 import 'package:destask/utils/global_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -33,25 +34,71 @@ class _GantiPasswordState extends State<GantiPassword> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                buildFormField(
-                    _oldPasswordController, 'Old Password', Icon(Icons.lock)),
+                TextFormField(
+                  controller: _oldPasswordController,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: 'Password Lama',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    prefixIcon: Icon(Icons.lock),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Kolom password lama harus diisi';
+                    }
+                    return null;
+                  },
+                ),
                 SizedBox(height: 16),
-                buildFormField(_newPasswordController, 'New Password',
-                    Icon(Icons.vpn_key_rounded)),
+                TextFormField(
+                  controller: _newPasswordController,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: 'Password Baru',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    prefixIcon: Icon(Icons.vpn_key_rounded),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Kolom password baru harus diisi';
+                    }
+                    return null;
+                  },
+                ),
                 SizedBox(height: 16),
-                buildFormField(_confirmPasswordController, 'Confirm Password',
-                    Icon(Icons.key_rounded)),
+                TextFormField(
+                  controller: _confirmPasswordController,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: 'Konfirmasi Password Baru',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    prefixIcon: Icon(Icons.key_rounded),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Kolom konfirmasi password baru harus diisi';
+                    } else if (value != _newPasswordController.text) {
+                      return 'Konfirmasi password baru tidak sama dengan password baru';
+                    }
+                    return null;
+                  },
+                ),
                 SizedBox(height: 32),
                 GestureDetector(
                   onTap: () async {
-                    // if (_formKey.currentState!.validate()) {
-                    //   GantiPasswordController gantiPasswordController =
-                    //       Get.put(GantiPasswordController());
-                    //   await gantiPasswordController.gantiPassword(
-                    //       _oldPasswordController.text,
-                    //       _newPasswordController.text,
-                    //       _confirmPasswordController.text);
-                    // }
+                    if (_formKey.currentState!.validate()) {
+                      GantiPasswordController gantiPasswordController =
+                          Get.put(GantiPasswordController());
+                      await gantiPasswordController.gantiPassword(
+                          _oldPasswordController.text,
+                          _newPasswordController.text);
+                    }
                   },
                   child: Container(
                     height: 50,

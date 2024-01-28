@@ -50,7 +50,7 @@ class _AddTaskState extends State<AddTask> {
     }
   }
 
-  Future<void> _selectDateEnd(BuildContext context) async {
+  void _selectDateEnd(BuildContext context) async {
     final DateTime? pickedDate = await showDatePicker(
       context: context,
       initialDate: _selectedDateEnd ?? DateTime.now(),

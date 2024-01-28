@@ -13,7 +13,7 @@ Future getToken() async {
 }
 
 class PersonilController {
-  Future<List<dynamic>> getAllPersonil() async {
+  Future getAllPersonil() async {
     var token = await getToken();
     var response = await http
         .get(Uri.parse(url), headers: {'Authorization': 'Bearer $token'});
@@ -28,7 +28,7 @@ class PersonilController {
   }
 
   //get personil by id
-  Future<List<dynamic>> getPersonilById(String idPersonil) async {
+  Future getPersonilById(String idPersonil) async {
     var token = await getToken();
     var response = await http.get(Uri.parse('$url/$idPersonil'),
         headers: {'Authorization': 'Bearer $token'});
@@ -40,19 +40,4 @@ class PersonilController {
       return [];
     }
   }
-
-  //get personil by pekerjaan id
-  // Future<List<dynamic>> getPersonilByPekerjaanId(String idPekerjaan) async {
-  //   var token = await getToken();
-  //   var response = await http.get(Uri.parse('$url?idpekerjaan=$idPekerjaan'),
-  //       headers: {'Authorization': 'Bearer $token'});
-  //   if (response.statusCode == 200) {
-  //     Iterable list = json.decode(response.body);
-  //     List<dynamic> personil = List<dynamic>.from(list.map((e) => e));
-  //     return personil;
-  //   } else {
-  //     // Handle error
-  //     return [];
-  //   }
-  // }
 }

@@ -13,10 +13,11 @@ class Pekerjaan extends StatefulWidget {
 class _PekerjaanState extends State<Pekerjaan>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  bool isSearchBarVisible = false;
-  late Future<List<dynamic>> futurePekerjaan;
   TextEditingController searchController = TextEditingController();
   PekerjaanController pekerjaanController = PekerjaanController();
+
+  bool isSearchBarVisible = false;
+  late Future<List<dynamic>> futurePekerjaan;
 
   final List<String> statusId = [
     '1',
