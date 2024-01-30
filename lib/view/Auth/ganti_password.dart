@@ -95,9 +95,28 @@ class _GantiPasswordState extends State<GantiPassword> {
                     if (_formKey.currentState!.validate()) {
                       GantiPasswordController gantiPasswordController =
                           Get.put(GantiPasswordController());
-                      await gantiPasswordController.gantiPassword(
-                          _oldPasswordController.text,
-                          _newPasswordController.text);
+                      bool success =
+                          await gantiPasswordController.gantiPassword(
+                              _oldPasswordController.text,
+                              _newPasswordController.text);
+                      if (success) {
+                        Get.back();
+                        Get.snackbar(
+                          'Berhasil',
+                          'Password berhasil diganti',
+                          backgroundColor: Colors.green,
+                          colorText: Colors.white,
+                          snackPosition: SnackPosition.BOTTOM,
+                        );
+                      } else {
+                        Get.snackbar(
+                          'Gagal',
+                          'Password gagal diganti',
+                          backgroundColor: Colors.red,
+                          colorText: Colors.white,
+                          snackPosition: SnackPosition.BOTTOM,
+                        );
+                      }
                     }
                   },
                   child: Container(

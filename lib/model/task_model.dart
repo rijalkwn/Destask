@@ -49,4 +49,23 @@ class TaskModel {
       tautan_task: json['tautan_task'],
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id_task': id_task,
+      'id_pekerjaan': id_pekerjaan,
+      'id_user': id_user,
+      'id_status_task': id_status_task,
+      'id_kategori_task': id_kategori_task,
+      'tgl_planing': tgl_planing,
+      'tgl_selesai': tgl_selesai,
+      'tgl_verifikasi_diterima': tgl_verifikasi_diterima,
+      'status_verifikasi': status_verifikasi,
+      'persentase_selesai': persentase_selesai,
+      'deskripsi_task': deskripsi_task,
+      'alasan_verifikasi': alasan_verifikasi,
+      'bukti_selesai': bukti_selesai,
+      'tautan_task': tautan_task,
+    };
+  }
 }

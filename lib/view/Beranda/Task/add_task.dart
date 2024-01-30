@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:destask/controller/pekerjaan_controller.dart';
 import 'package:destask/controller/status_task_controller.dart';
 import 'package:destask/controller/task_controller.dart';
+import 'package:destask/model/status_task_model.dart';
+import 'package:destask/model/task_model.dart';
 import 'package:destask/utils/global_colors.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -17,14 +19,21 @@ class AddTask extends StatefulWidget {
 }
 
 class _AddTaskState extends State<AddTask> {
-  late Future<List<dynamic>> statusTask;
-  late List<dynamic> status;
+  final String idpekerjaan = Get.parameters['idpekerjaan'] ?? '';
   final TextEditingController _deskripsiTaskController =
       TextEditingController();
   final TextEditingController _persentaseSelesaiController =
       TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  late String idpekerjaan;
+  StatusTaskController statusTaskController = StatusTaskController();
+  List<StatusTaskModel> statusTask = [];
+
+  //get status task
+  Future<List<StatusTaskModel>> getDataStatusTask() async {
+    List<StatusTaskModel> data = await statusTaskController.getAllStatusTask();
+    return data;
+  }
+
   //file
   PlatformFile? pickedFile;
   File? fileToDisplay;
@@ -89,8 +98,12 @@ class _AddTaskState extends State<AddTask> {
   @override
   void initState() {
     super.initState();
-    idpekerjaan = Get.parameters['idpekerjaan'] ?? '';
-    // statusTask = StatusTaskController().getAllStatusTask();
+    statusTask = [];
+    getDataStatusTask().then((data) {
+      setState(() {
+        statusTask = data;
+      });
+    });
   }
 
   @override
@@ -152,15 +165,15 @@ class _AddTaskState extends State<AddTask> {
                 SizedBox(height: 16),
                 //status task
                 buildLabel('Status Task *'),
-                FutureBuilder<List<dynamic>>(
-                  future: statusTask,
+                FutureBuilder<List<StatusTaskModel>>(
+                  future: getDataStatusTask(),
                   builder: (context, snapshot) {
                     if (snapshot.hasError) {
                       return Text('Error loading data');
                     } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                       return Text('No data available');
                     } else {
-                      List<dynamic> statusList = snapshot.data!;
+                      List<StatusTaskModel> statusList = snapshot.data!;
                       return buildDropDownMenu(statusList);
                     }
                   },
@@ -235,16 +248,16 @@ class _AddTaskState extends State<AddTask> {
     );
   }
 
-  DropdownButtonFormField<String> buildDropDownMenu(List<dynamic> statusList) {
+  DropdownButtonFormField<String> buildDropDownMenu(
+      List<StatusTaskModel> statusList) {
     return DropdownButtonFormField<String>(
-      value: statusList[0]['nama_status_task'],
       onChanged: (value) {
         // Handle onChanged event
       },
       items: statusList.map((status) {
         return DropdownMenuItem<String>(
-          value: status['nama_status_task'],
-          child: Text(status['nama_status_task']),
+          value: status.id_status_task,
+          child: Text(status.nama_status_task.toString()),
         );
       }).toList(),
       decoration: InputDecoration(

@@ -1,4 +1,5 @@
 import 'package:destask/controller/pekerjaan_controller.dart';
+import 'package:destask/model/pekerjaan_model.dart';
 import 'package:destask/utils/global_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -15,9 +16,9 @@ class _PekerjaanState extends State<Pekerjaan>
   late TabController _tabController;
   TextEditingController searchController = TextEditingController();
   PekerjaanController pekerjaanController = PekerjaanController();
+  late Future<List<PekerjaanModel>> pekerjaan;
 
   bool isSearchBarVisible = false;
-  late Future<List<dynamic>> futurePekerjaan;
 
   final List<String> statusId = [
     '1',
@@ -46,11 +47,17 @@ class _PekerjaanState extends State<Pekerjaan>
     Icons.support,
   ];
 
+  //getdata pekerjaan
+  Future<List<PekerjaanModel>> getDataPekerjaan() async {
+    var data = await pekerjaanController.getAllPekerjaanUser();
+    return data;
+  }
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 6, vsync: this);
-    futurePekerjaan = PekerjaanController().getAllPekerjaanUser();
+    pekerjaan = getDataPekerjaan();
   }
 
   @override
@@ -66,7 +73,9 @@ class _PekerjaanState extends State<Pekerjaan>
                 style: TextStyle(color: Colors.white),
                 autofocus: true,
                 onChanged: (value) {
-                  setState(() {});
+                  setState(() {
+                    searchController.text = value;
+                  });
                 },
                 decoration: InputDecoration(
                   hintText: 'Search...',
@@ -123,7 +132,7 @@ class _PekerjaanState extends State<Pekerjaan>
         children: [
           for (var status in statusId)
             StatusPekerjaan(
-              futurePekerjaan: futurePekerjaan,
+              pekerjaan: pekerjaan,
               status: status,
               searchQuery: searchController.text,
             ),
@@ -136,19 +145,19 @@ class _PekerjaanState extends State<Pekerjaan>
 class StatusPekerjaan extends StatelessWidget {
   const StatusPekerjaan({
     Key? key,
-    required this.futurePekerjaan,
+    required this.pekerjaan,
     required this.status,
     required this.searchQuery,
   }) : super(key: key);
 
-  final Future<List<dynamic>> futurePekerjaan;
+  final Future<List<PekerjaanModel>> pekerjaan;
   final String status;
   final String searchQuery;
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<dynamic>>(
-      future: futurePekerjaan,
+    return FutureBuilder<List<PekerjaanModel>>(
+      future: pekerjaan,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(child: CircularProgressIndicator());
@@ -157,10 +166,11 @@ class StatusPekerjaan extends StatelessWidget {
         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
           return Center(child: Text('No data available.'));
         } else if (snapshot.hasData) {
-          final filteredList = snapshot.data!
+          List<PekerjaanModel> pekerjaan = snapshot.data!;
+          final filteredList = pekerjaan
               .where((pekerjaan) =>
-                  pekerjaan['id_status_pekerjaan'] == status &&
-                  pekerjaan['nama_pekerjaan']
+                  pekerjaan.id_status_pekerjaan == status &&
+                  pekerjaan.nama_pekerjaan!
                       .toLowerCase()
                       .contains(searchQuery.toLowerCase()))
               .toList();
@@ -194,31 +204,32 @@ class PekerjaanList extends StatelessWidget {
             color: GlobalColors.mainColor,
             child: ListTile(
               leading: Container(
-                padding: const EdgeInsets.all(5),
+                padding: EdgeInsets.all(15),
                 decoration: BoxDecoration(
-                  color: Colors.amber,
+                  color: Colors.white,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.work,
-                  size: 30,
-                  color: Colors.white,
+                child: Text(
+                  pekerjaan[index].persentase_selesai.toString() + '%',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
                 ),
               ),
               title: Text(
-                pekerjaan[index]['nama_pekerjaan'].length > 20
-                    ? '${pekerjaan[index]['nama_pekerjaan'].substring(0, 20)}...'
-                    : pekerjaan[index]['nama_pekerjaan'],
+                pekerjaan[index].nama_pekerjaan ?? '',
                 style: TextStyle(color: Colors.white),
               ),
               subtitle: Text(
-                "Persentase Selesai : ${pekerjaan[index]['persentase_selesai']}%",
+                "Persentase Selesai : ${pekerjaan[index].persentase_selesai}%",
                 style: TextStyle(color: Colors.white),
               ),
               trailing: GestureDetector(
                 onTap: () {
                   Get.toNamed(
-                      '/detail_pekerjaan/${pekerjaan[index]['id_pekerjaan']}');
+                      '/detail_pekerjaan/${pekerjaan[index].id_pekerjaan}');
                 },
                 child: Icon(
                   Icons.density_small,
@@ -226,7 +237,7 @@ class PekerjaanList extends StatelessWidget {
                 ),
               ),
               onTap: () {
-                Get.toNamed('/task/${pekerjaan[index]['id_pekerjaan']}');
+                Get.toNamed('/task/${pekerjaan[index].id_pekerjaan}');
               },
             ),
           ),

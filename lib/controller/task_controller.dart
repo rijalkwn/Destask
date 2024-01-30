@@ -1,3 +1,4 @@
+import 'package:destask/model/task_model.dart';
 import 'package:destask/utils/constant_api.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
@@ -20,15 +21,16 @@ Future getIdUser() async {
 }
 
 class TaskController {
-  Future<List<dynamic>> getAllTask() async {
+  Future getAllTask() async {
     try {
       var token = await getToken();
       var response = await http
           .get(Uri.parse(url), headers: {'Authorization': 'Bearer $token'});
       if (response.statusCode == 200) {
-        Iterable list = json.decode(response.body);
-        List<dynamic> pekerjaan = List<dynamic>.from(list.map((e) => e));
-        return pekerjaan;
+        Iterable it = json.decode(response.body);
+        List<TaskModel> task =
+            List<TaskModel>.from(it.map((e) => TaskModel.fromJson(e)).toList());
+        return task;
       } else {
         // Handle error
         return [];
@@ -40,14 +42,16 @@ class TaskController {
   }
 
   //get task by id
-  Future<Map<String, dynamic>> getTaskById(String idTask) async {
+  Future getTaskById(String idTask) async {
     try {
       var token = await getToken();
       var response = await http.get(Uri.parse('$url/$idTask'),
           headers: {'Authorization': 'Bearer $token'});
       if (response.statusCode == 200) {
-        Map<String, dynamic> task = json.decode(response.body);
-        return task;
+        Iterable it = json.decode(response.body);
+        List<TaskModel> user =
+            List<TaskModel>.from(it.map((e) => TaskModel.fromJson(e)).toList());
+        return user;
       } else {
         // Handle error
         return {};
@@ -58,17 +62,28 @@ class TaskController {
     }
   }
 
+  bool isTaskOnSelectedDate(Map<String, dynamic> task, DateTime selectedDate) {
+    DateTime taskPlaning = DateTime.parse(task['tgl_planing']);
+    DateTime taskSelesai = DateTime.parse(task['tgl_selesai']);
+    return selectedDate.isAfter(taskPlaning.subtract(Duration(days: 1))) &&
+        selectedDate.isBefore(taskSelesai.add(Duration(days: 1)));
+  }
+
   //get task by pekerjaan
-  Future<List<dynamic>> getTasksByPekerjaanId(String idPekerjaan) async {
+  Future getTasksByPekerjaanId(
+      String idPekerjaan, DateTime selectedDate) async {
     try {
       const urlx = '$baseURL/api/taskbypekerjaan';
       var token = await getToken();
       var response = await http.get(Uri.parse('$urlx/$idPekerjaan'),
           headers: {'Authorization': 'Bearer $token'});
       if (response.statusCode == 200) {
-        Iterable list = json.decode(response.body);
-        List<dynamic> tasks = List<dynamic>.from(list.map((e) => e));
-        return tasks;
+        Iterable it = json.decode(response.body);
+        List<TaskModel> task = List<TaskModel>.from(it
+            .where((element) => isTaskOnSelectedDate(element, selectedDate))
+            .map((e) => TaskModel.fromJson(e))
+            .toList());
+        return task;
       } else {
         print(response.statusCode);
         return [];
@@ -80,7 +95,8 @@ class TaskController {
   }
 
   //get task by user dan pekerjaan
-  Future<List<dynamic>> getTasksByUserPekerjaan(String idPekerjaan) async {
+  Future getTasksByUserPekerjaan(
+      String idPekerjaan, DateTime selectedDate) async {
     try {
       const urlx = '$baseURL/api/taskbyuser';
       var token = await getToken();
@@ -88,10 +104,13 @@ class TaskController {
       var response = await http.get(Uri.parse('$urlx/$idUser'),
           headers: {'Authorization': 'Bearer $token'});
       if (response.statusCode == 200) {
-        Iterable list = json.decode(response.body);
-        List<dynamic> tasks = List<dynamic>.from(list
-            .where((element) => element['id_pekerjaan'] == idPekerjaan)
-            .map((e) => e));
+        Iterable it = json.decode(response.body);
+        List<TaskModel> tasks = List<TaskModel>.from(it
+            .where((element) =>
+                element['id_pekerjaan'] == idPekerjaan &&
+                isTaskOnSelectedDate(element, selectedDate))
+            .map((e) => TaskModel.fromJson(e))
+            .toList());
         return tasks;
       } else {
         print(response.statusCode);

@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:badges/badges.dart';
 import 'package:destask/controller/pekerjaan_controller.dart';
 import 'package:destask/controller/personil_controller.dart';
-import 'package:destask/controller/profile_controller.dart';
+import 'package:destask/model/pekerjaan_model.dart';
 import 'package:destask/utils/global_colors.dart';
 import 'package:destask/view/Auth/login.dart';
 import 'package:flutter/material.dart';
@@ -18,14 +18,38 @@ class Beranda extends StatefulWidget {
 
 class _BerandaState extends State<Beranda> {
   PekerjaanController pekerjaanController = PekerjaanController();
-  late Future<List> futurePekerjaan;
+  late Future<List<PekerjaanModel>> pekerjaan;
   String nama = '';
+  String jumlahPekerjaanSelesai = '';
+
+  //getdata pekerjaan
+  Future<List<PekerjaanModel>> getDataPekerjaan() async {
+    var data = await pekerjaanController.getOnProgressUser();
+    return data;
+  }
+
+  getJumlahPekerjaanSelesai() async {
+    var data = await pekerjaanController.getAllPekerjaanUser();
+    int count = 0; // Initialize a counter variable
+
+    setState(() {
+      for (var i = 0; i < data.length; i++) {
+        if (data[i].id_status_pekerjaan.toString() == '2') {
+          count += 1;
+        }
+      }
+      jumlahPekerjaanSelesai = count.toString();
+    });
+
+    return data;
+  }
 
   @override
   void initState() {
     super.initState();
     startLaunching();
-    futurePekerjaan = pekerjaanController.getOnProgressUser();
+    pekerjaan = getDataPekerjaan();
+    getJumlahPekerjaanSelesai();
   }
 
   //cek login with token
@@ -144,8 +168,8 @@ class _BerandaState extends State<Beranda> {
               height: screenHeight * 3 / 4,
               color: Colors.white,
               child: SingleChildScrollView(
-                child: FutureBuilder<List<dynamic>>(
-                  future: futurePekerjaan,
+                child: FutureBuilder<List<PekerjaanModel>>(
+                  future: pekerjaan,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return Padding(
@@ -195,11 +219,33 @@ class _BerandaState extends State<Beranda> {
                     childAspectRatio: 1.1,
                   ),
                   itemBuilder: (context, index) {
+                    Widget badgecontent;
+
+                    if (index == 0) {
+                      badgecontent = Text(
+                        jumlahPekerjaanSelesai,
+                        style: TextStyle(color: Colors.white),
+                      );
+                    } else if (index == 1) {
+                      badgecontent = Text(
+                        '0',
+                        style: TextStyle(color: Colors.white),
+                      );
+                    } else if (index == 2) {
+                      badgecontent = Text(
+                        '0',
+                        style: TextStyle(color: Colors.white),
+                      );
+                    } else {
+                      badgecontent = Text(
+                        '0',
+                        style: TextStyle(color: Colors.white),
+                      );
+                    }
                     return Column(
                       children: [
                         badges.Badge(
-                          badgeContent:
-                              Text('3', style: TextStyle(color: Colors.white)),
+                          badgeContent: badgecontent,
                           badgeStyle: BadgeStyle(
                             badgeColor: Colors.red, // Red circle color
                             elevation: 0, // No shadow
@@ -295,15 +341,18 @@ class _ListOfJob extends StatelessWidget {
                   color: GlobalColors.mainColor,
                   child: ListTile(
                     leading: Container(
-                      padding: const EdgeInsets.all(5),
+                      padding: EdgeInsets.all(15),
                       decoration: BoxDecoration(
-                        color: Colors.amber,
+                        color: Colors.white,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
-                        Icons.work,
-                        size: 30,
-                        color: Colors.white,
+                      child: Text(
+                        persentase_selesai + '%',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ),
                     ),
                     title: Text(

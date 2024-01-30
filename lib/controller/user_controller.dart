@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:destask/model/user_model.dart';
 import 'package:destask/utils/constant_api.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:get/get.dart';
@@ -13,8 +14,32 @@ Future getToken() async {
   return token;
 }
 
-class ProfileController {
-  Future<Map<String, dynamic>> getProfileById(String idUser) async {
+class UserController {
+  Future getAllUser() async {
+    try {
+      SharedPreferences pref = await SharedPreferences.getInstance();
+      var iduser = pref.getString('id_user');
+      var token = await getToken();
+      var response = await http.get(
+        Uri.parse('$url/$iduser'),
+        headers: {'Authorization': 'Bearer $token'},
+      );
+      if (response.statusCode == 200) {
+        Iterable it = json.decode(response.body);
+        List<UserModel> user =
+            List<UserModel>.from(it.map((e) => UserModel.fromJson(e)));
+        return user;
+      } else {
+        // Handle error
+        return [];
+      }
+    } catch (e) {
+      // Handle exception
+      return [];
+    }
+  }
+
+  Future getUserById(String idUser) async {
     try {
       var token = await getToken();
       var response = await http.get(
@@ -22,20 +47,20 @@ class ProfileController {
         headers: {'Authorization': 'Bearer $token'},
       );
       if (response.statusCode == 200) {
-        List<Map<String, dynamic>> profileList =
-            List<Map<String, dynamic>>.from(json.decode(response.body));
-        Map<String, dynamic> profile = profileList.first;
-        return profile;
+        Iterable it = json.decode(response.body);
+        List<UserModel> user =
+            List<UserModel>.from(it.map((e) => UserModel.fromJson(e)).toList());
+        return user;
       } else {
-        throw Exception(
-            'Failed to load profile. Status code: ${response.statusCode}');
+        // Handle error
+        return {};
       }
     } catch (e) {
-      throw Exception('Error getting profile: $e');
+      print(e);
     }
   }
 
-  Future editProfil(
+  Future editProfile(
     String iduser,
     String nama,
     String email,

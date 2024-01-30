@@ -50,8 +50,7 @@ class MyApp extends StatelessWidget {
           ),
           GetPage(name: '/add_task/:idpekerjaan', page: () => AddTask()),
           GetPage(name: '/edit_task/:idtask', page: () => EditTask()),
-          GetPage(name: '/delete_task/:idtask', page: () => EditTask()),
-          GetPage(name: '/detail_task', page: () => DetailTask()),
+          GetPage(name: '/detail_task/:idtask', page: () => DetailTask()),
           GetPage(name: '/pekerjaan', page: () => const Pekerjaan()),
           GetPage(
               name: '/detail_pekerjaan/:idpekerjaan',

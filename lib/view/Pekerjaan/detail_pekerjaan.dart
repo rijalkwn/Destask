@@ -1,4 +1,9 @@
 import 'package:destask/controller/pekerjaan_controller.dart';
+import 'package:destask/controller/personil_controller.dart';
+import 'package:destask/controller/status_pekerjaan_controller.dart';
+import 'package:destask/controller/user_controller.dart';
+import 'package:destask/model/pekerjaan_model.dart';
+import 'package:destask/utils/global_colors.dart';
 import 'package:destask/view/Pekerjaan/pekerjaan.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -12,6 +17,14 @@ class DetailPekerjaan extends StatefulWidget {
 }
 
 class _DetailPekerjaanState extends State<DetailPekerjaan> {
+  final String idpekerjaan = Get.parameters['idpekerjaan'] ?? '';
+  PekerjaanController pekerjaanController = PekerjaanController();
+  StatusPekerjaanController statusPekerjaanController =
+      StatusPekerjaanController();
+  PersonilController personilController = PersonilController();
+  UserController userController = UserController();
+
+  //kolom pekerjaan
   String idPekerjaan = '';
   String idStatusPekerjaan = '';
   String idKategoriPekerjaan = '';
@@ -25,68 +38,192 @@ class _DetailPekerjaanState extends State<DetailPekerjaan> {
   String persentaseSelesai = '';
   String waktuSelesai = '';
 
-  void detailPekerjaan() async {
-    try {
-      final String idpekerjaan = Get.parameters['idpekerjaan'] ?? '';
-      PekerjaanController pekerjaanController = PekerjaanController();
-      Map<String, dynamic> pekerjaan =
-          await pekerjaanController.getPekerjaanById(idpekerjaan);
-      setState(() {
-        idPekerjaan = pekerjaan['id_pekerjaan'] ?? '';
-        idStatusPekerjaan = pekerjaan['id_status_pekerjaan'] ?? '';
-        idKategoriPekerjaan = pekerjaan['id_kategori_pekerjaan'] ?? '';
-        idPersonil = pekerjaan['id_personil'] ?? '';
-        namaPekerjaan = pekerjaan['nama_pekerjaan'] ?? '';
-        pelanggan = pekerjaan['pelanggan'] ?? '';
-        jenisLayanan = pekerjaan['jenis_layanan'] ?? '';
-        nominalHarga = pekerjaan['nominal_harga'] ?? '';
-        deskripsiPekerjaan = pekerjaan['deskripsi_pekerjaan'] ?? '';
-        targetWaktuSelesai = pekerjaan['target_waktu_selesai'] ?? '';
-        persentaseSelesai = pekerjaan['persentase_selesai'] ?? '';
-        waktuSelesai = pekerjaan['waktu_selesai'] ?? '';
-      });
-    } catch (e) {
-      print('Error detail pekerjaan: $e');
-    }
+  //status
+  String namaStatus = '';
+
+  //bantuan
+  String idpersonil = '';
+  String idstatus = '';
+  String idkategori = '';
+
+  //personil
+  String idUserPM = '';
+  String desainer1 = '';
+  String desainer2 = '';
+  String beWeb1 = '';
+  String beWeb2 = '';
+  String beWeb3 = '';
+  String beMobile1 = '';
+  String beMobile2 = '';
+  String beMobile3 = '';
+  String feWeb1 = '';
+  String feMobile1 = '';
+
+  //user
+  String namaIdUserPM = '';
+  String namaDesigner1 = '';
+  String namaDesigner2 = '';
+  String namaBEWeb1 = '';
+  String namaBEWeb2 = '';
+  String namaBEWeb3 = '';
+  String namaBEMobile1 = '';
+  String namaBEMobile2 = '';
+  String namaBEMobile3 = '';
+  String namaFEWeb1 = '';
+  String namaFEMobile1 = '';
+
+  getDataPekerjaan() async {
+    var data = await pekerjaanController.getPekerjaanById(idpekerjaan);
+    setState(() {
+      idPekerjaan = data[0].id_pekerjaan ?? '';
+      idStatusPekerjaan = data[0].id_status_pekerjaan ?? '';
+      idKategoriPekerjaan = data[0].id_kategori_pekerjaan ?? '';
+      idPersonil = data[0].id_personil ?? '';
+      namaPekerjaan = data[0].nama_pekerjaan ?? '';
+      pelanggan = data[0].pelanggan ?? '';
+      jenisLayanan = data[0].jenis_layanan ?? '';
+      nominalHarga = data[0].nominal_harga ?? '';
+      deskripsiPekerjaan = data[0].deskripsi_pekerjaan ?? '';
+      targetWaktuSelesai = data[0].target_waktu_selesai ?? '';
+      persentaseSelesai = data[0].persentase_selesai ?? '';
+      waktuSelesai = data[0].waktu_selesai ?? '';
+    });
+    return data;
   }
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    detailPekerjaan();
+    getDataPekerjaan().then((value) {
+      setState(() {
+        idpersonil = value[0].id_personil.toString();
+        idstatus = value[0].id_status_pekerjaan.toString();
+        idkategori = value[0].id_kategori_pekerjaan ?? '';
+      });
+      getDataStatus();
+      getDataPersonil().then((value) {
+        getDataUser();
+      });
+    });
   }
 
-  // ... (kode sebelumnya)
+  getDataStatus() async {
+    var data = await statusPekerjaanController.getStatusById(idstatus);
+    setState(() {
+      namaStatus = data[0].nama_status_pekerjaan ?? '';
+    });
+    return data;
+  }
+
+  getDataPersonil() async {
+    var data = await personilController.getPersonilById(idpersonil);
+    setState(() {
+      idUserPM = data[0].id_user_pm ?? '';
+      desainer1 = data[0].desainer1 ?? '';
+      desainer2 = data[0].desainer2 ?? '';
+      beWeb1 = data[0].be_web1 ?? '';
+      beWeb2 = data[0].be_web2 ?? '';
+      beWeb3 = data[0].be_web3 ?? '';
+      beMobile1 = data[0].be_mobile1 ?? '';
+      beMobile2 = data[0].be_mobile2 ?? '';
+      beMobile3 = data[0].be_mobile3 ?? '';
+      feWeb1 = data[0].fe_web1 ?? '';
+      feMobile1 = data[0].fe_mobile1 ?? '';
+    });
+    return data;
+  }
+
+  getDataUser() async {
+    var data = await userController.getAllUser();
+    setState(() {
+      //cek apakah idUserPM = id user
+      for (var i = 0; i < data.length; i++) {
+        if (idUserPM == data[i].id_user.toString()) {
+          namaIdUserPM = data[i].nama.toString();
+        }
+        if (desainer1 == data[i].id_user) {
+          namaDesigner1 = data[i].nama ?? '';
+        }
+        if (desainer2 == data[i].id_user) {
+          namaDesigner2 = data[i].nama ?? '';
+        }
+        if (beWeb1 == data[i].id_user) {
+          namaBEWeb1 = data[i].nama ?? '';
+        }
+        if (beWeb2 == data[i].id_user) {
+          namaBEWeb2 = data[i].nama ?? '';
+        }
+        if (beWeb3 == data[i].id_user) {
+          namaBEWeb3 = data[i].nama ?? '';
+        }
+        if (beMobile1 == data[i].id_user) {
+          namaBEMobile1 = data[i].nama ?? '';
+        }
+        if (beMobile2 == data[i].id_user) {
+          namaBEMobile2 = data[i].nama ?? '';
+        }
+        if (beMobile3 == data[i].id_user) {
+          namaBEMobile3 = data[i].nama ?? '';
+        }
+        if (feWeb1 == data[i].id_user) {
+          namaFEWeb1 = data[i].nama ?? '';
+        }
+        if (feMobile1 == data[i].id_user) {
+          namaFEMobile1 = data[i].nama ?? '';
+        }
+      }
+    });
+    return data;
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(namaPekerjaan ?? ''),
+        backgroundColor: GlobalColors.mainColor,
+        iconTheme: IconThemeData(color: Colors.white),
+        title: Text(
+          "Detail " + namaPekerjaan,
+          style: TextStyle(fontSize: 20, color: Colors.white),
+        ),
       ),
-      body: Container(
-        padding: EdgeInsets.all(16.0),
-        child: Table(
-          columnWidths: {
-            0: FlexColumnWidth(1),
-            1: FlexColumnWidth(2),
-          },
-          children: [
-            _buildTableRow('ID Pekerjaan', idPekerjaan),
-            _buildTableRow('ID Status Pekerjaan', idStatusPekerjaan),
-            _buildTableRow('ID Kategori Pekerjaan', idKategoriPekerjaan),
-            _buildTableRow('ID Personil', idPersonil),
-            _buildTableRow('Nama Pekerjaan', namaPekerjaan),
-            _buildTableRow('Pelanggan', pelanggan),
-            _buildTableRow('Jenis Layanan', jenisLayanan),
-            _buildTableRow('Nominal Harga', _formatRupiah(nominalHarga)),
-            _buildTableRow('Deskripsi Pekerjaan', deskripsiPekerjaan),
-            _buildTableRow(
-                'Target Waktu Selesai', _formatDatetime(targetWaktuSelesai)),
-            _buildTableRow('Persentase Selesai', persentaseSelesai),
-            _buildTableRow('Waktu Selesai', _formatDatetime(waktuSelesai)),
-          ],
+      body: SingleChildScrollView(
+        child: Container(
+          padding: EdgeInsets.all(16.0),
+          child: Table(
+            columnWidths: {
+              0: FlexColumnWidth(7),
+              1: FlexColumnWidth(0.5),
+              2: FlexColumnWidth(10),
+            },
+            children: [
+              _buildTableRow('ID Pekerjaan', idPekerjaan),
+              _buildTableRow('ID Status Pekerjaan', namaStatus),
+              _buildTableRow('ID Kategori Pekerjaan', idKategoriPekerjaan),
+              _buildTableRow('Nama Pekerjaan', namaPekerjaan),
+              _buildTableRow('Pelanggan', pelanggan),
+              _buildTableRow('Jenis Layanan', jenisLayanan),
+              _buildTableRow('Nominal Harga', _formatRupiah(nominalHarga)),
+              _buildTableRow('Deskripsi Pekerjaan', deskripsiPekerjaan),
+              _buildTableRow(
+                  'Target Waktu Selesai', _formatDatetime(targetWaktuSelesai)),
+              _buildTableRow('Persentase Selesai', persentaseSelesai),
+              _buildTableRow('Waktu Selesai', _formatDatetime(waktuSelesai)),
+              //personil
+              _buildTableRow('ID Personil', idPersonil),
+              _buildTableRowPersonil('- Project Manager', namaIdUserPM),
+              _buildTableRowPersonil('- Desainer 1', namaDesigner1),
+              _buildTableRowPersonil('- Desainer 2', namaDesigner2),
+              _buildTableRowPersonil('- Back End Web 1', namaBEWeb1),
+              _buildTableRowPersonil('- Back End Web 2', namaBEWeb2),
+              _buildTableRowPersonil('- Back End Web 3', namaBEWeb3),
+              _buildTableRowPersonil('- Back End Mobile 1', namaBEMobile1),
+              _buildTableRowPersonil('- Back End Mobile 2', namaBEMobile2),
+              _buildTableRowPersonil('- Back End Mobile 3', namaBEMobile3),
+              _buildTableRowPersonil('- Front End Web 1', namaFEWeb1),
+              _buildTableRowPersonil('- Front End Mobile 1', namaFEMobile1),
+            ],
+          ),
         ),
       ),
     );
@@ -102,6 +239,41 @@ class _DetailPekerjaanState extends State<DetailPekerjaan> {
               label,
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
+          ),
+        ),
+        TableCell(
+          child: Container(
+            padding: EdgeInsets.symmetric(vertical: 8.0),
+            child: Text(":"),
+          ),
+        ),
+        TableCell(
+          child: Container(
+            padding: EdgeInsets.symmetric(vertical: 8.0),
+            child: Text(value == null ? '-' : value.toString()),
+          ),
+        ),
+      ],
+    );
+  }
+
+  //khusus personil
+  TableRow _buildTableRowPersonil(String label, dynamic value) {
+    return TableRow(
+      children: [
+        TableCell(
+          child: Container(
+            padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 3),
+            child: Text(
+              label,
+              style: TextStyle(fontWeight: FontWeight.normal),
+            ),
+          ),
+        ),
+        TableCell(
+          child: Container(
+            padding: EdgeInsets.symmetric(vertical: 8.0),
+            child: Text(":"),
           ),
         ),
         TableCell(

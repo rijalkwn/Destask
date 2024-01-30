@@ -15,24 +15,25 @@ Future getToken() async {
 }
 
 class PekerjaanController {
-  Future<List<dynamic>> getAllPekerjaan() async {
-    try {
-      var token = await getToken();
-      var response = await http
-          .get(Uri.parse(url), headers: {'Authorization': 'Bearer $token'});
-      if (response.statusCode == 200) {
-        Iterable list = json.decode(response.body);
-        List<dynamic> pekerjaan = List<dynamic>.from(list.map((e) => e));
-        return pekerjaan;
-      } else {
-        // Handle error
-        return [];
-      }
-    } catch (e) {
-      print(e);
-      return [];
-    }
-  }
+  // Future getAllPekerjaan() async {
+  //   try {
+  //     var token = await getToken();
+  //     var response = await http
+  //         .get(Uri.parse(url), headers: {'Authorization': 'Bearer $token'});
+  //     if (response.statusCode == 200) {
+  //       Iterable list = json.decode(response.body);
+  //       List<PekerjaanModel> pekerjaan = List<PekerjaanModel>.from(
+  //           list.map((e) => PekerjaanModel.fromJson(e)).toList());
+  //       return pekerjaan;
+  //     } else {
+  //       // Handle error
+  //       return [];
+  //     }
+  //   } catch (e) {
+  //     print(e);
+  //     return [];
+  //   }
+  // }
 
   //get pekerjaan by id
   Future getPekerjaanById(String idPekerjaan) async {
@@ -44,7 +45,8 @@ class PekerjaanController {
       );
       if (response.statusCode == 200) {
         Iterable list = json.decode(response.body);
-        Map<String, dynamic> pekerjaan = list.first;
+        List<PekerjaanModel> pekerjaan = List<PekerjaanModel>.from(
+            list.map((e) => PekerjaanModel.fromJson(e)).toList());
         return pekerjaan;
       } else {
         return {}; // Mengembalikan map kosong jika tidak ada data
@@ -55,11 +57,10 @@ class PekerjaanController {
   }
 
   //menampilkan list pekerjaan progres di beranda
-  Future<List<dynamic>> getOnProgressUser() async {
+  Future getOnProgressUser() async {
     try {
       SharedPreferences pref = await SharedPreferences.getInstance();
       var iduser = pref.getString('id_user');
-      print(iduser);
       var token = await getToken();
       var response = await http.get(
         Uri.parse('$urluser/$iduser'),
@@ -67,7 +68,7 @@ class PekerjaanController {
       );
       if (response.statusCode == 200) {
         Iterable list = json.decode(response.body);
-        List<dynamic> pekerjaan = List<dynamic>.from(list
+        List<PekerjaanModel> pekerjaan = List<PekerjaanModel>.from(list
             .where((element) => element['id_status_pekerjaan'] == "1")
             .map((e) => PekerjaanModel.fromJson(e)));
         return pekerjaan;
@@ -83,19 +84,19 @@ class PekerjaanController {
   }
 
 //menampilakn list pekerjaan di menu pekerjaan
-  Future<List<dynamic>> getAllPekerjaanUser() async {
+  Future getAllPekerjaanUser() async {
     try {
       SharedPreferences pref = await SharedPreferences.getInstance();
       var iduser = pref.getString('id_user');
-      print(iduser);
       var token = await getToken();
       var response = await http.get(
         Uri.parse('$urluser/$iduser'),
         headers: {'Authorization': 'Bearer $token'},
       );
       if (response.statusCode == 200) {
-        Iterable list = json.decode(response.body);
-        List<dynamic> pekerjaan = List<dynamic>.from(list.map((e) => e));
+        Iterable it = json.decode(response.body);
+        List<PekerjaanModel> pekerjaan = List<PekerjaanModel>.from(
+            it.map((e) => PekerjaanModel.fromJson(e)));
         return pekerjaan;
       } else {
         // Handle error

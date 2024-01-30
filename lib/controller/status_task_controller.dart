@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:destask/model/status_task_model.dart';
 import 'package:destask/utils/constant_api.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -13,7 +14,7 @@ Future getToken() async {
 }
 
 class StatusTaskController {
-  Future<List<dynamic>> getAllStatusTask() async {
+  Future getAllStatusTask() async {
     try {
       var token = await getToken();
       var response = await http.get(
@@ -21,8 +22,9 @@ class StatusTaskController {
         headers: {'Authorization': 'Bearer $token'},
       );
       if (response.statusCode == 200) {
-        Iterable list = json.decode(response.body);
-        List<dynamic> statusTask = List<dynamic>.from(list.map((e) => e));
+        Iterable it = json.decode(response.body);
+        List<StatusTaskModel> statusTask = List<StatusTaskModel>.from(
+            it.map((e) => StatusTaskModel.fromJson(e)));
         return statusTask;
       } else {
         // Handle error
@@ -30,6 +32,21 @@ class StatusTaskController {
       }
     } catch (e) {
       // Handle exception
+      return [];
+    }
+  }
+
+  Future getStatusById(String idStatusPekerjaan) async {
+    var token = await getToken();
+    var response = await http.get(Uri.parse('$url/$idStatusPekerjaan'),
+        headers: {'Authorization': 'Bearer $token'});
+    if (response.statusCode == 200) {
+      Iterable it = json.decode(response.body);
+      List<StatusTaskModel> statustask = List<StatusTaskModel>.from(
+          it.map((e) => StatusTaskModel.fromJson(e)).toList());
+      return statustask;
+    } else {
+      // Handle error
       return [];
     }
   }

@@ -1,5 +1,5 @@
 import 'package:destask/controller/auth_controller.dart';
-import 'package:destask/controller/profile_controller.dart';
+import 'package:destask/controller/user_controller.dart';
 import 'package:destask/utils/global_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -12,11 +12,12 @@ class Pengaturan extends StatefulWidget {
 }
 
 class _PengaturanState extends State<Pengaturan> {
+  UserController userController = UserController();
   String nama = '';
   String email = '';
   String id_user = '';
 
-  getData() async {
+  getIdUser() async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     var iduser = pref.getString('id_user');
     return iduser;
@@ -25,36 +26,22 @@ class _PengaturanState extends State<Pengaturan> {
   @override
   void initState() {
     super.initState();
-    getData().then((iduser) {
-      if (iduser != null) {
-        fetchData(iduser);
-      } else {
-        print('id_user is null');
-      }
+    getIdUser().then((value) {
+      setState(() {
+        id_user = value!;
+      });
     });
+    getDataUser();
   }
 
-  void fetchData(String iduser) async {
-    try {
-      if (iduser.isNotEmpty) {
-        ProfileController profileController = ProfileController();
-        Map<String, dynamic> datauser =
-            await profileController.getProfileById(iduser);
-        if (datauser.isNotEmpty) {
-          setState(() {
-            id_user = datauser['id_user'] ?? '';
-            nama = datauser['nama'] ?? '';
-            email = datauser['email'] ?? '';
-          });
-        } else {
-          print('User data is null or empty');
-        }
-      } else {
-        print('id_user is null');
-      }
-    } catch (e) {
-      print('Error fetching data: $e');
-    }
+  //getdata user
+  getDataUser() async {
+    var data = await userController.getUserById(id_user);
+    setState(() {
+      nama = data[0].nama ?? '';
+      email = data[0].email;
+    });
+    return data;
   }
 
   @override
@@ -77,7 +64,10 @@ class _PengaturanState extends State<Pengaturan> {
                   SizedBox(height: 10),
                   Text(
                     nama,
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black),
                   ),
                   SizedBox(height: 5),
                   Text(

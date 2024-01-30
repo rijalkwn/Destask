@@ -1,37 +1,74 @@
 import 'dart:io';
 
+import 'package:destask/controller/pekerjaan_controller.dart';
 import 'package:destask/controller/status_task_controller.dart';
 import 'package:destask/controller/task_controller.dart';
+import 'package:destask/model/status_task_model.dart';
+import 'package:destask/model/task_model.dart';
 import 'package:destask/utils/global_colors.dart';
-import 'package:destask/view/Beranda/Task/my_date_time_picker.dart';
-import 'package:destask/view/Pekerjaan/pekerjaan.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:quickalert/quickalert.dart';
 
+import 'my_date_time_picker.dart';
+
 class EditTask extends StatefulWidget {
+  const EditTask({super.key});
+
   @override
   State<EditTask> createState() => _EditTaskState();
 }
 
 class _EditTaskState extends State<EditTask> {
-  late Future<List<dynamic>> statusTask;
-  late List<dynamic> status;
+  final String idtask = Get.parameters['idtask'] ?? '';
   final TextEditingController _deskripsiTaskController =
       TextEditingController();
   final TextEditingController _persentaseSelesaiController =
       TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  StatusTaskController statusTaskController = StatusTaskController();
+  List<StatusTaskModel> statusTask = [];
+  String initialStatus = '';
 
-  //date picker
-  DateTime? _selectedDateStart;
-  DateTime? _selectedDateEnd;
   //file
   PlatformFile? pickedFile;
   File? fileToDisplay;
   String? fileName;
   bool isLoading = false;
+
+  //date picker
+  DateTime? _selectedDateStart;
+  DateTime? _selectedDateEnd;
+
+  Future<void> _selectDateStart(BuildContext context) async {
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: _selectedDateStart ?? DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+
+    if (pickedDate != null && pickedDate != _selectedDateStart) {
+      setState(() {
+        _selectedDateStart = pickedDate;
+      });
+    }
+  }
+
+  void _selectDateEnd(BuildContext context) async {
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: _selectedDateEnd ?? DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+    if (pickedDate != null && pickedDate != _selectedDateEnd) {
+      setState(() {
+        _selectedDateEnd = pickedDate;
+      });
+    }
+  }
 
   //pick file
   void _pickFile() async {
@@ -55,67 +92,44 @@ class _EditTaskState extends State<EditTask> {
     });
   }
 
-  void _selectDateStart(BuildContext context) async {
-    final DateTime? pickedDate = await showDatePicker(
-      context: context,
-      initialDate: _selectedDateStart ?? DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
-    );
-
-    if (pickedDate != null && pickedDate != _selectedDateStart) {
-      setState(() {
-        _selectedDateStart = pickedDate;
-      });
-    }
+  //get status task
+  Future<List<StatusTaskModel>> getDataStatusTask() async {
+    List<StatusTaskModel> data = await statusTaskController.getAllStatusTask();
+    return data;
   }
 
-  void _selectDateEnd(BuildContext context) async {
-    final DateTime? pickedDate = await showDatePicker(
-      context: context,
-      initialDate: _selectedDateEnd ?? DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
-    );
-
-    if (pickedDate != null && pickedDate != _selectedDateEnd) {
-      setState(() {
-        _selectedDateEnd = pickedDate;
-      });
-    }
+  //getdata task
+  getDataTask() async {
+    var data = await TaskController().getTaskById(idtask);
+    setState(() {
+      _deskripsiTaskController.text = data[0].deskripsi_task ?? '';
+      _selectedDateStart = DateTime.parse(data[0].tgl_planing ?? '');
+      _selectedDateEnd = DateTime.parse(data[0].tgl_selesai ?? '');
+      _persentaseSelesaiController.text = data[0].persentase_selesai ?? '';
+      initialStatus = data[0].id_status_task ?? '';
+    });
+    return data;
   }
-
-  Future fetchData() async {
-    final String idTask = Get.parameters['idtask'] ?? '';
-    TaskController taskController = TaskController();
-    Map<String, dynamic> task = await taskController.getTaskById(idTask);
-    return task;
-  }
-
-  var idPekerjaan = null;
 
   @override
   void initState() {
     super.initState();
-    fetchData().then((data) {
+    statusTask = [];
+    getDataTask();
+    getDataStatusTask().then((data) {
       setState(() {
-        idPekerjaan = data['idpekerjaan'] ?? '';
-        _deskripsiTaskController.text = data['deskripsi_task'] ?? '';
-        _selectedDateStart = DateTime.parse(data['tgl_planing']);
-        _selectedDateEnd = DateTime.parse(data['tgl_selesai']);
-        _persentaseSelesaiController.text = data['persentase_selesai'] ?? '';
-        fileName = data['bukti_selesai'] ?? '';
+        statusTask = data;
       });
-      statusTask = StatusTaskController().getAllStatusTask();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final String idTask = Get.parameters['idtask'] ?? '';
     return Scaffold(
       appBar: AppBar(
-        title: Text('Edit Task'),
+        backgroundColor: GlobalColors.mainColor,
+        title: Text('Edit Task', style: TextStyle(color: Colors.white)),
+        iconTheme: IconThemeData(color: Colors.white),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -168,15 +182,15 @@ class _EditTaskState extends State<EditTask> {
                 SizedBox(height: 16),
                 //status task
                 buildLabel('Status Task *'),
-                FutureBuilder<List<dynamic>>(
-                  future: statusTask,
+                FutureBuilder<List<StatusTaskModel>>(
+                  future: getDataStatusTask(),
                   builder: (context, snapshot) {
                     if (snapshot.hasError) {
                       return Text('Error loading data');
                     } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                       return Text('No data available');
                     } else {
-                      List<dynamic> statusList = snapshot.data!;
+                      List<StatusTaskModel> statusList = snapshot.data!;
                       return buildDropDownMenu(statusList);
                     }
                   },
@@ -251,16 +265,14 @@ class _EditTaskState extends State<EditTask> {
     );
   }
 
-  DropdownButtonFormField<String> buildDropDownMenu(List<dynamic> statusList) {
+  DropdownButtonFormField<String> buildDropDownMenu(
+      List<StatusTaskModel> statusList) {
     return DropdownButtonFormField<String>(
-      value: statusList[0]['nama_status_task'],
-      onChanged: (value) {
-        // Handle onChanged event
-      },
+      onChanged: (value) {},
       items: statusList.map((status) {
         return DropdownMenuItem<String>(
-          value: status['nama_status_task'],
-          child: Text(status['nama_status_task']),
+          value: status.id_status_task,
+          child: Text(status.nama_status_task.toString()),
         );
       }).toList(),
       decoration: InputDecoration(

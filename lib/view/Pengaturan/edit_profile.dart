@@ -1,6 +1,5 @@
 import 'dart:io';
-
-import 'package:destask/controller/profile_controller.dart';
+import 'package:destask/controller/user_controller.dart';
 import 'package:destask/utils/global_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -19,6 +18,8 @@ class _EditProfileState extends State<EditProfile> {
   TextEditingController _usernameController = TextEditingController();
   TextEditingController _usergroupController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  UserController userController = UserController();
   File? Image;
   String? fileImageName;
 
@@ -29,12 +30,17 @@ class _EditProfileState extends State<EditProfile> {
     return idUser;
   }
 
-  fetchData() async {
+  //getdata user
+  getDataUser() async {
     var iduser = await getIdUser();
-    ProfileController profileController = ProfileController();
-    Map<String, dynamic> profile =
-        await profileController.getProfileById(iduser);
-    return profile;
+    var data = await userController.getUserById(iduser);
+    setState(() {
+      _nameController.text = data[0].nama;
+      _emailController.text = data[0].email;
+      _usernameController.text = data[0].username;
+      _usergroupController.text = data[0].id_usergroup;
+    });
+    return data;
   }
 
   //pick image
@@ -55,18 +61,7 @@ class _EditProfileState extends State<EditProfile> {
   @override
   void initState() {
     super.initState();
-    fetchData().then((profile) {
-      if (profile != null) {
-        setState(() {
-          _nameController.text = profile['nama'] ?? '';
-          _emailController.text = profile['email'] ?? '';
-          _usernameController.text = profile['username'] ?? '';
-          _usergroupController.text = profile['id_usergroup'] ?? '';
-        });
-      } else {
-        print('Profile is null');
-      }
-    });
+    getDataUser();
   }
 
   @override
@@ -118,8 +113,8 @@ class _EditProfileState extends State<EditProfile> {
                 GestureDetector(
                   onTap: () async {
                     if (_formKey.currentState!.validate()) {
-                      ProfileController profileController = ProfileController();
-                      bool editProfile = await profileController.editProfil(
+                      UserController userController = UserController();
+                      bool editProfile = await userController.editProfile(
                           iduser,
                           _nameController.text,
                           _emailController.text,
