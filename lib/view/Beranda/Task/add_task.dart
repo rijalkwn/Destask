@@ -90,7 +90,7 @@ class _AddTaskState extends State<AddTask> {
   void initState() {
     super.initState();
     idpekerjaan = Get.parameters['idpekerjaan'] ?? '';
-    statusTask = StatusTaskController().getAllStatusTask();
+    // statusTask = StatusTaskController().getAllStatusTask();
   }
 
   @override
