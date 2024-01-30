@@ -1,110 +1,94 @@
-import 'package:destask/utils/global_colors.dart';
+import 'package:destask/controller/notifikasi_controller.dart';
+import 'package:destask/model/notifikasi_model.dart';
 import 'package:flutter/material.dart';
 
 class Notifikasi extends StatefulWidget {
-  const Notifikasi({Key? key}) : super(key: key);
-
   @override
   State<Notifikasi> createState() => _NotifikasiState();
 }
 
 class _NotifikasiState extends State<Notifikasi> {
-  List notifikasi = [
-    "Lorem Ipsum sadajsdn sdskadas asdans as",
-    "Lorem sds adsdasda sdda a asdsa asaas asdadadsdas",
-    "ffijic wjiejfie fejiejf efei jfwijfw",
-    "Lo isdiaj ajdisjd aisdi asdjisad asidaid asdasi",
-    "eurhce rija lkruna aaksd asdasda adaaa asa",
-    "Lorem Ipsum sadajsdn sdskadas asdans as",
-  ];
-  List detail = [
-    "ON PROGRESS",
-    "ON PROGRESS",
-    "ON PROGRESS",
-    "ON PROGRESS",
-    "ON PROGRESS",
-    "ON PROGRESS",
-  ];
+  NotifikasiController notifikasiController = NotifikasiController();
+  late Future<List<NotifikasiModel>> _notifikasiData;
+  //getdata notifikasi
+  Future<List<NotifikasiModel>> getDataNotifikasi() async {
+    var data = await notifikasiController.getNotifikasi();
+    return data;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _notifikasiData = getDataNotifikasi();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Notifikasi', style: TextStyle(color: Colors.white)),
-        backgroundColor: GlobalColors.mainColor,
-        iconTheme: const IconThemeData(color: Colors.white),
-        //icon
+        title: Text('Notifikasi'),
       ),
       body: Padding(
-        padding: EdgeInsets.symmetric(vertical: 5, horizontal: 5),
-        child: ListView.builder(
-          itemCount: notifikasi.length,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemBuilder: (context, index) {
-            //card berbentuk listtile dengan tiap card dapat di tap
-            return GestureDetector(
-              onTap: () {
-                //bottomsheet
-                showModalBottomSheet(
-                  context: context,
-                  builder: (context) {
-                    return Container(
-                      height: 200,
-                      color: Colors.white,
-                      child: Column(
-                        children: [
-                          ListTile(
-                            leading: Container(
-                              // padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: Colors.blueAccent,
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.work,
-                                size: 30,
-                                color: Colors.white,
-                              ),
-                            ),
-                            title: Text(notifikasi[index]),
-                            subtitle: Text(detail[index]),
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            FutureBuilder<List<NotifikasiModel>>(
+              future: _notifikasiData,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                } else {
+                  List<NotifikasiModel> notifikasiList = snapshot.data ?? [];
+                  return Expanded(
+                    child: ListView.builder(
+                      itemCount: notifikasiList.length,
+                      itemBuilder: (context, index) {
+                        NotifikasiModel notifikasi = notifikasiList[index];
+                        return Card(
+                          child: ListTile(
+                            title: Text(notifikasi.judul_notifikasi.toString()),
+                            subtitle:
+                                Text(notifikasi.pesan_notifikasi.toString()),
+                            trailing: notifikasi.status_terbaca.toString() ==
+                                    "0"
+                                ? GestureDetector(
+                                    onTap: () async {
+                                      bool sudahBaca =
+                                          await notifikasiController
+                                              .updateNotifikasi(notifikasi
+                                                  .id_notifikasi
+                                                  .toString());
+                                      if (sudahBaca) {
+                                        setState(() {
+                                          _notifikasiData = getDataNotifikasi();
+                                        });
+                                      }
+                                    },
+                                    child: Container(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: 10, vertical: 5),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(10),
+                                        color: Colors.green,
+                                      ),
+                                      child: Text(
+                                        "Sudah dibaca",
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    ),
+                                  )
+                                : null,
                           ),
-                        ],
-                      ),
-                    );
-                  },
-                );
+                        );
+                      },
+                    ),
+                  );
+                }
               },
-              child: Card(
-                child: ListTile(
-                  leading: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: Colors.blueAccent,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.work,
-                      size: 30,
-                      color: Colors.white,
-                    ),
-                  ),
-                  trailing: IconButton(
-                    onPressed: () {},
-                    icon: const Icon(
-                      Icons.keyboard_arrow_right,
-                    ),
-                  ),
-                  title: Text(
-                    notifikasi[index].length > 20
-                        ? '${notifikasi[index].substring(0, 20)}...'
-                        : notifikasi[index],
-                  ),
-                ),
-              ),
-            );
-          },
+            ),
+          ],
         ),
       ),
     );

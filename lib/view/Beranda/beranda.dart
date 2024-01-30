@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:badges/badges.dart';
+import 'package:destask/controller/notifikasi_controller.dart';
 import 'package:destask/controller/pekerjaan_controller.dart';
 import 'package:destask/controller/personil_controller.dart';
 import 'package:destask/model/pekerjaan_model.dart';
@@ -18,9 +19,11 @@ class Beranda extends StatefulWidget {
 
 class _BerandaState extends State<Beranda> {
   PekerjaanController pekerjaanController = PekerjaanController();
+  NotifikasiController notifikasiController = NotifikasiController();
   late Future<List<PekerjaanModel>> pekerjaan;
   String nama = '';
   String jumlahPekerjaanSelesai = '';
+  int jumlahNotifikasi = 0;
 
   //getdata pekerjaan
   Future<List<PekerjaanModel>> getDataPekerjaan() async {
@@ -44,12 +47,28 @@ class _BerandaState extends State<Beranda> {
     return data;
   }
 
+  //get notifikasi
+  getNotifikasi() async {
+    var data = await notifikasiController.getNotifikasi();
+    int count = 0; // Initialize a counter variable
+    setState(() {
+      for (var i = 0; i < data.length; i++) {
+        if (data[i].status_terbaca.toString() == '0') {
+          count += 1;
+        }
+      }
+      jumlahNotifikasi = count;
+    });
+    return data;
+  }
+
   @override
   void initState() {
     super.initState();
     startLaunching();
     pekerjaan = getDataPekerjaan();
     getJumlahPekerjaanSelesai();
+    getNotifikasi();
   }
 
   //cek login with token
@@ -107,7 +126,7 @@ class _BerandaState extends State<Beranda> {
                 padding: const EdgeInsets.all(8.0),
                 child: badges.Badge(
                   badgeContent: Text(
-                    '3',
+                    jumlahNotifikasi.toString(),
                     style: TextStyle(color: Colors.white),
                   ),
                   badgeStyle: BadgeStyle(

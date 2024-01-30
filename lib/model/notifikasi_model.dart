@@ -7,6 +7,7 @@ class NotifikasiModel {
   final String? judul_notifikasi;
   final String? pesan_notifikasi;
   final String? status_terbaca;
+  final String? created_at;
 
   NotifikasiModel({
     this.id_notifikasi,
@@ -17,6 +18,7 @@ class NotifikasiModel {
     this.judul_notifikasi,
     this.pesan_notifikasi,
     this.status_terbaca,
+    this.created_at,
   });
 
   factory NotifikasiModel.fromJson(Map<String, dynamic> json) {
@@ -29,6 +31,7 @@ class NotifikasiModel {
       judul_notifikasi: json['judul_notifikasi'],
       pesan_notifikasi: json['pesan_notifikasi'],
       status_terbaca: json['status_terbaca'],
+      created_at: json['created_at'],
     );
   }
 }

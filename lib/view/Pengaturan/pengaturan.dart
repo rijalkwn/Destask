@@ -28,7 +28,7 @@ class _PengaturanState extends State<Pengaturan> {
     super.initState();
     getIdUser().then((value) {
       setState(() {
-        id_user = value!;
+        id_user = value.toString();
       });
     });
     getDataUser();
