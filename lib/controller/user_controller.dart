@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:destask/model/user_model.dart';
-import 'package:destask/utils/constant_api.dart';
+import '../model/user_model.dart';
+import '../utils/constant_api.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
@@ -17,11 +17,9 @@ Future getToken() async {
 class UserController {
   Future getAllUser() async {
     try {
-      SharedPreferences pref = await SharedPreferences.getInstance();
-      var iduser = pref.getString('id_user');
       var token = await getToken();
       var response = await http.get(
-        Uri.parse('$url/$iduser'),
+        Uri.parse(url),
         headers: {'Authorization': 'Bearer $token'},
       );
       if (response.statusCode == 200) {

@@ -1,5 +1,5 @@
-import 'package:destask/controller/notifikasi_controller.dart';
-import 'package:destask/model/notifikasi_model.dart';
+import '../../controller/notifikasi_controller.dart';
+import '../../model/notifikasi_model.dart';
 import 'package:flutter/material.dart';
 
 class Notifikasi extends StatefulWidget {

@@ -1,5 +1,5 @@
-import 'package:destask/controller/auth_controller.dart';
-import 'package:destask/utils/global_colors.dart';
+import '../../controller/auth_controller.dart';
+import '../../utils/global_colors.dart';
 import 'package:destask/view/Auth/login.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -41,11 +41,11 @@ class _LupaPasswordState extends State<LupaPassword> {
     setState(() {
       isLoading = true;
     });
-    await send(equivalentMessage, smtpServer);
+    await send(equivalentMessage, smtpServer, timeout: Duration(seconds: 10));
     setState(() {
       isLoading = false;
     });
-    if (smtpServer != null) {
+    if (isLoading == false) {
       AlertDialog alert = AlertDialog(
         title: Text("Email Berhasil Dikirim"),
         content: Text("Silahkan cek inbox email anda"),
@@ -86,7 +86,7 @@ class _LupaPasswordState extends State<LupaPassword> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: GlobalColors.secondColor,
+      backgroundColor: GlobalColors.backgroundColor,
       body: SingleChildScrollView(
         child: Center(
           child: Padding(
@@ -119,7 +119,7 @@ class _LupaPasswordState extends State<LupaPassword> {
                           Text(
                             "Lupa Password",
                             style: TextStyle(
-                              color: GlobalColors.textColor,
+                              color: Colors.black,
                               fontSize: 28,
                               fontWeight: FontWeight.normal,
                             ),
@@ -210,7 +210,7 @@ class _LupaPasswordState extends State<LupaPassword> {
                             child: Text(
                               'Kembali ke Menu Login',
                               style: TextStyle(
-                                color: GlobalColors.textColor,
+                                color: Colors.black,
                                 fontSize: 14,
                                 fontWeight: FontWeight.normal,
                               ),

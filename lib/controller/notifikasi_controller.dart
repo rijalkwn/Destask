@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:destask/model/notifikasi_model.dart';
-import 'package:destask/utils/constant_api.dart';
+import '../model/notifikasi_model.dart';
+import '../utils/constant_api.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 

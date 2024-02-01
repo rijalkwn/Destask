@@ -1,5 +1,5 @@
-import 'package:destask/model/task_model.dart';
-import 'package:destask/utils/constant_api.dart';
+import '../model/task_model.dart';
+import '../utils/constant_api.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:get/get.dart';
@@ -63,10 +63,13 @@ class TaskController {
   }
 
   bool isTaskOnSelectedDate(Map<String, dynamic> task, DateTime selectedDate) {
-    DateTime taskPlaning = DateTime.parse(task['tgl_planing']);
-    DateTime taskSelesai = DateTime.parse(task['tgl_selesai']);
-    return selectedDate.isAfter(taskPlaning.subtract(Duration(days: 1))) &&
-        selectedDate.isBefore(taskSelesai.add(Duration(days: 1)));
+    DateTime createdTask = DateTime.parse(task['created_at']);
+    DateTime? taskSelesai = task['tgl_selesai'] != null
+        ? DateTime.parse(task['tgl_selesai'])
+        : null;
+    return selectedDate.isAfter(createdTask.subtract(Duration(days: 1))) &&
+        (taskSelesai == null ||
+            selectedDate.isBefore(taskSelesai.add(Duration(days: 1))));
   }
 
   //get task by pekerjaan
@@ -95,7 +98,7 @@ class TaskController {
   }
 
   //get task by user dan pekerjaan
-  Future getTasksByUserPekerjaan(
+  Future getTasksByUserPekerjaanDate(
       String idPekerjaan, DateTime selectedDate) async {
     try {
       const urlx = '$baseURL/api/taskbyuser';
@@ -122,22 +125,39 @@ class TaskController {
     }
   }
 
+  Future getTasksByUserPekerjaan(String idPekerjaan) async {
+    try {
+      const urlx = '$baseURL/api/taskbyuser';
+      var token = await getToken();
+      var idUser = await getIdUser();
+      var response = await http.get(Uri.parse('$urlx/$idUser'),
+          headers: {'Authorization': 'Bearer $token'});
+      if (response.statusCode == 200) {
+        Iterable it = json.decode(response.body);
+        List<TaskModel> tasks = List<TaskModel>.from(it
+            .where((element) => element['id_pekerjaan'] == idPekerjaan)
+            .map((e) => TaskModel.fromJson(e))
+            .toList());
+        return tasks;
+      } else {
+        print(response.statusCode);
+        return [];
+      }
+    } catch (e) {
+      print(e.toString());
+      return [];
+    }
+  }
+
   //fungsi add task
   Future addTask(
-    String id_task,
-    String id_pekerjaan,
-    String id_user,
-    String id_status_task,
-    String id_kategori_task,
-    String tgl_planing,
-    String tgl_selesai,
-    String tgl_verifikasi_diterima,
-    String status_verifikasi,
-    String persentase_selesai,
-    String deskripsi_task,
-    String alasan_verifikasi,
-    String bukti_selesai,
-    String tautan_task,
+    String idPekerjaan,
+    String idUser,
+    String idStatusTask,
+    String idKategoriTask,
+    DateTime tglPlaning,
+    String deskripsiTask,
+    String tautanTask,
   ) async {
     try {
       var token = await getToken();
@@ -145,22 +165,18 @@ class TaskController {
         Uri.parse(url),
         headers: {'Authorization': 'Bearer $token'},
         body: {
-          'id_task': id_task,
-          'id_pekerjaan': id_pekerjaan,
-          'id_user': id_user,
-          'id_status_task': id_status_task,
-          'id_kategori_task': id_kategori_task,
-          'tgl_planing': tgl_planing,
-          'tgl_selesai': tgl_selesai,
-          'persentase_selesai': persentase_selesai,
-          'deskripsi_task': deskripsi_task,
-          'bukti_selesai': bukti_selesai,
-          'tautan_task': tautan_task,
+          'id_pekerjaan': idPekerjaan,
+          'id_user': idUser,
+          'id_status_task': idStatusTask,
+          'id_kategori_task': idKategoriTask,
+          'tgl_planing':
+              tglPlaning.toIso8601String(), // Convert DateTime to string
+          'deskripsi_task': deskripsiTask,
+          'tautan_task': tautanTask,
         },
       );
 
-      if (response.statusCode == 201) {
-        Get.toNamed('/task/$id_pekerjaan');
+      if (response.statusCode == 200) {
         return true;
       } else {
         print('Error adding task: ${response.body}');
@@ -173,12 +189,15 @@ class TaskController {
   }
 
   Future editTask(
-    String idPekerjaan,
     String idTask,
-    String taskName,
-    String taskDetail,
-    DateTime tanggalMulai,
-    DateTime tanggalSelesai,
+    String idPekerjaan,
+    String idUser,
+    String idStatusTask,
+    String idKategoriTask,
+    DateTime tglPlaning,
+    String deskripsiTask,
+    String tautanTask,
+    String persentaseSelesai,
   ) async {
     try {
       var token = await getToken();
@@ -186,10 +205,15 @@ class TaskController {
         Uri.parse('$url/$idTask'),
         headers: {'Authorization': 'Bearer $token'},
         body: {
-          'nama_task': taskName,
-          'detail_task': taskDetail,
-          'tanggal_mulai': tanggalMulai.toString(),
-          'tanggal_selesai': tanggalSelesai.toString(),
+          'id_task': idTask,
+          'id_pekerjaan': idPekerjaan,
+          'id_user': idUser,
+          'id_status_task': idStatusTask,
+          'id_kategori_task': idKategoriTask,
+          'tgl_planing': tglPlaning,
+          'deskripsi_task': deskripsiTask,
+          'tautan_task': tautanTask,
+          'persentase_selesai': persentaseSelesai,
         },
       );
 
@@ -206,6 +230,52 @@ class TaskController {
     }
   }
 
+  //submit task
+  Future submitTask(
+    String idTask,
+    String idPekerjaan,
+    String idUser,
+    String idStatusTask,
+    String idKategoriTask,
+    DateTime tglPlaning,
+    String deskripsiTask,
+    String tautanTask,
+    String persentaseSelesai,
+    String buktiSelesai,
+  ) async {
+    try {
+      var token = await getToken();
+      var response = await http.put(
+        Uri.parse('$url/$idTask'),
+        headers: {'Authorization': 'Bearer $token'},
+        body: {
+          'id_task': idTask,
+          'id_pekerjaan': idPekerjaan,
+          'id_user': idUser,
+          'id_status_task': idStatusTask,
+          'id_kategori_task': idKategoriTask,
+          'tgl_planing': tglPlaning.toIso8601String(),
+          'deskripsi_task': deskripsiTask,
+          'tautan_task': tautanTask,
+          'persentase_selesai': persentaseSelesai,
+          'bukti_selesai': buktiSelesai,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        Get.offAndToNamed('/task/$idPekerjaan');
+        return true;
+      } else {
+        print('Error submitting task: ${response.body}');
+        return false;
+      }
+    } catch (e) {
+      print('Exception submitting task: $e');
+      return false;
+    }
+  }
+
+  //delete task
   Future deleteTask(
     String idTask,
   ) async {

@@ -1,5 +1,5 @@
-import 'package:destask/controller/auth_controller.dart';
-import 'package:destask/utils/global_colors.dart';
+import '../../controller/auth_controller.dart';
+import '../../utils/global_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:quickalert/quickalert.dart';
@@ -31,7 +31,7 @@ class _LoginState extends State<Login> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: GlobalColors.secondColor,
+      backgroundColor: GlobalColors.backgroundColor,
       body: SingleChildScrollView(
         child: Center(
           child: Padding(
@@ -63,7 +63,7 @@ class _LoginState extends State<Login> {
                           Text(
                             'Login In Here',
                             style: TextStyle(
-                              color: GlobalColors.textColor,
+                              color: Colors.black,
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
                             ),
@@ -287,7 +287,7 @@ class _LoginState extends State<Login> {
                             child: Text(
                               'Lupa Password?',
                               style: TextStyle(
-                                  color: GlobalColors.textColor,
+                                  color: Colors.black,
                                   fontSize: 16,
                                   fontWeight: FontWeight.normal,
                                   decoration: TextDecoration.underline),
@@ -298,7 +298,7 @@ class _LoginState extends State<Login> {
                           Text(
                             'Versi 1.0.0',
                             style: TextStyle(
-                              color: GlobalColors.textColor,
+                              color: Colors.black,
                               fontSize: 16,
                               fontWeight: FontWeight.normal,
                             ),

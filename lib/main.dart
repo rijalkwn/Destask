@@ -1,19 +1,19 @@
-import 'package:destask/view/Beranda/Informasi/pekerjaan_selesai.dart';
-import 'package:destask/view/Beranda/Task/detail_task.dart';
-import 'package:destask/view/Beranda/Task/add_task.dart';
-import 'package:destask/view/Beranda/Task/edit_task.dart';
-import 'package:destask/view/Beranda/Task/task.dart';
-import 'package:destask/view/Beranda/beranda.dart';
-import 'package:destask/view/KPI/KPI.dart';
-import 'package:destask/view/Menu/bottom_nav.dart';
-import 'package:destask/view/Notifikasi/notifikasi.dart';
-import 'package:destask/view/Pekerjaan/detail_pekerjaan.dart';
-import 'package:destask/view/Pekerjaan/pekerjaan.dart';
-import 'package:destask/view/Pengaturan/pengaturan.dart';
-import 'package:destask/view/Pengaturan/edit_profile.dart';
-import 'package:destask/view/Auth/ganti_password.dart';
-import 'package:destask/view/Auth/login.dart';
-import 'package:destask/view/Auth/lupa_password.dart';
+import '../view/Beranda/Informasi/pekerjaan_selesai.dart';
+import '../view/Beranda/Task/detail_task.dart';
+import '../view/Beranda/Task/add_task.dart';
+import '../view/Beranda/Task/edit_task.dart';
+import '../view/Beranda/Task/task.dart';
+import '../view/Beranda/beranda.dart';
+import '../view/RekapPoint/rekap_point.dart';
+import '../view/Menu/bottom_nav.dart';
+import '../view/Notifikasi/notifikasi.dart';
+import '../view/Pekerjaan/detail_pekerjaan.dart';
+import '../view/Pekerjaan/pekerjaan.dart';
+import '../view/Pengaturan/pengaturan.dart';
+import '../view/Pengaturan/edit_profile.dart';
+import '../view/Auth/ganti_password.dart';
+import '../view/Auth/login.dart';
+import '../view/Auth/lupa_password.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -39,23 +39,25 @@ class MyApp extends StatelessWidget {
           GetPage(name: '/bottomnav', page: () => const BottomNav()),
           GetPage(name: '/login', page: () => const Login()),
           GetPage(name: '/lupa_password', page: () => const LupaPassword()),
-          GetPage(name: '/beranda', page: () => Beranda()),
-          GetPage(name: '/pekerjaan_selesai', page: () => PekerjaanSelesai()),
-          GetPage(name: '/target_bulan_ini', page: () => PekerjaanSelesai()),
-          GetPage(name: '/task_selesai', page: () => PekerjaanSelesai()),
+          GetPage(name: '/beranda', page: () => const Beranda()),
+          GetPage(
+              name: '/pekerjaan_selesai', page: () => const PekerjaanSelesai()),
+          GetPage(
+              name: '/target_bulan_ini', page: () => const PekerjaanSelesai()),
+          GetPage(name: '/task_selesai', page: () => const PekerjaanSelesai()),
           GetPage(name: '/notifikasi', page: () => Notifikasi()),
           GetPage(
             name: '/task/:idpekerjaan',
-            page: () => Task(),
+            page: () => const Task(),
           ),
           GetPage(name: '/add_task/:idpekerjaan', page: () => AddTask()),
-          GetPage(name: '/edit_task/:idtask', page: () => EditTask()),
-          GetPage(name: '/detail_task/:idtask', page: () => DetailTask()),
+          GetPage(name: '/edit_task/:idtask', page: () => const EditTask()),
+          GetPage(name: '/detail_task/:idtask', page: () => const DetailTask()),
           GetPage(name: '/pekerjaan', page: () => const Pekerjaan()),
           GetPage(
               name: '/detail_pekerjaan/:idpekerjaan',
-              page: () => DetailPekerjaan()),
-          GetPage(name: '/kpi', page: () => KPI()),
+              page: () => const DetailPekerjaan()),
+          GetPage(name: '/rekap_point', page: () => const RekapPoint()),
           GetPage(name: '/pengaturan', page: () => Pengaturan()),
           GetPage(name: '/edit_profile/:id_user', page: () => EditProfile()),
           GetPage(name: '/ganti_password', page: () => const GantiPassword()),

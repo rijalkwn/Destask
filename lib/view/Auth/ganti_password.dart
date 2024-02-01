@@ -1,5 +1,5 @@
-import 'package:destask/controller/ganti_password_controller.dart';
-import 'package:destask/utils/global_colors.dart';
+import '../../controller/ganti_password_controller.dart';
+import '../../utils/global_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

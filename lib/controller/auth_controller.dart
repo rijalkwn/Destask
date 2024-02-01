@@ -1,7 +1,7 @@
 import 'dart:convert';
-import 'package:destask/model/user_model.dart';
-import 'package:destask/utils/constant_api.dart';
-import 'package:destask/view/Auth/login.dart';
+import '../model/user_model.dart';
+import '../utils/constant_api.dart';
+import '../view/Auth/login.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';

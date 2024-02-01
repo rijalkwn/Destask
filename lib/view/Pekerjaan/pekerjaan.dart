@@ -1,6 +1,6 @@
-import 'package:destask/controller/pekerjaan_controller.dart';
-import 'package:destask/model/pekerjaan_model.dart';
-import 'package:destask/utils/global_colors.dart';
+import '../../controller/pekerjaan_controller.dart';
+import '../../model/pekerjaan_model.dart';
+import '../../utils/global_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -64,7 +64,7 @@ class _PekerjaanState extends State<Pekerjaan>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.blueAccent,
+        backgroundColor: GlobalColors.mainColor,
         iconTheme: IconThemeData(color: Colors.white),
         automaticallyImplyLeading: false,
         title: isSearchBarVisible

@@ -1,11 +1,13 @@
-import 'package:destask/controller/pekerjaan_controller.dart';
-import 'package:destask/controller/personil_controller.dart';
-import 'package:destask/controller/task_controller.dart';
-import 'package:destask/model/pekerjaan_model.dart';
-import 'package:destask/model/task_model.dart';
+import 'package:destask/controller/user_controller.dart';
+import 'package:destask/model/user_model.dart';
 import 'package:destask/utils/global_colors.dart';
+import 'package:intl/intl.dart';
+
+import '../../../controller/pekerjaan_controller.dart';
+import '../../../controller/personil_controller.dart';
+import '../../../controller/task_controller.dart';
+import '../../../model/task_model.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_launcher_icons/utils.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -19,10 +21,12 @@ class Task extends StatefulWidget {
 
 class _TaskState extends State<Task> {
   final String idPekerjaan = Get.parameters['idpekerjaan'] ?? '';
+  CalendarFormat _calendarFormat = CalendarFormat.month;
   TextEditingController searchController = TextEditingController();
   PekerjaanController pekerjaanController = PekerjaanController();
   PersonilController personilController = PersonilController();
   TaskController taskController = TaskController();
+  UserController userController = UserController();
   bool isSearchBarVisible = false;
 
   String namaPekerjaan = '';
@@ -36,6 +40,7 @@ class _TaskState extends State<Task> {
   late bool PM;
 
   late Future<List<TaskModel>> task;
+  late Future<List> user;
 
   getIdUser() async {
     final prefs = await SharedPreferences.getInstance();
@@ -59,16 +64,23 @@ class _TaskState extends State<Task> {
     return false;
   }
 
+  //get data all user
+  Future<List<UserModel>> getDataUserById(String idUserTask) async {
+    var data = await userController.getUserById(idUserTask);
+    return data;
+  }
+
+  //get data task
   Future<List<TaskModel>> getDataTask() async {
     //cek PM
     PM = await cekPM();
 
     //untuk pm
-    var task_PM =
+    List<TaskModel> task_PM =
         await taskController.getTasksByPekerjaanId(idPekerjaan, _selectedDay);
     //untuk non pm
-    var task_nonPM =
-        await taskController.getTasksByUserPekerjaan(idPekerjaan, _selectedDay);
+    List<TaskModel> task_nonPM = await taskController
+        .getTasksByUserPekerjaanDate(idPekerjaan, _selectedDay);
 
     var pekerjaan = await pekerjaanController.getPekerjaanById(idPekerjaan);
     setState(() {
@@ -97,8 +109,7 @@ class _TaskState extends State<Task> {
     List<TaskModel> tasks = []; // Ambil tugas sesuai tanggal
 
     for (TaskModel task in tasks) {
-      DateTime taskDate = DateTime.parse(task.tgl_planing!);
-      // Tambahkan tugas ke daftar events
+      DateTime taskDate = DateTime.parse(task.tgl_planing!.toString());
       events.putIfAbsent(taskDate, () => []);
     }
 
@@ -110,14 +121,21 @@ class _TaskState extends State<Task> {
     super.initState();
     _focusedDay = DateTime.now();
     _selectedDay = _focusedDay;
-    task = getDataTask();
+    task = getDataTask().then((value) {
+      setState(() {
+        for (var taskItem in value) {
+          getDataUserById(taskItem.id_user.toString()).then((value) {});
+        }
+      });
+      return value;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.blueAccent,
+        backgroundColor: GlobalColors.mainColor,
         iconTheme: IconThemeData(color: Colors.white),
         title: isSearchBarVisible
             ? TextField(
@@ -164,17 +182,23 @@ class _TaskState extends State<Task> {
         padding: EdgeInsets.all(10),
         child: Column(
           children: [
+            //TABEL CALENDAR
             TableCalendar(
               locale: 'id_ID',
               firstDay: DateTime.utc(2000, 01, 01),
               lastDay: DateTime.utc(2030, 12, 31),
               focusedDay: _focusedDay,
-              calendarFormat: CalendarFormat.week,
+              calendarFormat: _calendarFormat,
+              onFormatChanged: (format) {
+                setState(() {
+                  _calendarFormat = format;
+                });
+              },
               selectedDayPredicate: _selectedDayPredicate,
               onDaySelected: _onDaySelected,
               startingDayOfWeek: StartingDayOfWeek.monday,
               headerStyle: HeaderStyle(
-                formatButtonVisible: false,
+                formatButtonVisible: true,
               ),
               calendarStyle: const CalendarStyle(
                 // outsideDaysVisible: false,
@@ -190,15 +214,65 @@ class _TaskState extends State<Task> {
                 });
               },
             ),
-            SizedBox(
-              height: 10,
+            Divider(),
+            //KETERANGAN
+            Column(
+              children: [
+                Text(
+                  'Keterangan : ',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Container(
+                        width: 20,
+                        height: 20,
+                        decoration: BoxDecoration(
+                          color: GlobalColors.mainColor,
+                          shape: BoxShape.circle,
+                        )),
+                    Text('On Progress'),
+                    SizedBox(
+                      width: 10,
+                    ),
+                    Container(
+                        width: 20,
+                        height: 20,
+                        decoration: BoxDecoration(
+                          color: Colors.green,
+                          shape: BoxShape.circle,
+                        )),
+                    Text('Selesai'),
+                    SizedBox(
+                      width: 10,
+                    ),
+                    Container(
+                        width: 20,
+                        height: 20,
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        )),
+                    Text('Overdue'),
+                  ],
+                ),
+              ],
             ),
+            SizedBox(
+              height: 20,
+            ),
+            //LIST TASK
             Expanded(
-              child: buildTask(),
+              child: SingleChildScrollView(child: buildTask()),
             ),
           ],
         ),
       ),
+      //TOMBOL ADD TASK
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Get.toNamed('/add_task/$id_pekerjaan',
@@ -219,6 +293,7 @@ class _TaskState extends State<Task> {
             child: CircularProgressIndicator(),
           );
         } else if (snapshot.hasError) {
+          print(snapshot.error);
           return Center(
             child: Text(
               'Error: ${snapshot.error}',
@@ -239,7 +314,7 @@ class _TaskState extends State<Task> {
                   task.deskripsi_task!.toLowerCase().contains(
                         searchController.text.toLowerCase(),
                       ) ||
-                  task.tgl_planing!.contains(searchController.text))
+                  task.tgl_planing!.toString().contains(searchController.text))
               .toList();
           return allTasks.isEmpty
               ? Center(
@@ -254,33 +329,46 @@ class _TaskState extends State<Task> {
                   itemCount: filterTask.length,
                   itemBuilder: (context, index) {
                     Map<String, dynamic> taskData = allTasks[index].toJson();
-                    DateTime today = DateTime.now();
-                    DateTime tglSelesai =
-                        DateTime.parse(taskData['tgl_selesai']);
+
+                    //setting color card
+                    DateTime currentDate = DateTime.now();
                     DateTime tglPlaning =
                         DateTime.parse(taskData['tgl_planing']);
+                    DateTime? tglSelesai;
 
-                    // Set default color to blue
-                    Color cardColor = Colors.blue;
-
-                    // Check conditions and update color accordingly
-                    if (today.isAfter(tglSelesai) &&
-                            taskData['persentase_selesai'] != 100 ||
-                        taskData['id_status_task'] != '2') {
-                      cardColor = Colors.red;
-                    } else if (today.isBefore(tglPlaning)) {
-                      cardColor = Colors.orange;
-                    } else if (today.isAfter(tglPlaning) &&
-                        today.isBefore(tglSelesai)) {
-                      cardColor = Colors.blue;
-                    } else if (today.isAfter(tglSelesai) &&
-                            taskData['persentase_selesai'] == 100 ||
-                        taskData['id_status_task'] == '2') {
-                      cardColor = Colors.green;
+                    if (taskData['tgl_selesai'] != null) {
+                      final DateFormat dateFormat = DateFormat('yyyy-MM-dd');
+                      try {
+                        tglSelesai = dateFormat.parse(taskData['tgl_selesai']);
+                      } catch (e) {
+                        print('Error parsing tgl_selesai: $e');
+                        // Handle the error, set tglSelesai to null, or use a default date
+                        tglSelesai = null;
+                      }
                     }
 
+// Now tglSelesai is a DateTime object or null if there was an error in parsing.
+
+                    Color taskColor = GlobalColors.mainColor;
+
+                    if (tglSelesai == null) {
+                      //sedang dikerjakan
+                      if (currentDate.isBefore(tglPlaning)) {
+                        taskColor = GlobalColors.mainColor;
+                      }
+                      //overdue
+                      else {
+                        taskColor = Colors.red;
+                      }
+                    } else {
+                      if (tglSelesai.isBefore(tglPlaning)) {
+                        taskColor = Colors.green;
+                      } else {
+                        taskColor = Colors.red;
+                      }
+                    }
                     return Card(
-                      color: cardColor,
+                      color: taskColor,
                       child: ListTile(
                         leading: Container(
                           padding: EdgeInsets.all(15),
@@ -307,13 +395,15 @@ class _TaskState extends State<Task> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Persentase : ${taskData['persentase_selesai']}%',
+                              'Deadline : ${taskData['tgl_planing']}',
                               style: TextStyle(color: Colors.white),
                             ),
-                            Text(
-                              'Deadline : ${taskData['tgl_selesai']}',
-                              style: TextStyle(color: Colors.white),
-                            ),
+                            PM
+                                ? Text(
+                                    'PIC : ${taskData['id_user']}',
+                                    style: TextStyle(color: Colors.white),
+                                  )
+                                : SizedBox(),
                           ],
                         ),
                         trailing: GestureDetector(

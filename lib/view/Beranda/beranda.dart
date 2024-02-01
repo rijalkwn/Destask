@@ -1,18 +1,18 @@
 import 'dart:async';
 
 import 'package:badges/badges.dart';
-import 'package:destask/controller/notifikasi_controller.dart';
-import 'package:destask/controller/pekerjaan_controller.dart';
-import 'package:destask/controller/personil_controller.dart';
-import 'package:destask/model/pekerjaan_model.dart';
-import 'package:destask/utils/global_colors.dart';
-import 'package:destask/view/Auth/login.dart';
+import '../../controller/notifikasi_controller.dart';
+import '../../controller/pekerjaan_controller.dart';
+import '../../model/pekerjaan_model.dart';
+import '../../utils/global_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:badges/badges.dart' as badges;
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Beranda extends StatefulWidget {
+  const Beranda({Key? key}) : super(key: key);
+
   @override
   State<Beranda> createState() => _BerandaState();
 }
@@ -199,7 +199,7 @@ class _BerandaState extends State<Beranda> {
                       return Center(child: Text('Error: ${snapshot.error}'));
                     } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                       return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 200),
+                        padding: EdgeInsets.symmetric(vertical: 200),
                         child: Center(child: Text('No data available.')),
                       );
                     } else if (snapshot.hasData) {
@@ -336,7 +336,7 @@ class _ListOfJob extends StatelessWidget {
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: GlobalColors.textColor, // Choose your desired text color
+                color: Colors.black, // Choose your desired text color
               ),
               textAlign: TextAlign.center,
             ),
@@ -344,61 +344,85 @@ class _ListOfJob extends StatelessWidget {
           const SizedBox(
             height: 10,
           ),
-          ListView.builder(
-            itemCount: pekerjaan.length,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemBuilder: (context, index) {
-              var namaPekerjaan = pekerjaan[index].nama_pekerjaan;
-              var persentase_selesai = pekerjaan[index].persentase_selesai;
-              return GestureDetector(
-                onTap: () {
-                  Get.toNamed('/task/${pekerjaan[index].id_pekerjaan}');
-                  print(pekerjaan[index].id_pekerjaan);
-                },
-                child: Card(
-                  color: GlobalColors.mainColor,
-                  child: ListTile(
-                    leading: Container(
-                      padding: EdgeInsets.all(15),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Text(
-                        persentase_selesai + '%',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
+          Column(
+            children: pekerjaan.map((pekerjaanItem) {
+              var namaPekerjaan = pekerjaanItem.nama_pekerjaan;
+              var persentase_selesai = pekerjaanItem.persentase_selesai;
+              return Card(
+                color: GlobalColors.mainColor,
+                child: Column(
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        Get.toNamed('/task/${pekerjaanItem.id_pekerjaan}');
+                      },
+                      child: ListTile(
+                        leading: Container(
+                          padding: EdgeInsets.all(15),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Text(
+                            persentase_selesai + '%',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                        title: Text(
+                          namaPekerjaan.length > 20
+                              ? '${namaPekerjaan.substring(0, 20)}...'
+                              : namaPekerjaan,
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        subtitle: Text(
+                          "Persentase: " + persentase_selesai + "%",
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                        trailing: GestureDetector(
+                          onTap: () {
+                            Get.toNamed(
+                                '/detail_pekerjaan/${pekerjaanItem.id_pekerjaan}');
+                          },
+                          child: Icon(
+                            Icons.density_small,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ),
-                    title: Text(
-                      namaPekerjaan.length > 20
-                          ? '${namaPekerjaan.substring(0, 20)}...'
-                          : namaPekerjaan,
-                      style: TextStyle(color: Colors.white),
+                    Divider(),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            padding: EdgeInsets.only(top: 3, bottom: 13),
+                            child: GestureDetector(
+                              onTap: () {
+                                Get.toNamed(
+                                    '/detail_pekerjaan/${pekerjaanItem.id_pekerjaan}');
+                              },
+                              child: Center(
+                                child: Text(
+                                  'Detail',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    subtitle: Text(
-                      "Persentase: " + persentase_selesai + "%",
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                    trailing: GestureDetector(
-                      onTap: () {
-                        Get.toNamed(
-                            '/detail_pekerjaan/${pekerjaan[index].id_pekerjaan}');
-                      },
-                      child: Icon(
-                        Icons.density_small,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
+                  ],
                 ),
               );
-            },
-          ),
+            }).toList(),
+          )
         ],
       ),
     );
@@ -411,11 +435,7 @@ List<Color> colors = [
   Colors.purple,
 ];
 
-List<String> names = [
-  'Pekerjaan\nSelesai',
-  'Target\nBulan Ini',
-  'Task\nSelesai'
-];
+List<String> names = ['Pekerjaan\nSelesai', 'Target\nBulan Ini', 'Point\nTask'];
 
 List<Icon> nameIcon = const [
   Icon(

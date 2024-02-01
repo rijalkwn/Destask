@@ -1,6 +1,5 @@
-import 'package:destask/controller/auth_controller.dart';
-import 'package:destask/controller/user_controller.dart';
-import 'package:destask/utils/global_colors.dart';
+import '../../controller/auth_controller.dart';
+import '../../controller/user_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:quickalert/quickalert.dart';

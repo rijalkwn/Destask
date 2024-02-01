@@ -1,8 +1,8 @@
-import 'package:destask/controller/pekerjaan_controller.dart';
-import 'package:destask/controller/status_task_controller.dart';
-import 'package:destask/controller/task_controller.dart';
-import 'package:destask/controller/user_controller.dart';
-import 'package:destask/utils/global_colors.dart';
+import '../../../controller/pekerjaan_controller.dart';
+import '../../../controller/status_task_controller.dart';
+import '../../../controller/task_controller.dart';
+import '../../../controller/user_controller.dart';
+import '../../../utils/global_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -132,18 +132,18 @@ class _DetailTaskState extends State<DetailTask> {
                   _buildTableRow('ID Task', idTask),
                   _buildTableRow('Pekerjaan', namaPekerjaan),
                   _buildTableRow('User', namaUserTask),
+                  _buildTableRow('Deskripsi Task', deskripsiTask),
                   _buildTableRow('Status Task', namaStatusTask),
                   _buildTableRow('ID Kategori Task', idKategoriTask),
                   _buildTableRow('Tanggal Planing', tglPlaning),
+                  _buildTableRow('Status Verifikasi', statusVerifikasi),
+                  _buildTableRow('Persentase Selesai', persentaseSelesai),
+                  _buildTableRow('Tautan Task', tautanTask),
+                  _buildTableRow('Alasan Verifikasi', alasanVerifikasi),
                   _buildTableRow('Tanggal Selesai', tglSelesai),
                   _buildTableRow(
                       'Tanggal Verifikasi Diterima', tglVerifikasiDiterima),
-                  _buildTableRow('Status Verifikasi', statusVerifikasi),
-                  _buildTableRow('Persentase Selesai', persentaseSelesai),
-                  _buildTableRow('Deskripsi Task', deskripsiTask),
-                  _buildTableRow('Alasan Verifikasi', alasanVerifikasi),
                   _buildTableRow('Bukti Selesai', buktiSelesai),
-                  _buildTableRow('Tautan Task', tautanTask),
                 ],
               ),
               SizedBox(height: 16.0),

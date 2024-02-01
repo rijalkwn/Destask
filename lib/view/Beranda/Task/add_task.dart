@@ -1,19 +1,23 @@
 import 'dart:io';
 
-import 'package:destask/controller/pekerjaan_controller.dart';
-import 'package:destask/controller/status_task_controller.dart';
-import 'package:destask/controller/task_controller.dart';
-import 'package:destask/model/status_task_model.dart';
-import 'package:destask/model/task_model.dart';
-import 'package:destask/utils/global_colors.dart';
+import '../../../controller/kategori_task_controller.dart';
+import '../../../controller/task_controller.dart';
+import '../../../model/kategori_task_model.dart';
+import 'package:quickalert/quickalert.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../../controller/status_task_controller.dart';
+import '../../../model/status_task_model.dart';
+import '../../../utils/global_colors.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:quickalert/quickalert.dart';
 
 import 'my_date_time_picker.dart';
 
 class AddTask extends StatefulWidget {
+  const AddTask({super.key});
+
   @override
   State<AddTask> createState() => _AddTaskState();
 }
@@ -22,27 +26,47 @@ class _AddTaskState extends State<AddTask> {
   final String idpekerjaan = Get.parameters['idpekerjaan'] ?? '';
   final TextEditingController _deskripsiTaskController =
       TextEditingController();
-  final TextEditingController _persentaseSelesaiController =
-      TextEditingController();
+  final TextEditingController _tautanTaskController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   StatusTaskController statusTaskController = StatusTaskController();
+  KategoriTaskController kategoriTaskController = KategoriTaskController();
+  TaskController taskController = TaskController();
   List<StatusTaskModel> statusTask = [];
-
-  //get status task
-  Future<List<StatusTaskModel>> getDataStatusTask() async {
-    List<StatusTaskModel> data = await statusTaskController.getAllStatusTask();
-    return data;
-  }
+  List<KategoriTaskModel> kategoriTask = [];
 
   //file
   PlatformFile? pickedFile;
   File? fileToDisplay;
   String? fileName;
+  String filePath = "";
   bool isLoading = false;
+  String idUser = "";
+  String idStatusTask = "";
+  String idKategoriTask = "";
+
+  //get status task
+  Future<List<StatusTaskModel>> getDataStatusTask() async {
+    List<StatusTaskModel> dataStatus =
+        await statusTaskController.getAllStatusTask();
+    return dataStatus;
+  }
+
+  //getkategori task
+  Future<List<KategoriTaskModel>> getDataKategoriTask() async {
+    List<KategoriTaskModel> dataKategori =
+        await kategoriTaskController.getAllKategoriTask();
+    return dataKategori;
+  }
+
+  //get id user
+  getIdUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    var idUser = prefs.getString("id_user");
+    return idUser;
+  }
 
   //date picker
   DateTime? _selectedDateStart;
-  DateTime? _selectedDateEnd;
 
   Future<void> _selectDateStart(BuildContext context) async {
     final DateTime? pickedDate = await showDatePicker(
@@ -59,20 +83,6 @@ class _AddTaskState extends State<AddTask> {
     }
   }
 
-  void _selectDateEnd(BuildContext context) async {
-    final DateTime? pickedDate = await showDatePicker(
-      context: context,
-      initialDate: _selectedDateEnd ?? DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
-    );
-    if (pickedDate != null && pickedDate != _selectedDateEnd) {
-      setState(() {
-        _selectedDateEnd = pickedDate;
-      });
-    }
-  }
-
   //pick file
   void _pickFile() async {
     setState(() {
@@ -85,6 +95,7 @@ class _AddTaskState extends State<AddTask> {
       setState(() {
         pickedFile = result.files.first;
         fileName = pickedFile!.name;
+        filePath = pickedFile!.path.toString();
         fileToDisplay = File(pickedFile!.path.toString());
       });
     } else {
@@ -99,9 +110,20 @@ class _AddTaskState extends State<AddTask> {
   void initState() {
     super.initState();
     statusTask = [];
+    kategoriTask = [];
     getDataStatusTask().then((data) {
       setState(() {
         statusTask = data;
+      });
+    });
+    getDataKategoriTask().then((data) {
+      setState(() {
+        kategoriTask = data;
+      });
+    });
+    getIdUser().then((value) {
+      setState(() {
+        idUser = value;
       });
     });
   }
@@ -129,7 +151,7 @@ class _AddTaskState extends State<AddTask> {
                 SizedBox(height: 16),
 
                 //tanggal mulai
-                buildLabel('Tanggal Mulai *'),
+                buildLabel('Deadline *'),
                 MyDateTimePicker(
                   selectedDate: _selectedDateStart,
                   onChanged: (date) {
@@ -139,25 +161,7 @@ class _AddTaskState extends State<AddTask> {
                   },
                   validator: (date) {
                     if (date == null) {
-                      return 'Kolom Tanggal Mulai harus diisi';
-                    }
-                    return null;
-                  },
-                ),
-                SizedBox(height: 16),
-
-                //tanggal selesai
-                buildLabel('Tanggal Selesai *'),
-                MyDateTimePicker(
-                  selectedDate: _selectedDateEnd,
-                  onChanged: (date) {
-                    setState(() {
-                      _selectedDateEnd = date;
-                    });
-                  },
-                  validator: (date) {
-                    if (date == null) {
-                      return 'Kolom Tanggal Selesai harus diisi';
+                      return 'Kolom Tanggal Deadline harus diisi';
                     }
                     return null;
                   },
@@ -174,54 +178,114 @@ class _AddTaskState extends State<AddTask> {
                       return Text('No data available');
                     } else {
                       List<StatusTaskModel> statusList = snapshot.data!;
-                      return buildDropDownMenu(statusList);
+                      return DropdownButtonFormField<String>(
+                        onChanged: (value) {
+                          setState(() {
+                            idStatusTask = value!;
+                          });
+                        },
+                        items: statusList.map((status) {
+                          return DropdownMenuItem<String>(
+                            value: status.id_status_task,
+                            child: Text(status.nama_status_task.toString()),
+                          );
+                        }).toList(),
+                        decoration: InputDecoration(
+                          contentPadding:
+                              EdgeInsets.symmetric(horizontal: 15, vertical: 3),
+                          border: OutlineInputBorder(),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Kolom Status Task harus diisi';
+                          }
+                          return null;
+                        },
+                      );
                     }
                   },
                 ),
                 SizedBox(height: 16),
-                //persentase selesai
-                buildLabel('Persentase Selesai *'),
-                buildFormField(_persentaseSelesaiController,
-                    'Persentase Selesai', TextInputType.number),
-                SizedBox(height: 16),
-                //bukti selesai
-                buildLabel('Bukti Selesai'),
-                GestureDetector(
-                  onTap: () {
-                    _pickFile();
+                //kategori task
+                buildLabel('Kategori Task *'),
+                FutureBuilder<List<KategoriTaskModel>>(
+                  future: getDataKategoriTask(),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasError) {
+                      return Text('Error loading data');
+                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return Text('No data available');
+                    } else {
+                      List<KategoriTaskModel> kategoriList = snapshot.data!;
+                      return DropdownButtonFormField<String>(
+                        onChanged: (value) {
+                          setState(() {
+                            idKategoriTask = value!;
+                          });
+                        },
+                        items: kategoriList.map((kategori) {
+                          return DropdownMenuItem<String>(
+                            value: kategori.id_kategori_task,
+                            child: Text(kategori.nama_kategori_task.toString()),
+                          );
+                        }).toList(),
+                        decoration: InputDecoration(
+                          contentPadding:
+                              EdgeInsets.symmetric(horizontal: 15, vertical: 3),
+                          border: OutlineInputBorder(),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Kolom Kategori Task harus diisi';
+                          }
+                          return null;
+                        },
+                      );
+                    }
                   },
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      color: Colors.grey[200],
-                    ),
-                    padding: EdgeInsets.all(16),
-                    child: Row(
-                      children: [
-                        Icon(Icons.upload_file),
-                        SizedBox(width: 16),
-                        if (pickedFile != null)
-                          Expanded(
-                            child: Text(
-                              fileName!,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          )
-                        else
-                          Expanded(
-                            child: Text(
-                              'Pilih file',
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
                 ),
                 SizedBox(height: 16),
-                InkWell(
+                //tautan task
+                buildLabel('Tautan Task *'),
+                buildFormField(
+                    _tautanTaskController, "Tautan Task", TextInputType.url),
+                SizedBox(height: 16),
+                //simpan
+                GestureDetector(
                   onTap: () async {
-                    if (_formKey.currentState!.validate()) {}
+                    setState(() {
+                      isLoading = true;
+                    });
+                    if (_formKey.currentState!.validate()) {
+                      bool addTask = await taskController.addTask(
+                        idpekerjaan,
+                        idUser,
+                        idStatusTask,
+                        idKategoriTask,
+                        _selectedDateStart!, //tgl planing
+                        _deskripsiTaskController.text,
+                        _tautanTaskController.text,
+                      );
+                      if (addTask) {
+                        Get.toNamed('/task/$idpekerjaan');
+                        QuickAlert.show(
+                            context: context,
+                            title: "Tambah Task Berhasil",
+                            type: QuickAlertType.success);
+                      } else {
+                        QuickAlert.show(
+                            context: context,
+                            title: "Tambah Task Gagal",
+                            type: QuickAlertType.error);
+                      }
+                      setState(() {
+                        isLoading = false;
+                      });
+                    } else {
+                      setState(() {
+                        isLoading = false;
+                      });
+                    }
                   },
                   child: Container(
                     decoration: BoxDecoration(
@@ -245,31 +309,6 @@ class _AddTaskState extends State<AddTask> {
           ),
         ),
       ),
-    );
-  }
-
-  DropdownButtonFormField<String> buildDropDownMenu(
-      List<StatusTaskModel> statusList) {
-    return DropdownButtonFormField<String>(
-      onChanged: (value) {
-        // Handle onChanged event
-      },
-      items: statusList.map((status) {
-        return DropdownMenuItem<String>(
-          value: status.id_status_task,
-          child: Text(status.nama_status_task.toString()),
-        );
-      }).toList(),
-      decoration: InputDecoration(
-        contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 3),
-        border: OutlineInputBorder(),
-      ),
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Kolom Status Task harus diisi';
-        }
-        return null;
-      },
     );
   }
 

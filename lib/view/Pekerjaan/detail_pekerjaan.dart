@@ -1,10 +1,11 @@
-import 'package:destask/controller/pekerjaan_controller.dart';
-import 'package:destask/controller/personil_controller.dart';
-import 'package:destask/controller/status_pekerjaan_controller.dart';
-import 'package:destask/controller/user_controller.dart';
-import 'package:destask/model/pekerjaan_model.dart';
-import 'package:destask/utils/global_colors.dart';
-import 'package:destask/view/Pekerjaan/pekerjaan.dart';
+import 'package:destask/model/kategori_pekerjaan_model.dart';
+
+import '../../controller/kategori_pekerjaan_controller.dart';
+import '../../controller/pekerjaan_controller.dart';
+import '../../controller/personil_controller.dart';
+import '../../controller/status_pekerjaan_controller.dart';
+import '../../controller/user_controller.dart';
+import '../../utils/global_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -21,6 +22,8 @@ class _DetailPekerjaanState extends State<DetailPekerjaan> {
   PekerjaanController pekerjaanController = PekerjaanController();
   StatusPekerjaanController statusPekerjaanController =
       StatusPekerjaanController();
+  KategoriPekerjaanController kategoriPekerjaanController =
+      KategoriPekerjaanController();
   PersonilController personilController = PersonilController();
   UserController userController = UserController();
 
@@ -40,6 +43,9 @@ class _DetailPekerjaanState extends State<DetailPekerjaan> {
 
   //status
   String namaStatus = '';
+
+  //kategori
+  String namaKategori = '';
 
   //bantuan
   String idpersonil = '';
@@ -91,26 +97,21 @@ class _DetailPekerjaanState extends State<DetailPekerjaan> {
     return data;
   }
 
-  @override
-  void initState() {
-    super.initState();
-    getDataPekerjaan().then((value) {
-      setState(() {
-        idpersonil = value[0].id_personil.toString();
-        idstatus = value[0].id_status_pekerjaan.toString();
-        idkategori = value[0].id_kategori_pekerjaan ?? '';
-      });
-      getDataStatus();
-      getDataPersonil().then((value) {
-        getDataUser();
-      });
-    });
-  }
-
+  //get data status
   getDataStatus() async {
     var data = await statusPekerjaanController.getStatusById(idstatus);
     setState(() {
       namaStatus = data[0].nama_status_pekerjaan ?? '';
+    });
+    return data;
+  }
+
+  //getdata kategori
+  getDataKategori() async {
+    var data =
+        await kategoriPekerjaanController.getKategoriPekerjaanById(idkategori);
+    setState(() {
+      namaKategori = data[0].nama_kategori_pekerjaan ?? '';
     });
     return data;
   }
@@ -177,7 +178,27 @@ class _DetailPekerjaanState extends State<DetailPekerjaan> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    getDataPekerjaan().then((value) {
+      setState(() {
+        idpersonil = value[0].id_personil.toString();
+        idstatus = value[0].id_status_pekerjaan.toString();
+        idkategori = value[0].id_kategori_pekerjaan.toString();
+      });
+      getDataStatus();
+      getDataKategori();
+      getDataPersonil().then((value) {
+        getDataUser();
+      });
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    print(namaStatus);
+    print(idKategoriPekerjaan);
+    print(namaKategori);
     return Scaffold(
       appBar: AppBar(
         backgroundColor: GlobalColors.mainColor,
@@ -188,42 +209,84 @@ class _DetailPekerjaanState extends State<DetailPekerjaan> {
         ),
       ),
       body: SingleChildScrollView(
-        child: Container(
-          padding: EdgeInsets.all(16.0),
-          child: Table(
-            columnWidths: {
-              0: FlexColumnWidth(7),
-              1: FlexColumnWidth(0.5),
-              2: FlexColumnWidth(10),
-            },
-            children: [
-              _buildTableRow('ID Pekerjaan', idPekerjaan),
-              _buildTableRow('ID Status Pekerjaan', namaStatus),
-              _buildTableRow('ID Kategori Pekerjaan', idKategoriPekerjaan),
-              _buildTableRow('Nama Pekerjaan', namaPekerjaan),
-              _buildTableRow('Pelanggan', pelanggan),
-              _buildTableRow('Jenis Layanan', jenisLayanan),
-              _buildTableRow('Nominal Harga', _formatRupiah(nominalHarga)),
-              _buildTableRow('Deskripsi Pekerjaan', deskripsiPekerjaan),
-              _buildTableRow(
-                  'Target Waktu Selesai', _formatDatetime(targetWaktuSelesai)),
-              _buildTableRow('Persentase Selesai', persentaseSelesai),
-              _buildTableRow('Waktu Selesai', _formatDatetime(waktuSelesai)),
-              //personil
-              _buildTableRow('ID Personil', idPersonil),
-              _buildTableRowPersonil('- Project Manager', namaIdUserPM),
-              _buildTableRowPersonil('- Desainer 1', namaDesigner1),
-              _buildTableRowPersonil('- Desainer 2', namaDesigner2),
-              _buildTableRowPersonil('- Back End Web 1', namaBEWeb1),
-              _buildTableRowPersonil('- Back End Web 2', namaBEWeb2),
-              _buildTableRowPersonil('- Back End Web 3', namaBEWeb3),
-              _buildTableRowPersonil('- Back End Mobile 1', namaBEMobile1),
-              _buildTableRowPersonil('- Back End Mobile 2', namaBEMobile2),
-              _buildTableRowPersonil('- Back End Mobile 3', namaBEMobile3),
-              _buildTableRowPersonil('- Front End Web 1', namaFEWeb1),
-              _buildTableRowPersonil('- Front End Mobile 1', namaFEMobile1),
-            ],
-          ),
+        child: Column(
+          children: [
+            Container(
+              padding: EdgeInsets.all(10.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ListTile(
+                    title: Text(
+                      namaPekerjaan,
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    subtitle: Text(
+                      namaStatus,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.normal,
+                      ),
+                    ),
+                    trailing: Container(
+                      padding: EdgeInsets.all(15),
+                      decoration: BoxDecoration(
+                        color: Colors.blue,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Text(
+                        persentaseSelesai + '%',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Divider(),
+                ],
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.all(16.0),
+              child: Table(
+                columnWidths: {
+                  0: FlexColumnWidth(7),
+                  1: FlexColumnWidth(0.5),
+                  2: FlexColumnWidth(10),
+                },
+                children: [
+                  _buildTableRow('ID Pekerjaan', idPekerjaan),
+                  _buildTableRow('Pelanggan', pelanggan),
+                  _buildTableRow('Kategori Pekerjaan', namaKategori),
+                  _buildTableRow('Jenis Layanan', jenisLayanan),
+                  _buildTableRow('Nominal Harga', _formatRupiah(nominalHarga)),
+                  _buildTableRow('Deskripsi Pekerjaan', deskripsiPekerjaan),
+                  _buildTableRow('Target Waktu Selesai',
+                      _formatDatetime(targetWaktuSelesai)),
+                  _buildTableRow(
+                      'Waktu Selesai', _formatDatetime(waktuSelesai)),
+                  //personil
+                  _buildTableRow('ID Personil', idPersonil),
+                  _buildTableRowPersonil('- Project Manager', namaIdUserPM),
+                  _buildTableRowPersonil('- Desainer 1', namaDesigner1),
+                  _buildTableRowPersonil('- Desainer 2', namaDesigner2),
+                  _buildTableRowPersonil('- Back End Web 1', namaBEWeb1),
+                  _buildTableRowPersonil('- Back End Web 2', namaBEWeb2),
+                  _buildTableRowPersonil('- Back End Web 3', namaBEWeb3),
+                  _buildTableRowPersonil('- Back End Mobile 1', namaBEMobile1),
+                  _buildTableRowPersonil('- Back End Mobile 2', namaBEMobile2),
+                  _buildTableRowPersonil('- Back End Mobile 3', namaBEMobile3),
+                  _buildTableRowPersonil('- Front End Web 1', namaFEWeb1),
+                  _buildTableRowPersonil('- Front End Mobile 1', namaFEMobile1),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

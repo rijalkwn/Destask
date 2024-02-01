@@ -13,6 +13,7 @@ class TaskModel {
   final String? alasan_verifikasi;
   final String? bukti_selesai;
   final String? tautan_task;
+  final String? created_at;
 
   TaskModel({
     this.id_task,
@@ -29,6 +30,7 @@ class TaskModel {
     this.alasan_verifikasi,
     this.bukti_selesai,
     this.tautan_task,
+    this.created_at,
   });
 
   factory TaskModel.fromJson(Map<String, dynamic> json) {
@@ -38,15 +40,16 @@ class TaskModel {
       id_user: json['id_user'],
       id_status_task: json['id_status_task'],
       id_kategori_task: json['id_kategori_task'],
-      tgl_planing: json['tgl_planing'],
-      tgl_selesai: json['tgl_selesai'],
-      tgl_verifikasi_diterima: json['tgl_verifikasi_diterima'],
-      status_verifikasi: json['status_verifikasi'],
+      tgl_planing: json['tgl_planing'] ?? '',
+      tgl_selesai: json['tgl_selesai'] ?? '',
+      tgl_verifikasi_diterima: json['tgl_verifikasi_diterima'] ?? '',
+      status_verifikasi: json['status_verifikasi'] ?? '',
       persentase_selesai: json['persentase_selesai'],
       deskripsi_task: json['deskripsi_task'],
-      alasan_verifikasi: json['alasan_verifikasi'],
-      bukti_selesai: json['bukti_selesai'],
-      tautan_task: json['tautan_task'],
+      alasan_verifikasi: json['alasan_verifikasi'] ?? '',
+      bukti_selesai: json['bukti_selesai'] ?? '',
+      tautan_task: json['tautan_task'] ?? '',
+      created_at: json['created_at'] ?? '',
     );
   }
 
@@ -66,6 +69,7 @@ class TaskModel {
       'alasan_verifikasi': alasan_verifikasi,
       'bukti_selesai': bukti_selesai,
       'tautan_task': tautan_task,
+      'created_at': created_at,
     };
   }
 }

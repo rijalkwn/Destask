@@ -1,9 +1,7 @@
-import 'dart:ffi';
-
-import 'package:destask/controller/pekerjaan_controller.dart';
-import 'package:destask/controller/personil_controller.dart';
-import 'package:destask/controller/user_controller.dart';
-import 'package:destask/model/pekerjaan_model.dart';
+import '../../../controller/pekerjaan_controller.dart';
+import '../../../controller/personil_controller.dart';
+import '../../../controller/user_controller.dart';
+import '../../../model/pekerjaan_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -36,7 +34,6 @@ class _PekerjaanSelesaiState extends State<PekerjaanSelesai> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     pekerjaan = getDataPekerjaan();
   }

@@ -1,5 +1,5 @@
-import 'package:destask/model/pekerjaan_model.dart';
-import 'package:destask/utils/constant_api.dart';
+import '../model/pekerjaan_model.dart';
+import '../utils/constant_api.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
