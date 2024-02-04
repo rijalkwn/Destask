@@ -1,3 +1,5 @@
+import 'package:destask/view/RekapPoint/detail_rekap_point.dart';
+
 import '../view/Beranda/Informasi/pekerjaan_selesai.dart';
 import '../view/Beranda/Task/detail_task.dart';
 import '../view/Beranda/Task/add_task.dart';
@@ -58,6 +60,9 @@ class MyApp extends StatelessWidget {
               name: '/detail_pekerjaan/:idpekerjaan',
               page: () => const DetailPekerjaan()),
           GetPage(name: '/rekap_point', page: () => const RekapPoint()),
+          GetPage(
+              name: '/detail_rekap_point/:idpekerjaan',
+              page: () => const DetailRekapPoint()),
           GetPage(name: '/pengaturan', page: () => Pengaturan()),
           GetPage(name: '/edit_profile/:id_user', page: () => EditProfile()),
           GetPage(name: '/ganti_password', page: () => const GantiPassword()),

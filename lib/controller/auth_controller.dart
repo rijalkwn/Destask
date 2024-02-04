@@ -6,16 +6,16 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-const String url = "$baseURL/authAPI";
+const String url = "$baseURL/authlogin";
 
 class AuthController {
-  Future login(String identitasController, String passwordController,
-      bool isCaptcha) async {
+  Future login(String identitasController, String passwordController) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      var params =
-          "?identitas=$identitasController&password=$passwordController";
-      var res = await http.post(Uri.parse(url + params));
+      var res = await http.post(Uri.parse(url), body: {
+        "identitas": identitasController,
+        "password": passwordController
+      });
       if (res.statusCode == 200) {
         var response = json.decode(res.body);
         prefs.setString("id_user", response['data']['id_user']);
@@ -47,7 +47,7 @@ class AuthController {
 
   Future checkEmailExist(String email) async {
     try {
-      final String url = "$baseURL/user";
+      final String url = "$baseURL/authcekuser";
       var res = await http.get(Uri.parse(url));
       if (res.statusCode == 200) {
         Iterable it = json.decode(res.body);

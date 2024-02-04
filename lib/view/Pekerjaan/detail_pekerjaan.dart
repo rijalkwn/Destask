@@ -1,5 +1,3 @@
-import 'package:destask/model/kategori_pekerjaan_model.dart';
-
 import '../../controller/kategori_pekerjaan_controller.dart';
 import '../../controller/pekerjaan_controller.dart';
 import '../../controller/personil_controller.dart';

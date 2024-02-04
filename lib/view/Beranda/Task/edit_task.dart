@@ -34,8 +34,6 @@ class _EditTaskState extends State<EditTask> {
   StatusTaskController statusTaskController = StatusTaskController();
   KategoriTaskController kategoriTaskController = KategoriTaskController();
   TaskController taskController = TaskController();
-  List<StatusTaskModel> statusTask = [];
-  List<KategoriTaskModel> kategoriTask = [];
 
   //file
   PlatformFile? pickedFile;
@@ -49,12 +47,44 @@ class _EditTaskState extends State<EditTask> {
   String idKategoriTask = "";
   bool completed = false;
 
+  @override
+  void initState() {
+    super.initState();
+    try {
+      getDataTask().then((value) {
+        setState(() {
+          idPekerjaan = value[0].id_pekerjaan.toString();
+          _deskripsiTaskController.text = value[0].deskripsi_task.toString();
+          _persentaseSelesaiController.text =
+              value[0].persentase_selesai.toString();
+          _selectedDateStart = DateTime.parse(value[0].tgl_planing.toString());
+          idStatusTask = value[0].id_status_task.toString();
+          idKategoriTask = value[0].id_kategori_task.toString();
+          _tautanTaskController.text = value[0].tautan_task.toString();
+          _persentaseSelesaiController.text =
+              value[0].persentase_selesai.toString();
+        });
+      });
+
+      getDataStatusTask().then((data) {
+        return data;
+      });
+      getDataKategoriTask().then((data) {
+        return data;
+      });
+      getIdUser().then((value) {
+        setState(() {
+          idUser = value;
+        });
+      });
+    } catch (e) {
+      print('Exception: $e');
+    }
+  }
+
   //getdata task
   Future<List<TaskModel>> getDataTask() async {
     List<TaskModel> dataTask = await taskController.getTaskById(idTask);
-    setState(() {
-      idPekerjaan = dataTask[0].id_pekerjaan.toString();
-    });
     return dataTask;
   }
 
@@ -119,45 +149,6 @@ class _EditTaskState extends State<EditTask> {
     setState(() {
       isLoading = false;
     });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    try {
-      statusTask = [];
-      kategoriTask = [];
-      getDataStatusTask().then((data) {
-        setState(() {
-          statusTask = data;
-        });
-      });
-      getDataKategoriTask().then((data) {
-        setState(() {
-          kategoriTask = data;
-        });
-      });
-      getIdUser().then((value) {
-        setState(() {
-          idUser = value;
-        });
-      });
-      getDataTask().then((value) {
-        setState(() {
-          _deskripsiTaskController.text = value[0].deskripsi_task.toString();
-          _persentaseSelesaiController.text =
-              value[0].persentase_selesai.toString();
-          _selectedDateStart = DateTime.parse(value[0].tgl_planing.toString());
-          idStatusTask = value[0].id_status_task.toString();
-          idKategoriTask = value[0].id_kategori_task.toString();
-          _tautanTaskController.text = value[0].tautan_task.toString();
-          _persentaseSelesaiController.text =
-              value[0].persentase_selesai.toString();
-        });
-      });
-    } catch (e) {
-      print('Exception: $e');
-    }
   }
 
   @override
@@ -354,11 +345,10 @@ class _EditTaskState extends State<EditTask> {
                           });
                           if (_formKey.currentState!.validate()) {
                             bool submitTask = await taskController.submitTask(
-                              idTask,
-                              idPekerjaan,
-                              idUser,
-                              idStatusTask,
-                              idKategoriTask,
+                              idTask.toString(),
+                              idPekerjaan.toString(),
+                              idStatusTask.toString(),
+                              idKategoriTask.toString(),
                               _selectedDateStart!, //tgl planing
                               _deskripsiTaskController.text,
                               _tautanTaskController.text,
@@ -366,7 +356,7 @@ class _EditTaskState extends State<EditTask> {
                               filePath, //bukti selesai
                             );
                             if (submitTask) {
-                              Get.toNamed('/task/$idPekerjaan');
+                              Get.toNamed('/task/$idTask');
                               QuickAlert.show(
                                   context: context,
                                   title: "Submit Task Berhasil",
@@ -410,9 +400,8 @@ class _EditTaskState extends State<EditTask> {
                           });
                           if (_formKey.currentState!.validate()) {
                             bool editTask = await taskController.editTask(
-                              idTask,
-                              idPekerjaan,
-                              idUser,
+                              idTask.toString(),
+                              idPekerjaan.toString(),
                               idStatusTask,
                               idKategoriTask,
                               _selectedDateStart!, //tgl planing
@@ -421,7 +410,8 @@ class _EditTaskState extends State<EditTask> {
                               _persentaseSelesaiController.text.toString(),
                             );
                             if (editTask) {
-                              Get.toNamed('/task/$idPekerjaan');
+                              Navigator.pushReplacementNamed(
+                                  context, '/task/$idPekerjaan');
                               QuickAlert.show(
                                   context: context,
                                   title: "Edit Task Berhasil",

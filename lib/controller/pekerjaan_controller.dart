@@ -6,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 // API link
 const url = '$baseURL/api/pekerjaan';
-const urluser = '$baseURL/api/pekerjaanuser';
+const urluser = '$baseURL/api/pekerjaanbyuser';
 
 Future getToken() async {
   final prefs = await SharedPreferences.getInstance();
@@ -15,26 +15,6 @@ Future getToken() async {
 }
 
 class PekerjaanController {
-  // Future getAllPekerjaan() async {
-  //   try {
-  //     var token = await getToken();
-  //     var response = await http
-  //         .get(Uri.parse(url), headers: {'Authorization': 'Bearer $token'});
-  //     if (response.statusCode == 200) {
-  //       Iterable list = json.decode(response.body);
-  //       List<PekerjaanModel> pekerjaan = List<PekerjaanModel>.from(
-  //           list.map((e) => PekerjaanModel.fromJson(e)).toList());
-  //       return pekerjaan;
-  //     } else {
-  //       // Handle error
-  //       return [];
-  //     }
-  //   } catch (e) {
-  //     print(e);
-  //     return [];
-  //   }
-  // }
-
   //get pekerjaan by id
   Future getPekerjaanById(String idPekerjaan) async {
     try {

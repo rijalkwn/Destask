@@ -2,6 +2,7 @@ import 'package:destask/controller/user_controller.dart';
 import 'package:destask/model/user_model.dart';
 import 'package:destask/utils/global_colors.dart';
 import 'package:intl/intl.dart';
+import 'package:quickalert/quickalert.dart';
 
 import '../../../controller/pekerjaan_controller.dart';
 import '../../../controller/personil_controller.dart';
@@ -13,7 +14,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class Task extends StatefulWidget {
-  const Task({Key? key});
+  const Task({super.key});
 
   @override
   State<Task> createState() => _TaskState();
@@ -21,7 +22,7 @@ class Task extends StatefulWidget {
 
 class _TaskState extends State<Task> {
   final String idPekerjaan = Get.parameters['idpekerjaan'] ?? '';
-  CalendarFormat _calendarFormat = CalendarFormat.month;
+  CalendarFormat _calendarFormat = CalendarFormat.week;
   TextEditingController searchController = TextEditingController();
   PekerjaanController pekerjaanController = PekerjaanController();
   PersonilController personilController = PersonilController();
@@ -30,6 +31,7 @@ class _TaskState extends State<Task> {
   bool isSearchBarVisible = false;
 
   String namaPekerjaan = '';
+  List namaPIC = [];
   String id_pekerjaan = '';
 
   late DateTime _focusedDay;
@@ -41,6 +43,36 @@ class _TaskState extends State<Task> {
 
   late Future<List<TaskModel>> task;
   late Future<List> user;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusedDay = DateTime.now();
+    _selectedDay = _focusedDay;
+    _loadDataTask(); // Extracted initialization logic to a separate method
+  }
+
+  void _loadDataTask() async {
+    try {
+      task = getDataTask().then((value) {
+        setState(() {
+          for (var taskItem in value) {
+            getDataUser(taskItem.id_user.toString()).then((data) {
+              for (var userItem in data) {
+                if (taskItem.id_user == userItem.id_user) {
+                  namaPIC.add(userItem.nama.toString());
+                }
+              }
+            });
+          }
+          namaPIC;
+        });
+        return value;
+      });
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
 
   getIdUser() async {
     final prefs = await SharedPreferences.getInstance();
@@ -65,8 +97,8 @@ class _TaskState extends State<Task> {
   }
 
   //get data all user
-  Future<List<UserModel>> getDataUserById(String idUserTask) async {
-    var data = await userController.getUserById(idUserTask);
+  Future<List<UserModel>> getDataUser(String idUserTask) async {
+    List<UserModel> data = await userController.getUserById(idUserTask);
     return data;
   }
 
@@ -90,7 +122,7 @@ class _TaskState extends State<Task> {
     return PM ? task_PM : task_nonPM;
   }
 
-  void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
+  Future<void> _onDaySelected(DateTime selectedDay, DateTime focusedDay) async {
     setState(() {
       _selectedDay = selectedDay;
       _focusedDay = focusedDay;
@@ -102,8 +134,8 @@ class _TaskState extends State<Task> {
     return isSameDay(_selectedDay, day);
   }
 
-  Map<DateTime, List<dynamic>> _getEventsForDays() {
-    Map<DateTime, List<dynamic>> events = {};
+  Map<DateTime, List<TaskModel>> _getEventsForDays() {
+    Map<DateTime, List<TaskModel>> events = {};
 
     // Ambil daftar tugas untuk tanggal yang sedang ditampilkan
     List<TaskModel> tasks = []; // Ambil tugas sesuai tanggal
@@ -117,18 +149,9 @@ class _TaskState extends State<Task> {
   }
 
   @override
-  void initState() {
-    super.initState();
-    _focusedDay = DateTime.now();
-    _selectedDay = _focusedDay;
-    task = getDataTask().then((value) {
-      setState(() {
-        for (var taskItem in value) {
-          getDataUserById(taskItem.id_user.toString()).then((value) {});
-        }
-      });
-      return value;
-    });
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
   }
 
   @override
@@ -342,12 +365,9 @@ class _TaskState extends State<Task> {
                         tglSelesai = dateFormat.parse(taskData['tgl_selesai']);
                       } catch (e) {
                         print('Error parsing tgl_selesai: $e');
-                        // Handle the error, set tglSelesai to null, or use a default date
                         tglSelesai = null;
                       }
                     }
-
-// Now tglSelesai is a DateTime object or null if there was an error in parsing.
 
                     Color taskColor = GlobalColors.mainColor;
 
@@ -369,73 +389,141 @@ class _TaskState extends State<Task> {
                     }
                     return Card(
                       color: taskColor,
-                      child: ListTile(
-                        leading: Container(
-                          padding: EdgeInsets.all(15),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Text(
-                            taskData['persentase_selesai'].toString() + '%',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        title: Text(
-                          taskData['deskripsi_task'].length > 20
-                              ? taskData['deskripsi_task'].substring(0, 20) +
-                                  '...'
-                              : taskData['deskripsi_task'],
-                          style: TextStyle(color: Colors.white, fontSize: 18),
-                        ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Deadline : ${taskData['tgl_planing']}',
-                              style: TextStyle(color: Colors.white),
-                            ),
-                            PM
-                                ? Text(
-                                    'PIC : ${taskData['id_user']}',
+                      child: Column(
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              Get.toNamed('/detail_task/${taskData['id_task']}',
+                                  arguments: taskData);
+                            },
+                            child: ListTile(
+                              leading: Container(
+                                padding: EdgeInsets.all(15),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Text(
+                                  taskData['persentase_selesai'].toString() +
+                                      '%',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              title: Text(
+                                taskData['deskripsi_task'].length > 20
+                                    ? taskData['deskripsi_task']
+                                            .substring(0, 20) +
+                                        '...'
+                                    : taskData['deskripsi_task'],
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: 18),
+                              ),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Deadline : ${taskData['tgl_planing']}',
                                     style: TextStyle(color: Colors.white),
-                                  )
-                                : SizedBox(),
-                          ],
-                        ),
-                        trailing: GestureDetector(
-                          onTap: () async {
-                            TaskController taskController = TaskController();
-                            bool cekDelete = await taskController
-                                .deleteTask(taskData['id_task']);
-                            if (cekDelete) {
-                              Get.snackbar(
-                                'Sukses',
-                                'Task berhasil dihapus',
-                                backgroundColor: Colors.green,
-                                colorText: Colors.white,
-                              );
-                              await getDataTask();
-                            } else {
-                              Get.snackbar(
-                                'Gagal',
-                                'Task gagal dihapus',
-                                backgroundColor: Colors.red,
-                                colorText: Colors.white,
-                              );
-                            }
-                          },
-                          child: Icon(
-                            Icons.delete,
-                            color: Colors.white,
+                                  ),
+                                  PM
+                                      ? Text(
+                                          'PIC : ${namaPIC.isNotEmpty ? namaPIC[index] : "Nama PIC Tidak Tersedia"}',
+                                          style: TextStyle(color: Colors.white),
+                                        )
+                                      : SizedBox(),
+                                ],
+                              ),
+                              trailing: Icon(
+                                Icons.arrow_forward_ios,
+                                color: Colors.white,
+                              ),
+                            ),
                           ),
-                        ),
-                        onTap: () {
-                          Get.toNamed('/detail_task/${taskData['id_task']}');
-                        },
+                          Divider(),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Container(
+                                  padding: EdgeInsets.only(top: 3, bottom: 13),
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      Get.toNamed(
+                                          '/edit_task/${taskData['id_task']}');
+                                    },
+                                    child: Center(
+                                      child: Icon(
+                                        Icons.edit,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Divider(),
+                              Expanded(
+                                child: Container(
+                                  padding: EdgeInsets.only(top: 3, bottom: 13),
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      showDialog(
+                                        context: context,
+                                        builder: (BuildContext context) {
+                                          return AlertDialog(
+                                            title:
+                                                Text("Konfirmasi Hapus Task"),
+                                            content: Text(
+                                                "Apakah Anda yakin ingin menghapus task ini?"),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () {
+                                                  Navigator.pop(
+                                                      context); // Close the dialog
+                                                },
+                                                child: Text("Batal"),
+                                              ),
+                                              TextButton(
+                                                onPressed: () async {
+                                                  Navigator.pop(
+                                                      context); // Close the dialog
+                                                  bool taskDeleted =
+                                                      await taskController
+                                                          .deleteTask(taskData[
+                                                                  'id_task']
+                                                              .toString());
+                                                  if (taskDeleted) {
+                                                    Get.offAndToNamed(
+                                                        '/task/$id_pekerjaan');
+                                                  } else {
+                                                    QuickAlert.show(
+                                                        context: context,
+                                                        title:
+                                                            "Hapus Task Gagal",
+                                                        type: QuickAlertType
+                                                            .error);
+                                                  }
+                                                },
+                                                child: Text("Hapus"),
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      );
+                                    },
+                                    child: Center(
+                                      child: Icon(
+                                        Icons.delete,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     );
                   },

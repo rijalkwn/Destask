@@ -226,8 +226,7 @@ class _LoginState extends State<Login> {
                                     Get.put(AuthController());
                                 bool login = await authController.login(
                                     _identitasController.text,
-                                    _passwordController.text,
-                                    _iscaptcha);
+                                    _passwordController.text);
                                 if (login == true && _iscaptcha == true) {
                                   Get.offAllNamed('/bottom_nav');
                                   QuickAlert.show(

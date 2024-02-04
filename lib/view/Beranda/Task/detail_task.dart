@@ -146,29 +146,6 @@ class _DetailTaskState extends State<DetailTask> {
                   _buildTableRow('Bukti Selesai', buktiSelesai),
                 ],
               ),
-              SizedBox(height: 16.0),
-              GestureDetector(
-                onTap: () {
-                  Get.toNamed('/edit_task/$idTask');
-                },
-                child: Container(
-                  padding: EdgeInsets.symmetric(vertical: 13.0),
-                  decoration: BoxDecoration(
-                    color: GlobalColors.mainColor,
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                  child: Center(
-                    child: Text(
-                      'Edit Task',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
             ],
           ),
         ),
@@ -206,8 +183,12 @@ class _DetailTaskState extends State<DetailTask> {
 
   String _formatDatetime(String datetimeString) {
     try {
-      DateTime datetime = DateTime.parse(datetimeString);
+      // Misalnya, jika format yang diberikan adalah 'yyyy-MM-dd'
+      DateTime datetime = DateFormat('yyyy-MM-dd').parse(datetimeString);
+
+      // Kemudian, konversi ke format yang diinginkan, misalnya 'd MMMM y'
       String formattedDate = DateFormat('d MMMM y', 'id_ID').format(datetime);
+
       return formattedDate;
     } catch (e) {
       print('Error parsing date: $e');

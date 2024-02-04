@@ -1,6 +1,10 @@
 import 'dart:async';
 
 import 'package:badges/badges.dart';
+import 'package:destask/controller/personil_controller.dart';
+import 'package:destask/controller/user_controller.dart';
+import 'package:destask/model/personil_model.dart';
+import 'package:destask/model/user_model.dart';
 import '../../controller/notifikasi_controller.dart';
 import '../../controller/pekerjaan_controller.dart';
 import '../../model/pekerjaan_model.dart';
@@ -19,15 +23,75 @@ class Beranda extends StatefulWidget {
 
 class _BerandaState extends State<Beranda> {
   PekerjaanController pekerjaanController = PekerjaanController();
+  PersonilController personilController = PersonilController();
+  UserController userController = UserController();
   NotifikasiController notifikasiController = NotifikasiController();
   late Future<List<PekerjaanModel>> pekerjaan;
   String nama = '';
+  List<String> idPersonil = [];
+  List<String> idPM = [];
+  List<String> namaPM = [];
   String jumlahPekerjaanSelesai = '';
-  int jumlahNotifikasi = 0;
+  String jumlahNotifikasi = '';
+
+  @override
+  void initState() {
+    super.initState();
+    startLaunching();
+    loadData();
+  }
+
+  void loadData() async {
+    try {
+      pekerjaan = getDataPekerjaan().then((value) {
+        setState(() {
+          for (var i = 0; i < value.length; i++) {
+            idPersonil.add(value[i].id_personil ?? '');
+          }
+        });
+        //dapatkan data id user pm di tabel personil berdasarkan list idPersonil
+        for (var i = 0; i < idPersonil.length; i++) {
+          getDataPersonil(idPersonil[i]).then((value) {
+            setState(() {
+              for (var i = 0; i < value.length; i++) {
+                idPM.add(value[i].id_user_pm ?? '');
+              }
+            });
+            for (var i = 0; i < idPM.length; i++) {
+              getDataUser(idPM[i]).then((value) {
+                setState(() {
+                  for (var i = 0; i < value.length; i++) {
+                    namaPM.add(value[i].nama ?? '');
+                  }
+                });
+              });
+            }
+          });
+        }
+        return value;
+      });
+      getJumlahPekerjaanSelesai();
+      getNotifikasi();
+    } catch (e) {
+      return null;
+    }
+  }
 
   //getdata pekerjaan
   Future<List<PekerjaanModel>> getDataPekerjaan() async {
     var data = await pekerjaanController.getOnProgressUser();
+    return data;
+  }
+
+  //get data personil
+  getDataPersonil(id) async {
+    var data = await personilController.getPersonilById(id);
+    return data;
+  }
+
+  //get data user
+  getDataUser(id) async {
+    var data = await userController.getUserById(id);
     return data;
   }
 
@@ -51,24 +115,15 @@ class _BerandaState extends State<Beranda> {
   getNotifikasi() async {
     var data = await notifikasiController.getNotifikasi();
     int count = 0; // Initialize a counter variable
-    setState(() {
-      for (var i = 0; i < data.length; i++) {
-        if (data[i].status_terbaca.toString() == '0') {
-          count += 1;
-        }
+    for (var i = 0; i < data.length; i++) {
+      if (data[i].status_terbaca.toString() == '0') {
+        count += 1;
       }
-      jumlahNotifikasi = count;
+    }
+    setState(() {
+      jumlahNotifikasi = count.toString();
     });
     return data;
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    startLaunching();
-    pekerjaan = getDataPekerjaan();
-    getJumlahPekerjaanSelesai();
-    getNotifikasi();
   }
 
   //cek login with token
@@ -80,8 +135,14 @@ class _BerandaState extends State<Beranda> {
       nama = namaUser;
     });
     if (token == null) {
-      Get.offAll('/login');
+      Get.offAllNamed('/login');
     }
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
   }
 
   @override
@@ -203,11 +264,8 @@ class _BerandaState extends State<Beranda> {
                         child: Center(child: Text('No data available.')),
                       );
                     } else if (snapshot.hasData) {
-                      List<dynamic> pekerjaan = snapshot.data as List<dynamic>;
-                      return Padding(
-                        padding: const EdgeInsets.only(top: 20),
-                        child: _ListOfJob(pekerjaan: pekerjaan),
-                      );
+                      List<PekerjaanModel> pekerjaan = snapshot.data!;
+                      return pekerjaanlist(pekerjaan);
                     } else {
                       return Center(child: Text('No data available.'));
                     }
@@ -314,20 +372,10 @@ class _BerandaState extends State<Beranda> {
       ),
     );
   }
-}
 
-class _ListOfJob extends StatelessWidget {
-  const _ListOfJob({
-    Key? key,
-    required this.pekerjaan,
-  }) : super(key: key);
-
-  final List<dynamic> pekerjaan;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.only(left: 10, right: 10),
+  Padding pekerjaanlist(List<PekerjaanModel> pekerjaan) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 20),
       child: Column(
         children: [
           Container(
@@ -346,8 +394,6 @@ class _ListOfJob extends StatelessWidget {
           ),
           Column(
             children: pekerjaan.map((pekerjaanItem) {
-              var namaPekerjaan = pekerjaanItem.nama_pekerjaan;
-              var persentase_selesai = pekerjaanItem.persentase_selesai;
               return Card(
                 color: GlobalColors.mainColor,
                 child: Column(
@@ -364,7 +410,7 @@ class _ListOfJob extends StatelessWidget {
                             shape: BoxShape.circle,
                           ),
                           child: Text(
-                            persentase_selesai + '%',
+                            pekerjaanItem.persentase_selesai.toString() + '%',
                             style: TextStyle(
                               color: Colors.black,
                               fontWeight: FontWeight.bold,
@@ -373,24 +419,15 @@ class _ListOfJob extends StatelessWidget {
                           ),
                         ),
                         title: Text(
-                          namaPekerjaan.length > 20
-                              ? '${namaPekerjaan.substring(0, 20)}...'
-                              : namaPekerjaan,
+                          pekerjaanItem.nama_pekerjaan!,
                           style: TextStyle(color: Colors.white),
                         ),
                         subtitle: Text(
-                          "Persentase: " + persentase_selesai + "%",
+                          "PM: " +
+                              (pekerjaan.indexOf(pekerjaanItem) < namaPM.length
+                                  ? namaPM[pekerjaan.indexOf(pekerjaanItem)]
+                                  : ''),
                           style: const TextStyle(color: Colors.white),
-                        ),
-                        trailing: GestureDetector(
-                          onTap: () {
-                            Get.toNamed(
-                                '/detail_pekerjaan/${pekerjaanItem.id_pekerjaan}');
-                          },
-                          child: Icon(
-                            Icons.density_small,
-                            color: Colors.white,
-                          ),
                         ),
                       ),
                     ),

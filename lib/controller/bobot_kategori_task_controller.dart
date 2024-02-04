@@ -1,11 +1,11 @@
 import 'dart:convert';
 
-import '../model/bobot_kategori_task.dart';
+import '../model/bobot_kategori_task_model.dart';
 import '../utils/constant_api.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
-const url = '$baseURL/bobotkategoritask';
+const url = '$baseURL/api/bobotkategoritask';
 
 getToken() async {
   SharedPreferences pref = await SharedPreferences.getInstance();
@@ -29,6 +29,7 @@ class BobotKategoriTaskController {
         return bobotKategori;
       } else {
         // Handle error
+        print('Error getAllBobotKategoriTask: ${response.body}');
         return [];
       }
     } catch (e) {

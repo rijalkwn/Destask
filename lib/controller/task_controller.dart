@@ -152,7 +152,6 @@ class TaskController {
   //fungsi add task
   Future addTask(
     String idPekerjaan,
-    String idUser,
     String idStatusTask,
     String idKategoriTask,
     DateTime tglPlaning,
@@ -161,6 +160,7 @@ class TaskController {
   ) async {
     try {
       var token = await getToken();
+      var idUser = await getIdUser();
       var response = await http.post(
         Uri.parse(url),
         headers: {'Authorization': 'Bearer $token'},
@@ -191,7 +191,6 @@ class TaskController {
   Future editTask(
     String idTask,
     String idPekerjaan,
-    String idUser,
     String idStatusTask,
     String idKategoriTask,
     DateTime tglPlaning,
@@ -205,14 +204,11 @@ class TaskController {
         Uri.parse('$url/$idTask'),
         headers: {'Authorization': 'Bearer $token'},
         body: {
-          'id_task': idTask,
-          'id_pekerjaan': idPekerjaan,
-          'id_user': idUser,
           'id_status_task': idStatusTask,
           'id_kategori_task': idKategoriTask,
-          'tgl_planing': tglPlaning,
-          'deskripsi_task': deskripsiTask,
-          'tautan_task': tautanTask,
+          'tgl_planing': tglPlaning.toIso8601String(),
+          'deskripsi_task': deskripsiTask.toString(),
+          'tautan_task': tautanTask.toString(),
           'persentase_selesai': persentaseSelesai,
         },
       );
@@ -221,6 +217,17 @@ class TaskController {
         Get.offAndToNamed('/task/$idPekerjaan');
         return true;
       } else {
+        print({
+          'id_task': idTask,
+          'id_status_task': idStatusTask,
+          'id_kategori_task': idKategoriTask,
+          'tgl_planing': tglPlaning,
+          'deskripsi_task': deskripsiTask,
+          'tautan_task': tautanTask,
+          'persentase_selesai': persentaseSelesai,
+        });
+        print('$url/$idTask');
+
         print('Error editing task: ${response.body}');
         return false;
       }
@@ -234,7 +241,6 @@ class TaskController {
   Future submitTask(
     String idTask,
     String idPekerjaan,
-    String idUser,
     String idStatusTask,
     String idKategoriTask,
     DateTime tglPlaning,
@@ -245,8 +251,9 @@ class TaskController {
   ) async {
     try {
       var token = await getToken();
+      var idUser = await getIdUser();
       var response = await http.put(
-        Uri.parse('$url/$idTask'),
+        Uri.parse('$url/submit/$idTask'),
         headers: {'Authorization': 'Bearer $token'},
         body: {
           'id_task': idTask,
@@ -285,6 +292,7 @@ class TaskController {
           headers: {'Authorization': 'Bearer $token'});
 
       if (response.statusCode == 200) {
+        print(response.body);
         return true;
       } else {
         print('Error deleting task: ${response.body}');

@@ -31,8 +31,6 @@ class _AddTaskState extends State<AddTask> {
   StatusTaskController statusTaskController = StatusTaskController();
   KategoriTaskController kategoriTaskController = KategoriTaskController();
   TaskController taskController = TaskController();
-  List<StatusTaskModel> statusTask = [];
-  List<KategoriTaskModel> kategoriTask = [];
 
   //file
   PlatformFile? pickedFile;
@@ -40,9 +38,15 @@ class _AddTaskState extends State<AddTask> {
   String? fileName;
   String filePath = "";
   bool isLoading = false;
-  String idUser = "";
   String idStatusTask = "";
   String idKategoriTask = "";
+
+  @override
+  void initState() {
+    super.initState();
+    getDataStatusTask().then((value) => value);
+    getDataKategoriTask().then((value) => value);
+  }
 
   //get status task
   Future<List<StatusTaskModel>> getDataStatusTask() async {
@@ -103,28 +107,6 @@ class _AddTaskState extends State<AddTask> {
     }
     setState(() {
       isLoading = false;
-    });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    statusTask = [];
-    kategoriTask = [];
-    getDataStatusTask().then((data) {
-      setState(() {
-        statusTask = data;
-      });
-    });
-    getDataKategoriTask().then((data) {
-      setState(() {
-        kategoriTask = data;
-      });
-    });
-    getIdUser().then((value) {
-      setState(() {
-        idUser = value;
-      });
     });
   }
 
@@ -259,7 +241,6 @@ class _AddTaskState extends State<AddTask> {
                     if (_formKey.currentState!.validate()) {
                       bool addTask = await taskController.addTask(
                         idpekerjaan,
-                        idUser,
                         idStatusTask,
                         idKategoriTask,
                         _selectedDateStart!, //tgl planing
@@ -267,7 +248,8 @@ class _AddTaskState extends State<AddTask> {
                         _tautanTaskController.text,
                       );
                       if (addTask) {
-                        Get.toNamed('/task/$idpekerjaan');
+                        Navigator.pushReplacementNamed(
+                            context, '/task/$idpekerjaan');
                         QuickAlert.show(
                             context: context,
                             title: "Tambah Task Berhasil",
