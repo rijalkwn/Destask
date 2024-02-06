@@ -26,7 +26,6 @@ class _DetailPekerjaanState extends State<DetailPekerjaan> {
   UserController userController = UserController();
 
   //kolom pekerjaan
-  String idPekerjaan = '';
   String idStatusPekerjaan = '';
   String idKategoriPekerjaan = '';
   String idPersonil = '';
@@ -35,7 +34,7 @@ class _DetailPekerjaanState extends State<DetailPekerjaan> {
   String jenisLayanan = '';
   String nominalHarga = '';
   String deskripsiPekerjaan = '';
-  String targetWaktuSelesai = '';
+  DateTime targetWaktuSelesai = DateTime.now();
   String persentaseSelesai = '';
   String waktuSelesai = '';
 
@@ -45,13 +44,8 @@ class _DetailPekerjaanState extends State<DetailPekerjaan> {
   //kategori
   String namaKategori = '';
 
-  //bantuan
-  String idpersonil = '';
-  String idstatus = '';
-  String idkategori = '';
-
   //personil
-  String idUserPM = '';
+  String namaPM = '';
   String desainer1 = '';
   String desainer2 = '';
   String beWeb1 = '';
@@ -63,114 +57,22 @@ class _DetailPekerjaanState extends State<DetailPekerjaan> {
   String feWeb1 = '';
   String feMobile1 = '';
 
-  //user
-  String namaIdUserPM = '';
-  String namaDesigner1 = '';
-  String namaDesigner2 = '';
-  String namaBEWeb1 = '';
-  String namaBEWeb2 = '';
-  String namaBEWeb3 = '';
-  String namaBEMobile1 = '';
-  String namaBEMobile2 = '';
-  String namaBEMobile3 = '';
-  String namaFEWeb1 = '';
-  String namaFEMobile1 = '';
-
   getDataPekerjaan() async {
     var data = await pekerjaanController.getPekerjaanById(idpekerjaan);
     setState(() {
-      idPekerjaan = data[0].id_pekerjaan ?? '';
-      idStatusPekerjaan = data[0].id_status_pekerjaan ?? '';
-      idKategoriPekerjaan = data[0].id_kategori_pekerjaan ?? '';
-      idPersonil = data[0].id_personil ?? '';
-      namaPekerjaan = data[0].nama_pekerjaan ?? '';
-      pelanggan = data[0].pelanggan ?? '';
-      jenisLayanan = data[0].jenis_layanan ?? '';
-      nominalHarga = data[0].nominal_harga ?? '';
-      deskripsiPekerjaan = data[0].deskripsi_pekerjaan ?? '';
-      targetWaktuSelesai = data[0].target_waktu_selesai ?? '';
-      persentaseSelesai = data[0].persentase_selesai ?? '';
-      waktuSelesai = data[0].waktu_selesai ?? '';
-    });
-    return data;
-  }
-
-  //get data status
-  getDataStatus() async {
-    var data = await statusPekerjaanController.getStatusById(idstatus);
-    setState(() {
-      namaStatus = data[0].nama_status_pekerjaan ?? '';
-    });
-    return data;
-  }
-
-  //getdata kategori
-  getDataKategori() async {
-    var data =
-        await kategoriPekerjaanController.getKategoriPekerjaanById(idkategori);
-    setState(() {
-      namaKategori = data[0].nama_kategori_pekerjaan ?? '';
-    });
-    return data;
-  }
-
-  getDataPersonil() async {
-    var data = await personilController.getPersonilById(idpersonil);
-    setState(() {
-      idUserPM = data[0].id_user_pm ?? '';
-      desainer1 = data[0].desainer1 ?? '';
-      desainer2 = data[0].desainer2 ?? '';
-      beWeb1 = data[0].be_web1 ?? '';
-      beWeb2 = data[0].be_web2 ?? '';
-      beWeb3 = data[0].be_web3 ?? '';
-      beMobile1 = data[0].be_mobile1 ?? '';
-      beMobile2 = data[0].be_mobile2 ?? '';
-      beMobile3 = data[0].be_mobile3 ?? '';
-      feWeb1 = data[0].fe_web1 ?? '';
-      feMobile1 = data[0].fe_mobile1 ?? '';
-    });
-    return data;
-  }
-
-  getDataUser() async {
-    var data = await userController.getAllUser();
-    setState(() {
-      //cek apakah idUserPM = id user
-      for (var i = 0; i < data.length; i++) {
-        if (idUserPM == data[i].id_user.toString()) {
-          namaIdUserPM = data[i].nama.toString();
-        }
-        if (desainer1 == data[i].id_user) {
-          namaDesigner1 = data[i].nama ?? '';
-        }
-        if (desainer2 == data[i].id_user) {
-          namaDesigner2 = data[i].nama ?? '';
-        }
-        if (beWeb1 == data[i].id_user) {
-          namaBEWeb1 = data[i].nama ?? '';
-        }
-        if (beWeb2 == data[i].id_user) {
-          namaBEWeb2 = data[i].nama ?? '';
-        }
-        if (beWeb3 == data[i].id_user) {
-          namaBEWeb3 = data[i].nama ?? '';
-        }
-        if (beMobile1 == data[i].id_user) {
-          namaBEMobile1 = data[i].nama ?? '';
-        }
-        if (beMobile2 == data[i].id_user) {
-          namaBEMobile2 = data[i].nama ?? '';
-        }
-        if (beMobile3 == data[i].id_user) {
-          namaBEMobile3 = data[i].nama ?? '';
-        }
-        if (feWeb1 == data[i].id_user) {
-          namaFEWeb1 = data[i].nama ?? '';
-        }
-        if (feMobile1 == data[i].id_user) {
-          namaFEMobile1 = data[i].nama ?? '';
-        }
-      }
+      namaPM = data[0].dataTambahan.nama_pm ?? '-';
+      desainer1 = data[0].dataTambahan.nama_desainer1 ?? '-';
+      desainer2 = data[0].dataTambahan.nama_desainer2 ?? '-';
+      beWeb1 = data[0].dataTambahan.nama_backend_web1 ?? '-';
+      beWeb2 = data[0].dataTambahan.nama_backend_web2 ?? '-';
+      beWeb3 = data[0].dataTambahan.nama_backend_web3 ?? '-';
+      beMobile1 = data[0].dataTambahan.nama_backend_mobile1 ?? '-';
+      beMobile2 = data[0].dataTambahan.nama_backend_mobile2 ?? '-';
+      beMobile3 = data[0].dataTambahan.nama_backend_mobile3 ?? '-';
+      feWeb1 = data[0].dataTambahan.nama_frontend_web1 ?? '-';
+      feMobile1 = data[0].dataTambahan.nama_frontend_mobile1 ?? '-';
+      namaStatus = data[0].dataTambahan.nama_status ?? '-';
+      namaKategori = data[0].dataTambahan.nama_kategori ?? '-';
     });
     return data;
   }
@@ -178,25 +80,11 @@ class _DetailPekerjaanState extends State<DetailPekerjaan> {
   @override
   void initState() {
     super.initState();
-    getDataPekerjaan().then((value) {
-      setState(() {
-        idpersonil = value[0].id_personil.toString();
-        idstatus = value[0].id_status_pekerjaan.toString();
-        idkategori = value[0].id_kategori_pekerjaan.toString();
-      });
-      getDataStatus();
-      getDataKategori();
-      getDataPersonil().then((value) {
-        getDataUser();
-      });
-    });
+    getDataPekerjaan();
   }
 
   @override
   Widget build(BuildContext context) {
-    print(namaStatus);
-    print(idKategoriPekerjaan);
-    print(namaKategori);
     return Scaffold(
       appBar: AppBar(
         backgroundColor: GlobalColors.mainColor,
@@ -258,29 +146,28 @@ class _DetailPekerjaanState extends State<DetailPekerjaan> {
                   2: FlexColumnWidth(10),
                 },
                 children: [
-                  _buildTableRow('ID Pekerjaan', idPekerjaan),
+                  _buildTableRow('ID Pekerjaan', idpekerjaan),
                   _buildTableRow('Pelanggan', pelanggan),
                   _buildTableRow('Kategori Pekerjaan', namaKategori),
                   _buildTableRow('Jenis Layanan', jenisLayanan),
                   _buildTableRow('Nominal Harga', _formatRupiah(nominalHarga)),
                   _buildTableRow('Deskripsi Pekerjaan', deskripsiPekerjaan),
-                  _buildTableRow('Target Waktu Selesai',
-                      _formatDatetime(targetWaktuSelesai)),
+                  _buildTableRow('Target Waktu Selesai', targetWaktuSelesai),
                   _buildTableRow(
-                      'Waktu Selesai', _formatDatetime(waktuSelesai)),
+                      'Waktu Selesai', waktuSelesai == '' ? '-' : waktuSelesai),
                   //personil
                   _buildTableRow('ID Personil', idPersonil),
-                  _buildTableRowPersonil('- Project Manager', namaIdUserPM),
-                  _buildTableRowPersonil('- Desainer 1', namaDesigner1),
-                  _buildTableRowPersonil('- Desainer 2', namaDesigner2),
-                  _buildTableRowPersonil('- Back End Web 1', namaBEWeb1),
-                  _buildTableRowPersonil('- Back End Web 2', namaBEWeb2),
-                  _buildTableRowPersonil('- Back End Web 3', namaBEWeb3),
-                  _buildTableRowPersonil('- Back End Mobile 1', namaBEMobile1),
-                  _buildTableRowPersonil('- Back End Mobile 2', namaBEMobile2),
-                  _buildTableRowPersonil('- Back End Mobile 3', namaBEMobile3),
-                  _buildTableRowPersonil('- Front End Web 1', namaFEWeb1),
-                  _buildTableRowPersonil('- Front End Mobile 1', namaFEMobile1),
+                  _buildTableRowPersonil('- Project Manager', namaPM),
+                  _buildTableRowPersonil('- Desainer 1', desainer1),
+                  _buildTableRowPersonil('- Desainer 2', desainer2),
+                  _buildTableRowPersonil('- Backend Web 1', beWeb1),
+                  _buildTableRowPersonil('- Backend Web 2', beWeb2),
+                  _buildTableRowPersonil('- Backend Web 3', beWeb3),
+                  _buildTableRowPersonil('- Backend Mobile 1', beMobile1),
+                  _buildTableRowPersonil('- Backend Mobile 2', beMobile2),
+                  _buildTableRowPersonil('- Backend Mobile 3', beMobile3),
+                  _buildTableRowPersonil('- Frontend Web 1', feWeb1),
+                  _buildTableRowPersonil('- Frontend Mobile 1', feMobile1),
                 ],
               ),
             ),
@@ -345,17 +232,6 @@ class _DetailPekerjaanState extends State<DetailPekerjaan> {
         ),
       ],
     );
-  }
-
-  String _formatDatetime(String datetimeString) {
-    try {
-      DateTime datetime = DateTime.parse(datetimeString);
-      String formattedDate = DateFormat('d MMMM y', 'id_ID').format(datetime);
-      return formattedDate;
-    } catch (e) {
-      print('Error parsing date: $e');
-      return datetimeString;
-    }
   }
 
   String _formatRupiah(String amount) {

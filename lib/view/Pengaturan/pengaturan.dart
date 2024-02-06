@@ -11,36 +11,23 @@ class Pengaturan extends StatefulWidget {
 }
 
 class _PengaturanState extends State<Pengaturan> {
-  UserController userController = UserController();
   String nama = '';
   String email = '';
   String id_user = '';
-
-  getIdUser() async {
+  getUser() async {
     SharedPreferences pref = await SharedPreferences.getInstance();
-    var iduser = pref.getString('id_user');
-    return iduser;
+    setState(() {
+      nama = pref.getString('nama') ?? '';
+      email = pref.getString('email') ?? '';
+      id_user = pref.getString('id_user') ?? '';
+    });
   }
 
   @override
   void initState() {
+    // TODO: implement initState
     super.initState();
-    getIdUser().then((value) {
-      setState(() {
-        id_user = value.toString();
-      });
-    });
-    getDataUser();
-  }
-
-  //getdata user
-  getDataUser() async {
-    var data = await userController.getUserById(id_user);
-    setState(() {
-      nama = data[0].nama ?? '';
-      email = data[0].email;
-    });
-    return data;
+    getUser();
   }
 
   @override

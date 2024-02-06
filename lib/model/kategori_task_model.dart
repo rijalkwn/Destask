@@ -1,7 +1,7 @@
 class KategoriTaskModel {
-  final String? id_kategori_task;
-  final String? nama_kategori_task;
-  final String? deskripsi_kategori_task;
+  String? id_kategori_task;
+  String? nama_kategori_task;
+  String? deskripsi_kategori_task;
 
   KategoriTaskModel({
     this.id_kategori_task,
@@ -11,9 +11,9 @@ class KategoriTaskModel {
 
   factory KategoriTaskModel.fromJson(Map<String, dynamic> json) {
     return KategoriTaskModel(
-      id_kategori_task: json['id_kategori_task'],
-      nama_kategori_task: json['nama_kategori_task'],
-      deskripsi_kategori_task: json['deskripsi_kategori_task'],
+      id_kategori_task: json['id_kategori_task']?.toString(),
+      nama_kategori_task: json['nama_kategori_task']?.toString(),
+      deskripsi_kategori_task: json['deskripsi_kategori_task']?.toString(),
     );
   }
 }

@@ -26,7 +26,7 @@ class _BerandaState extends State<Beranda> {
   PersonilController personilController = PersonilController();
   UserController userController = UserController();
   NotifikasiController notifikasiController = NotifikasiController();
-  late Future<List<PekerjaanModel>> pekerjaan;
+  late List<PekerjaanModel> pekerjaan;
   String nama = '';
   List<String> idPersonil = [];
   List<String> idPM = [];
@@ -43,61 +43,24 @@ class _BerandaState extends State<Beranda> {
 
   void loadData() async {
     try {
-      pekerjaan = getDataPekerjaan().then((value) {
-        setState(() {
-          for (var i = 0; i < value.length; i++) {
-            idPersonil.add(value[i].id_personil ?? '');
-          }
-        });
-        //dapatkan data id user pm di tabel personil berdasarkan list idPersonil
-        for (var i = 0; i < idPersonil.length; i++) {
-          getDataPersonil(idPersonil[i]).then((value) {
-            setState(() {
-              for (var i = 0; i < value.length; i++) {
-                idPM.add(value[i].id_user_pm ?? '');
-              }
-            });
-            for (var i = 0; i < idPM.length; i++) {
-              getDataUser(idPM[i]).then((value) {
-                setState(() {
-                  for (var i = 0; i < value.length; i++) {
-                    namaPM.add(value[i].nama ?? '');
-                  }
-                });
-              });
-            }
-          });
-        }
-        return value;
-      });
       getJumlahPekerjaanSelesai();
       getNotifikasi();
+      pekerjaan = await getDataPekerjaan();
     } catch (e) {
-      return null;
+      print("Error: $e");
+      // Handle error appropriately
     }
   }
 
   //getdata pekerjaan
-  Future<List<PekerjaanModel>> getDataPekerjaan() async {
+  Future getDataPekerjaan() async {
     var data = await pekerjaanController.getOnProgressUser();
-    return data;
-  }
-
-  //get data personil
-  getDataPersonil(id) async {
-    var data = await personilController.getPersonilById(id);
-    return data;
-  }
-
-  //get data user
-  getDataUser(id) async {
-    var data = await userController.getUserById(id);
     return data;
   }
 
   getJumlahPekerjaanSelesai() async {
     var data = await pekerjaanController.getAllPekerjaanUser();
-    int count = 0; // Initialize a counter variable
+    int count = 0;
 
     setState(() {
       for (var i = 0; i < data.length; i++) {
@@ -248,8 +211,8 @@ class _BerandaState extends State<Beranda> {
               height: screenHeight * 3 / 4,
               color: Colors.white,
               child: SingleChildScrollView(
-                child: FutureBuilder<List<PekerjaanModel>>(
-                  future: pekerjaan,
+                child: FutureBuilder(
+                  future: getDataPekerjaan(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return Padding(
@@ -402,32 +365,33 @@ class _BerandaState extends State<Beranda> {
                       onTap: () {
                         Get.toNamed('/task/${pekerjaanItem.id_pekerjaan}');
                       },
-                      child: ListTile(
-                        leading: Container(
-                          padding: EdgeInsets.all(15),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Text(
-                            pekerjaanItem.persentase_selesai.toString() + '%',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: ListTile(
+                          leading: Container(
+                            padding: EdgeInsets.all(15),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Text(
+                              pekerjaanItem.persentase_selesai.toString() + '%',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
                             ),
                           ),
-                        ),
-                        title: Text(
-                          pekerjaanItem.nama_pekerjaan!,
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        subtitle: Text(
-                          "PM: " +
-                              (pekerjaan.indexOf(pekerjaanItem) < namaPM.length
-                                  ? namaPM[pekerjaan.indexOf(pekerjaanItem)]
-                                  : ''),
-                          style: const TextStyle(color: Colors.white),
+                          title: Text(
+                            pekerjaanItem.nama_pekerjaan!,
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          subtitle: Text(
+                            "PM: " +
+                                pekerjaanItem.data_tambahan.nama_pm.toString(),
+                            style: const TextStyle(color: Colors.white),
+                          ),
                         ),
                       ),
                     ),

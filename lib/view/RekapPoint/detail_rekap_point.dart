@@ -31,22 +31,10 @@ class _DetailRekapPointState extends State<DetailRekapPoint> {
   List<int> pointKategoriTask = [];
   String namaPekerjaan = '';
 
-  //getdata pekerjaan
-  Future<List<PekerjaanModel>> getDataPekerjaan() async {
-    try {
-      var data = await pekerjaanController.getPekerjaanById(idpekerjaan);
-      return data;
-    } catch (e) {
-      print("Error in getDataPekerjaan: $e");
-      return [];
-    }
-  }
-
   //getdata task
   Future<List<TaskModel>> getDataTask() async {
     try {
       var data = await taskController.getTasksByUserPekerjaan(idpekerjaan);
-      print("DataTask: $data");
       return data;
     } catch (e) {
       print("Error in getDataTask: $e");
@@ -57,7 +45,6 @@ class _DetailRekapPointState extends State<DetailRekapPoint> {
   Future<List<KategoriTaskModel>> getDataKategoriTask() async {
     try {
       var data = await kategoriTaskController.getAllKategoriTask();
-      print("KategoriTaskData: $data");
       return data;
     } catch (e) {
       print("Error in getDataKategoriTask: $e");
@@ -68,7 +55,6 @@ class _DetailRekapPointState extends State<DetailRekapPoint> {
   Future<List<BobotKategoriTaskModel>> getDataBobotKategoriTask() async {
     try {
       var data = await bobotKategoriTaskController.getAllBobotKategoriTask();
-      print("BobotKategoriTaskData: $data");
       return data;
     } catch (e) {
       print("Error in getDataBobotKategoriTask: $e");
@@ -80,14 +66,10 @@ class _DetailRekapPointState extends State<DetailRekapPoint> {
   void initState() {
     super.initState();
     try {
-      getDataPekerjaan().then((data) {
-        setState(() {
-          namaPekerjaan =
-              data.isNotEmpty ? data[0].nama_pekerjaan.toString() : '';
-        });
-      });
-
       task = getDataTask().then((value) async {
+        if (value.isEmpty) {
+          return value;
+        }
         // Mengambil data kategori task
         listKategoriTask = await getDataKategoriTask();
         // Mengambil data bobot kategori task
@@ -117,6 +99,7 @@ class _DetailRekapPointState extends State<DetailRekapPoint> {
         }
 
         setState(() {
+          namaPekerjaan = value[0].data_tambahan.nama_pekerjaan ?? '';
           // Update the state with the initialized lists
           this.namaKategoriTask = namaKategoriTask;
           this.pointKategoriTask = pointKategoriTask;
@@ -201,20 +184,28 @@ class _DetailRekapPointState extends State<DetailRekapPoint> {
                     );
                   } else if (snapshot.hasData && snapshot.data!.isEmpty) {
                     return Center(
-                      child: Text('No data available.'),
+                      child: Text('No tasks available.'),
                     );
                   } else {
                     return ListView.builder(
                       itemCount: snapshot.data!.length,
                       itemBuilder: (context, index) {
+                        final String deskripsiTask =
+                            snapshot.data![index].deskripsi_task ?? '';
+                        final String kategoriTask =
+                            index < namaKategoriTask.length
+                                ? namaKategoriTask[index]
+                                : '';
+                        final int pointTask = index < pointKategoriTask.length
+                            ? pointKategoriTask[index]
+                            : 0;
+
                         return Card(
                           child: ListTile(
-                            title: Text(snapshot.data![index].deskripsi_task
-                                .toString()),
-                            subtitle: Text(
-                                'Kategori Task: ${namaKategoriTask[index]}'),
+                            title: Text(deskripsiTask),
+                            subtitle: Text('Kategori Task: $kategoriTask'),
                             trailing: Text(
-                              'Point: ${pointKategoriTask[index].toString()}',
+                              'Point: $pointTask',
                               style: TextStyle(fontSize: 14),
                             ),
                           ),
@@ -224,7 +215,7 @@ class _DetailRekapPointState extends State<DetailRekapPoint> {
                   }
                 },
               ),
-            ),
+            )
           ],
         ),
       ),

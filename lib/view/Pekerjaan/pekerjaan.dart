@@ -1,7 +1,9 @@
+import 'package:destask/controller/notifikasi_controller.dart';
 import 'package:destask/controller/personil_controller.dart';
 import 'package:destask/controller/user_controller.dart';
 import 'package:destask/model/personil_model.dart';
 import 'package:destask/model/user_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../controller/pekerjaan_controller.dart';
 import '../../model/pekerjaan_model.dart';
@@ -21,68 +23,28 @@ class _PekerjaanState extends State<Pekerjaan>
   late TabController _tabController;
   TextEditingController searchController = TextEditingController();
   PekerjaanController pekerjaanController = PekerjaanController();
-  PersonilController personilController = PersonilController();
   UserController userController = UserController();
   late Future<List<PekerjaanModel>> pekerjaan;
-  List<String> idPersonil = [];
-  List<String> idPM = [];
-  List<String> namaPM = [];
-
   bool isSearchBarVisible = false;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 6, vsync: this);
-    pekerjaan = getDataPekerjaan().then((value) {
-      setState(() {
-        for (var i = 0; i < value.length; i++) {
-          idPersonil.add(value[i].id_personil ?? '');
-        }
-      });
-      //dapatkan data id user pm di tabel personil berdasarkan list idPersonil
-      for (var i = 0; i < idPersonil.length; i++) {
-        getDataPersonil(idPersonil[i]).then((value) {
-          setState(() {
-            for (var i = 0; i < value.length; i++) {
-              idPM.add(value[i].id_user_pm ?? '');
-            }
-          });
-          for (var i = 0; i < idPM.length; i++) {
-            getDataUser(idPM[i]).then((value) {
-              setState(() {
-                for (var i = 0; i < value.length; i++) {
-                  namaPM.add(value[i].nama ?? '');
-                }
-              });
-            });
-          }
-        });
-      }
-      return value;
-    });
+    pekerjaan = getDataPekerjaan();
   }
 
-  //getdata pekerjaan
+  // get data pekerjaan
   Future<List<PekerjaanModel>> getDataPekerjaan() async {
     var data = await pekerjaanController.getAllPekerjaanUser();
     return data;
   }
 
-  //get data per
-  Future getDataPersonil(id) async {
-    List<PersonilModel> data = await personilController.getPersonilById(id);
-    return data;
-  }
-
-  Future getDataUser(id) async {
-    List<UserModel> data = await userController.getUserById(id);
-    return data;
-  }
-
   @override
   void dispose() {
-    // TODO: implement dispose
+    // Dispose controllers
+    _tabController.dispose();
+    searchController.dispose();
     super.dispose();
   }
 
@@ -161,7 +123,6 @@ class _PekerjaanState extends State<Pekerjaan>
               pekerjaan: pekerjaan,
               status: status,
               searchQuery: searchController.text,
-              namaPM: namaPM,
             ),
         ],
       ),
@@ -175,11 +136,9 @@ class StatusPekerjaan extends StatelessWidget {
     required this.pekerjaan,
     required this.status,
     required this.searchQuery,
-    required this.namaPM,
   }) : super(key: key);
 
   final Future<List<PekerjaanModel>> pekerjaan;
-  final List<String> namaPM;
   final String status;
   final String searchQuery;
 
@@ -207,7 +166,6 @@ class StatusPekerjaan extends StatelessWidget {
           return PekerjaanList(
             status: status,
             pekerjaan: filteredList,
-            namaPMList: namaPM,
           );
         } else {
           return Center(child: Text('No data available.'));
@@ -219,13 +177,12 @@ class StatusPekerjaan extends StatelessWidget {
 
 @immutable
 class PekerjaanList extends StatelessWidget {
-  PekerjaanList(
-      {required this.status,
-      required this.pekerjaan,
-      required this.namaPMList});
+  PekerjaanList({
+    required this.status,
+    required this.pekerjaan,
+  });
   final String status;
-  final List<dynamic> pekerjaan;
-  final List<String> namaPMList;
+  final List<PekerjaanModel> pekerjaan;
 
   @override
   Widget build(BuildContext context) {
@@ -257,7 +214,7 @@ class PekerjaanList extends StatelessWidget {
                 style: TextStyle(color: Colors.white),
               ),
               subtitle: Text(
-                "PM: " + (index < namaPMList.length ? namaPMList[index] : ''),
+                "PM: " + pekerjaan[index].data_tambahan.nama_pm,
                 style: TextStyle(color: Colors.white),
               ),
               trailing: GestureDetector(

@@ -1,13 +1,13 @@
 class NotifikasiModel {
-  final String? id_notifikasi;
-  final String? id_user;
-  final String? id_task;
-  final String? id_pekerjaan;
-  final String? id_kinerja;
-  final String? judul_notifikasi;
-  final String? pesan_notifikasi;
-  final String? status_terbaca;
-  final String? created_at;
+  String? id_notifikasi;
+  String? id_user;
+  String? id_task;
+  String? id_pekerjaan;
+  String? id_kinerja;
+  String? judul_notifikasi;
+  String? pesan_notifikasi;
+  String? status_terbaca;
+  DateTime created_at;
 
   NotifikasiModel({
     this.id_notifikasi,
@@ -18,20 +18,20 @@ class NotifikasiModel {
     this.judul_notifikasi,
     this.pesan_notifikasi,
     this.status_terbaca,
-    this.created_at,
+    required this.created_at,
   });
 
   factory NotifikasiModel.fromJson(Map<String, dynamic> json) {
     return NotifikasiModel(
-      id_notifikasi: json['id_notifikasi'],
-      id_user: json['id_user'],
-      id_task: json['id_task'],
-      id_pekerjaan: json['id_pekerjaan'],
-      id_kinerja: json['id_kinerja'],
-      judul_notifikasi: json['judul_notifikasi'],
-      pesan_notifikasi: json['pesan_notifikasi'],
-      status_terbaca: json['status_terbaca'],
-      created_at: json['created_at'],
+      id_notifikasi: json['id_notifikasi']?.toString(),
+      id_user: json['id_user']?.toString(),
+      id_task: json['id_task']?.toString(),
+      id_pekerjaan: json['id_pekerjaan']?.toString(),
+      id_kinerja: json['id_kinerja']?.toString(),
+      judul_notifikasi: json['judul_notifikasi']?.toString(),
+      pesan_notifikasi: json['pesan_notifikasi']?.toString(),
+      status_terbaca: json['status_terbaca']?.toString(),
+      created_at: DateTime.parse(json['created_at']),
     );
   }
 }

@@ -31,8 +31,6 @@ class _TaskState extends State<Task> {
   bool isSearchBarVisible = false;
 
   String namaPekerjaan = '';
-  List namaPIC = [];
-  String id_pekerjaan = '';
 
   late DateTime _focusedDay;
   DateTime _selectedDay = DateTime.now();
@@ -49,29 +47,7 @@ class _TaskState extends State<Task> {
     super.initState();
     _focusedDay = DateTime.now();
     _selectedDay = _focusedDay;
-    _loadDataTask(); // Extracted initialization logic to a separate method
-  }
-
-  void _loadDataTask() async {
-    try {
-      task = getDataTask().then((value) {
-        setState(() {
-          for (var taskItem in value) {
-            getDataUser(taskItem.id_user.toString()).then((data) {
-              for (var userItem in data) {
-                if (taskItem.id_user == userItem.id_user) {
-                  namaPIC.add(userItem.nama.toString());
-                }
-              }
-            });
-          }
-          namaPIC;
-        });
-        return value;
-      });
-    } catch (e) {
-      print('Error: $e');
-    }
+    task = getDataTask();
   }
 
   getIdUser() async {
@@ -117,7 +93,6 @@ class _TaskState extends State<Task> {
     var pekerjaan = await pekerjaanController.getPekerjaanById(idPekerjaan);
     setState(() {
       namaPekerjaan = pekerjaan[0].nama_pekerjaan.toString();
-      id_pekerjaan = pekerjaan[0].id_pekerjaan.toString();
     });
     return PM ? task_PM : task_nonPM;
   }
@@ -298,7 +273,7 @@ class _TaskState extends State<Task> {
       //TOMBOL ADD TASK
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Get.toNamed('/add_task/$id_pekerjaan',
+          Get.toNamed('/add_task/$idPekerjaan',
               arguments: Get.parameters['idpekerjaan']);
         },
         child: Icon(Icons.add, color: Colors.white),
@@ -429,10 +404,13 @@ class _TaskState extends State<Task> {
                                     style: TextStyle(color: Colors.white),
                                   ),
                                   PM
-                                      ? Text(
-                                          'PIC : ${namaPIC.isNotEmpty ? namaPIC[index] : "Nama PIC Tidak Tersedia"}',
-                                          style: TextStyle(color: Colors.white),
-                                        )
+                                      ? taskData['data_tambahan'] != null
+                                          ? Text(
+                                              'PIC : ${taskData['data_tambahan']['nama_user']}',
+                                              style: TextStyle(
+                                                  color: Colors.white),
+                                            )
+                                          : SizedBox()
                                       : SizedBox(),
                                 ],
                               ),
@@ -495,7 +473,7 @@ class _TaskState extends State<Task> {
                                                               .toString());
                                                   if (taskDeleted) {
                                                     Get.offAndToNamed(
-                                                        '/task/$id_pekerjaan');
+                                                        '/task/$idPekerjaan');
                                                   } else {
                                                     QuickAlert.show(
                                                         context: context,

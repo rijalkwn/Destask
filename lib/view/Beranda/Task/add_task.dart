@@ -24,6 +24,7 @@ class AddTask extends StatefulWidget {
 
 class _AddTaskState extends State<AddTask> {
   final String idpekerjaan = Get.parameters['idpekerjaan'] ?? '';
+  final String idUser = Get.parameters['iduser'] ?? '';
   final TextEditingController _deskripsiTaskController =
       TextEditingController();
   final TextEditingController _tautanTaskController = TextEditingController();
@@ -62,13 +63,6 @@ class _AddTaskState extends State<AddTask> {
     return dataKategori;
   }
 
-  //get id user
-  getIdUser() async {
-    final prefs = await SharedPreferences.getInstance();
-    var idUser = prefs.getString("id_user");
-    return idUser;
-  }
-
   //date picker
   DateTime? _selectedDateStart;
 
@@ -85,29 +79,6 @@ class _AddTaskState extends State<AddTask> {
         _selectedDateStart = pickedDate;
       });
     }
-  }
-
-  //pick file
-  void _pickFile() async {
-    setState(() {
-      isLoading = true;
-    });
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.any,
-    );
-    if (result != null) {
-      setState(() {
-        pickedFile = result.files.first;
-        fileName = pickedFile!.name;
-        filePath = pickedFile!.path.toString();
-        fileToDisplay = File(pickedFile!.path.toString());
-      });
-    } else {
-      print('User canceled the picker');
-    }
-    setState(() {
-      isLoading = false;
-    });
   }
 
   @override

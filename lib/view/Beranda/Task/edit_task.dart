@@ -8,7 +8,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../controller/status_task_controller.dart';
 import '../../../model/status_task_model.dart';
-import '../../../model/task_model.dart';
 import '../../../utils/global_colors.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -25,6 +24,7 @@ class EditTask extends StatefulWidget {
 
 class _EditTaskState extends State<EditTask> {
   final String idTask = Get.parameters['idtask'] ?? '';
+  final String idUser = Get.parameters['iduser'] ?? '';
   final TextEditingController _deskripsiTaskController =
       TextEditingController();
   final TextEditingController _persentaseSelesaiController =
@@ -42,7 +42,6 @@ class _EditTaskState extends State<EditTask> {
   String filePath = "";
   bool isLoading = false;
   String idPekerjaan = "";
-  String idUser = "";
   String idStatusTask = "";
   String idKategoriTask = "";
   bool completed = false;
@@ -50,7 +49,24 @@ class _EditTaskState extends State<EditTask> {
   @override
   void initState() {
     super.initState();
+    loadData();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    loadData();
+  }
+
+  void loadData() async {
     try {
+      getDataStatusTask().then((data) {
+        return data;
+      });
+      getDataKategoriTask().then((data) {
+        return data;
+      });
+      // getDataTask();
       getDataTask().then((value) {
         setState(() {
           idPekerjaan = value[0].id_pekerjaan.toString();
@@ -64,49 +80,30 @@ class _EditTaskState extends State<EditTask> {
           _persentaseSelesaiController.text =
               value[0].persentase_selesai.toString();
         });
-      });
-
-      getDataStatusTask().then((data) {
-        return data;
-      });
-      getDataKategoriTask().then((data) {
-        return data;
-      });
-      getIdUser().then((value) {
-        setState(() {
-          idUser = value;
-        });
+        return value;
       });
     } catch (e) {
-      print('Exception: $e');
+      print(e);
     }
+    ;
   }
 
   //getdata task
-  Future<List<TaskModel>> getDataTask() async {
-    List<TaskModel> dataTask = await taskController.getTaskById(idTask);
+  Future getDataTask() async {
+    var dataTask = await taskController.getTaskById(idTask);
     return dataTask;
   }
 
   //get status task
-  Future<List<StatusTaskModel>> getDataStatusTask() async {
-    List<StatusTaskModel> dataStatus =
-        await statusTaskController.getAllStatusTask();
+  Future getDataStatusTask() async {
+    var dataStatus = await statusTaskController.getAllStatusTask();
     return dataStatus;
   }
 
   //getkategori task
-  Future<List<KategoriTaskModel>> getDataKategoriTask() async {
-    List<KategoriTaskModel> dataKategori =
-        await kategoriTaskController.getAllKategoriTask();
+  Future getDataKategoriTask() async {
+    var dataKategori = await kategoriTaskController.getAllKategoriTask();
     return dataKategori;
-  }
-
-  //get id user
-  getIdUser() async {
-    final prefs = await SharedPreferences.getInstance();
-    var idUser = prefs.getString("id_user");
-    return idUser;
   }
 
   //date picker
@@ -152,6 +149,12 @@ class _EditTaskState extends State<EditTask> {
   }
 
   @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -192,7 +195,7 @@ class _EditTaskState extends State<EditTask> {
                 SizedBox(height: 16),
                 //status task
                 buildLabel('Status Task *'),
-                FutureBuilder<List<StatusTaskModel>>(
+                FutureBuilder(
                   future: getDataStatusTask(),
                   builder: (context, snapshot) {
                     if (snapshot.hasError) {
@@ -232,7 +235,7 @@ class _EditTaskState extends State<EditTask> {
                 SizedBox(height: 16),
                 //kategori task
                 buildLabel('Kategori Task *'),
-                FutureBuilder<List<KategoriTaskModel>>(
+                FutureBuilder(
                   future: getDataKategoriTask(),
                   builder: (context, snapshot) {
                     if (snapshot.hasError) {
@@ -353,10 +356,11 @@ class _EditTaskState extends State<EditTask> {
                               _deskripsiTaskController.text,
                               _tautanTaskController.text,
                               _persentaseSelesaiController.text.toString(),
-                              filePath, //bukti selesai
+                              File(filePath), //bukti selesai
                             );
                             if (submitTask) {
-                              Get.toNamed('/task/$idTask');
+                              Navigator.pushReplacementNamed(
+                                  context, '/task/$idPekerjaan');
                               QuickAlert.show(
                                   context: context,
                                   title: "Submit Task Berhasil",
@@ -411,7 +415,10 @@ class _EditTaskState extends State<EditTask> {
                             );
                             if (editTask) {
                               Navigator.pushReplacementNamed(
-                                  context, '/task/$idPekerjaan');
+                                context,
+                                '/task',
+                                arguments: idPekerjaan,
+                              );
                               QuickAlert.show(
                                   context: context,
                                   title: "Edit Task Berhasil",

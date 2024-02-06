@@ -77,6 +77,7 @@ class PekerjaanController {
         Iterable it = json.decode(response.body);
         List<PekerjaanModel> pekerjaan = List<PekerjaanModel>.from(
             it.map((e) => PekerjaanModel.fromJson(e)));
+        print(pekerjaan);
         return pekerjaan;
       } else {
         // Handle error

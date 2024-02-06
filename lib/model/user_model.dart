@@ -1,26 +1,26 @@
 class UserModel {
-  final String? id_user;
-  final String? id_usergroup;
-  final String? username;
-  final String? email;
-  final String? password;
-  final String? user_role;
-  final String? user_level;
-  final String? nama;
-  final String? status_keaktifan;
-  final String? foto_profil;
+  final String id_user;
+  String id_usergroup;
+  String username;
+  String email;
+  String password;
+  String user_role;
+  String user_level;
+  String nama;
+  String status_keaktifan;
+  String foto_profil;
 
   UserModel({
-    this.id_user,
-    this.id_usergroup,
-    this.username,
-    this.email,
-    this.password,
-    this.user_role,
-    this.user_level,
-    this.nama,
-    this.status_keaktifan,
-    this.foto_profil,
+    required this.id_user,
+    required this.id_usergroup,
+    required this.username,
+    required this.email,
+    required this.password,
+    required this.user_role,
+    required this.user_level,
+    required this.nama,
+    required this.status_keaktifan,
+    required this.foto_profil,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
