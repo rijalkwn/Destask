@@ -55,6 +55,8 @@ class PekerjaanModel {
 }
 
 class DataTambahan {
+  String nama_status;
+  String nama_kategori;
   String id_user_pm;
   String nama_pm;
   String desainer1;
@@ -77,10 +79,10 @@ class DataTambahan {
   String nama_fe_web1;
   String fe_mobile1;
   String nama_fe_mobile1;
-  String nama_status;
-  String nama_kategori;
 
   DataTambahan({
+    required this.nama_status,
+    required this.nama_kategori,
     required this.id_user_pm,
     required this.nama_pm,
     required this.desainer1,
@@ -103,12 +105,12 @@ class DataTambahan {
     required this.nama_fe_web1,
     required this.fe_mobile1,
     required this.nama_fe_mobile1,
-    required this.nama_status,
-    required this.nama_kategori,
   });
 
   factory DataTambahan.fromJson(Map<String, dynamic> json) {
     return DataTambahan(
+      nama_status: json['nama_status']?.toString() ?? '',
+      nama_kategori: json['nama_kategori']?.toString() ?? '',
       id_user_pm: json['id_user_pm']?.toString() ?? '',
       nama_pm: json['nama_pm']?.toString() ?? '',
       desainer1: json['desainer1']?.toString() ?? '',
@@ -131,8 +133,6 @@ class DataTambahan {
       nama_fe_web1: json['nama_fe_web1']?.toString() ?? '',
       fe_mobile1: json['fe_mobile1']?.toString() ?? '',
       nama_fe_mobile1: json['nama_fe_mobile1']?.toString() ?? '',
-      nama_status: json['nama_status']?.toString() ?? '',
-      nama_kategori: json['nama_kategori']?.toString() ?? '',
     );
   }
 }

@@ -3,6 +3,7 @@ import 'package:destask/controller/personil_controller.dart';
 import 'package:destask/controller/user_controller.dart';
 import 'package:destask/model/personil_model.dart';
 import 'package:destask/model/user_model.dart';
+import 'package:quickalert/quickalert.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../controller/pekerjaan_controller.dart';
@@ -123,6 +124,12 @@ class _PekerjaanState extends State<Pekerjaan>
               pekerjaan: pekerjaan,
               status: status,
               searchQuery: searchController.text,
+              onDismissed: () {
+                setState(() {
+                  pekerjaan =
+                      getDataPekerjaan(); // Ambil data pekerjaan kembali
+                });
+              },
             ),
         ],
       ),
@@ -131,16 +138,18 @@ class _PekerjaanState extends State<Pekerjaan>
 }
 
 class StatusPekerjaan extends StatelessWidget {
-  const StatusPekerjaan({
-    Key? key,
-    required this.pekerjaan,
-    required this.status,
-    required this.searchQuery,
-  }) : super(key: key);
+  const StatusPekerjaan(
+      {Key? key,
+      required this.pekerjaan,
+      required this.status,
+      required this.searchQuery,
+      required this.onDismissed})
+      : super(key: key);
 
   final Future<List<PekerjaanModel>> pekerjaan;
   final String status;
   final String searchQuery;
+  final VoidCallback onDismissed;
 
   @override
   Widget build(BuildContext context) {
@@ -166,6 +175,7 @@ class StatusPekerjaan extends StatelessWidget {
           return PekerjaanList(
             status: status,
             pekerjaan: filteredList,
+            refresh: onDismissed,
           );
         } else {
           return Center(child: Text('No data available.'));
@@ -177,20 +187,123 @@ class StatusPekerjaan extends StatelessWidget {
 
 @immutable
 class PekerjaanList extends StatelessWidget {
-  PekerjaanList({
+  const PekerjaanList({
+    super.key,
     required this.status,
     required this.pekerjaan,
+    required this.refresh,
   });
+
   final String status;
   final List<PekerjaanModel> pekerjaan;
+  final VoidCallback refresh;
+
+  getId() async {
+    var pref = await SharedPreferences.getInstance();
+    var id = pref.getString('id_user');
+    return id;
+  }
 
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
       itemCount: pekerjaan.length,
       itemBuilder: (context, index) {
-        return Padding(
-          padding: const EdgeInsets.only(top: 3, left: 5, right: 5),
+        return Dismissible(
+          key: Key(pekerjaan[index].id_pekerjaan.toString()),
+          direction: DismissDirection.horizontal, // Tetapkan arah ke horizontal
+          background: Container(
+            color: Colors.green, // Warna latar belakang saat digeser
+            alignment: Alignment.centerLeft, // Geser ke kiri
+            padding: EdgeInsets.only(left: 20.0),
+            child: Icon(Icons.check,
+                color: Colors.white), // Icon untuk menandakan "Selesai"
+          ),
+          secondaryBackground: Container(
+            color: Colors
+                .green, // Warna latar belakang saat digeser ke arah sebaliknya
+            alignment: Alignment.centerRight, // Geser ke kanan
+            padding: EdgeInsets.only(right: 20.0),
+            child: Icon(Icons.cancel,
+                color: Colors.white), // Icon untuk menandakan "Cancel"
+          ),
+          onDismissed: (direction) async {
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: Text('Konfirmasi'),
+                  content: Text(
+                      'Apakah Anda yakin ingin memindahkan pekerjaan ini?'),
+                  actions: <Widget>[
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop(); // Tutup dialog
+                      },
+                      child: Text('Tidak'),
+                    ),
+                    TextButton(
+                      onPressed: () async {
+                        Navigator.of(context).pop(); // Tutup dialog
+                        final idUser = await getId();
+                        if (direction == DismissDirection.startToEnd) {
+                          //cek id status pekerjaan
+                          int nextStatus;
+                          if (status == '6') {
+                            nextStatus = 1;
+                          } else {
+                            nextStatus = int.parse(status) + 1;
+                          }
+                          //cek pm
+                          if (pekerjaan[index].data_tambahan.id_user_pm ==
+                              idUser) {
+                            PekerjaanController().updateStatusPekerjaan(
+                                pekerjaan[index].id_pekerjaan!,
+                                nextStatus.toString());
+                            QuickAlert.show(
+                                context: context,
+                                title: "Pekerjaan Berhasil Dipindahkan",
+                                type: QuickAlertType.success);
+                          } else {
+                            QuickAlert.show(
+                                context: context,
+                                title: "Anda Bukan PM",
+                                type: QuickAlertType.error);
+                          }
+                        } else if (direction == DismissDirection.endToStart) {
+                          //cek id status pekerjaan
+                          int prevStatus;
+                          if (status == '1') {
+                            prevStatus = 6;
+                          } else {
+                            prevStatus = int.parse(status) - 1;
+                          }
+                          //cek pm
+                          if (pekerjaan[index].data_tambahan.id_user_pm ==
+                              idUser) {
+                            PekerjaanController().updateStatusPekerjaan(
+                                pekerjaan[index].id_pekerjaan!,
+                                prevStatus.toString());
+                            QuickAlert.show(
+                                context: context,
+                                title: "Pekerjaan Berhasil Dipindahkan",
+                                type: QuickAlertType.success);
+                          } else {
+                            QuickAlert.show(
+                                context: context,
+                                title: "Anda Bukan PM",
+                                type: QuickAlertType.error);
+                          }
+                        }
+                        refresh(); // Panggil fungsi refresh setelah melakukan pemindahan
+                      },
+                      child: Text('Ya'),
+                    ),
+                  ],
+                );
+              },
+            );
+          },
           child: Card(
             color: GlobalColors.mainColor,
             child: ListTile(

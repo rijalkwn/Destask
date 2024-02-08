@@ -1,5 +1,6 @@
 import 'package:destask/controller/kategori_task_controller.dart';
 import 'package:flutter/gestures.dart';
+import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../controller/pekerjaan_controller.dart';
@@ -114,8 +115,8 @@ class _DetailTaskState extends State<DetailTask> {
                       statusVerifikasi == ''
                           ? 'Belum Diverifikasi'
                           : statusVerifikasi),
-                  _buildTableRow('Persentase Selesai', persentaseSelesai + '%'),
-                  _buildTableRowLink('Tautan Task', Uri.parse(tautanTask)),
+                  _buildTableRow('Persentase Selesai', '$persentaseSelesai%'),
+                  _buildTableRowLink('Tautan Task', tautanTask),
                   _buildTableRow('Alasan Verifikasi',
                       alasanVerifikasi == '' ? '-' : alasanVerifikasi),
                   _buildTableRow(
@@ -164,49 +165,57 @@ class _DetailTaskState extends State<DetailTask> {
     );
   }
 
-  TableRow _buildTableRowLink(String label, Uri? link) {
+  TableRow _buildTableRowLink(String label, String link) {
     return TableRow(
       children: [
         TableCell(
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
+          child: Container(
+            padding: EdgeInsets.symmetric(vertical: 8.0),
             child: Text(
               label,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
         ),
         TableCell(
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
+          child: Container(
+            padding: EdgeInsets.symmetric(vertical: 8.0),
             child: Text(":"),
           ),
         ),
         TableCell(
           child: Padding(
             padding: const EdgeInsets.all(8.0),
-            child: link != null
-                ? RichText(
-                    text: TextSpan(
-                      style: DefaultTextStyle.of(context).style,
-                      children: [
-                        TextSpan(
-                          text: link.toString(),
-                          style: TextStyle(
-                            color: Colors.blue,
-                            decoration: TextDecoration.underline,
-                          ),
-                          recognizer: TapGestureRecognizer()
-                            ..onTap = () {
-                              launchUrl(link);
-                            },
-                        ),
-                      ],
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    link.isNotEmpty
+                        ? link.length > 30
+                            ? link.substring(0, 30) + '...'
+                            : link
+                        : "Tidak ada tautan",
+                    style: TextStyle(
+                      color: Colors.blue,
+                      decoration: TextDecoration.underline,
                     ),
-                  )
-                : Text('Tidak ada tautan'),
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(Icons.copy),
+                  onPressed: () {
+                    if (link != null) {
+                      Clipboard.setData(ClipboardData(text: link));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Tautan berhasil disalin!'),
+                        ),
+                      );
+                    }
+                  },
+                ),
+              ],
+            ),
           ),
         ),
       ],

@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:destask/controller/task_submit_controller.dart';
+
 import '../../../controller/kategori_task_controller.dart';
 import '../../../controller/task_controller.dart';
 import '../../../model/kategori_task_model.dart';
@@ -24,6 +26,7 @@ class EditTask extends StatefulWidget {
 
 class _EditTaskState extends State<EditTask> {
   final String idTask = Get.parameters['idtask'] ?? '';
+  final String idPekerjaan = Get.arguments['idpekerjaan'].toString() ?? '';
   final String idUser = Get.parameters['iduser'] ?? '';
   final TextEditingController _deskripsiTaskController =
       TextEditingController();
@@ -34,76 +37,138 @@ class _EditTaskState extends State<EditTask> {
   StatusTaskController statusTaskController = StatusTaskController();
   KategoriTaskController kategoriTaskController = KategoriTaskController();
   TaskController taskController = TaskController();
+  TaskSubmitController taskSubmitController = TaskSubmitController();
 
-  //file
-  PlatformFile? pickedFile;
-  File? fileToDisplay;
-  String? fileName;
-  String filePath = "";
   bool isLoading = false;
-  String idPekerjaan = "";
   String idStatusTask = "";
   String idKategoriTask = "";
   bool completed = false;
+  List<StatusTaskModel> statusList = [];
+  List<KategoriTaskModel> kategoriList = [];
 
   @override
   void initState() {
     super.initState();
     loadData();
+    getDataTask().then((value) {
+      setState(() {
+        _deskripsiTaskController.text = value[0].deskripsi_task.toString();
+        _persentaseSelesaiController.text =
+            value[0].persentase_selesai.toString();
+        _selectedDateStart = DateTime.parse(value[0].tgl_planing.toString());
+        idStatusTask = value[0].id_status_task.toString();
+        idKategoriTask = value[0].id_kategori_task.toString();
+        _tautanTaskController.text = value[0].tautan_task.toString();
+        _persentaseSelesaiController.text =
+            value[0].persentase_selesai.toString();
+      });
+      return value;
+    });
+    print(idPekerjaan);
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    loadData();
+    getDataTask().then((value) {
+      setState(() {
+        _deskripsiTaskController.text = value[0].deskripsi_task.toString();
+        _persentaseSelesaiController.text =
+            value[0].persentase_selesai.toString();
+        _selectedDateStart = DateTime.parse(value[0].tgl_planing.toString());
+        idStatusTask = value[0].id_status_task.toString();
+        idKategoriTask = value[0].id_kategori_task.toString();
+        _tautanTaskController.text = value[0].tautan_task.toString();
+        _persentaseSelesaiController.text =
+            value[0].persentase_selesai.toString();
+      });
+      return value;
+    });
   }
 
   void loadData() async {
     try {
-      getDataStatusTask().then((data) {
-        return data;
-      });
-      getDataKategoriTask().then((data) {
-        return data;
-      });
-      // getDataTask();
-      getDataTask().then((value) {
+      await getDataStatusTask().then((data) {
         setState(() {
-          idPekerjaan = value[0].id_pekerjaan.toString();
-          _deskripsiTaskController.text = value[0].deskripsi_task.toString();
-          _persentaseSelesaiController.text =
-              value[0].persentase_selesai.toString();
-          _selectedDateStart = DateTime.parse(value[0].tgl_planing.toString());
-          idStatusTask = value[0].id_status_task.toString();
-          idKategoriTask = value[0].id_kategori_task.toString();
-          _tautanTaskController.text = value[0].tautan_task.toString();
-          _persentaseSelesaiController.text =
-              value[0].persentase_selesai.toString();
+          statusList = data;
         });
-        return value;
+        return data;
+      }).catchError((error) {
+        print('Error loading status task data: $error');
+        QuickAlert.show(
+          context: context,
+          title: "Gagal Memuat Data",
+          type: QuickAlertType.error,
+        );
+      });
+      await getDataKategoriTask().then((data) {
+        setState(() {
+          kategoriList = data;
+        });
+      }).catchError((error) {
+        print('Error loading kategori task data: $error');
+        QuickAlert.show(
+          context: context,
+          title: "Gagal Memuat Data",
+          type: QuickAlertType.error,
+        );
       });
     } catch (e) {
-      print(e);
+      print('Error loading data: $e');
+      QuickAlert.show(
+        context: context,
+        title: "Gagal Memuat Data",
+        type: QuickAlertType.error,
+      );
     }
-    ;
   }
 
   //getdata task
   Future getDataTask() async {
-    var dataTask = await taskController.getTaskById(idTask);
-    return dataTask;
+    try {
+      var dataTask = await taskController.getTaskById(idTask);
+      return dataTask;
+    } catch (e) {
+      print('Error fetching task data: $e');
+      QuickAlert.show(
+        context: context,
+        title: "Gagal Memuat Data",
+        type: QuickAlertType.error,
+      );
+      return null;
+    }
   }
 
   //get status task
-  Future getDataStatusTask() async {
-    var dataStatus = await statusTaskController.getAllStatusTask();
-    return dataStatus;
+  Future<List<StatusTaskModel>> getDataStatusTask() async {
+    try {
+      var dataStatus = await statusTaskController.getAllStatusTask();
+      return dataStatus;
+    } catch (e) {
+      print('Error fetching task data: $e');
+      QuickAlert.show(
+        context: context,
+        title: "Gagal Memuat Data",
+        type: QuickAlertType.error,
+      );
+      return [];
+    }
   }
 
   //getkategori task
-  Future getDataKategoriTask() async {
-    var dataKategori = await kategoriTaskController.getAllKategoriTask();
-    return dataKategori;
+  Future<List<KategoriTaskModel>> getDataKategoriTask() async {
+    try {
+      var dataKategori = await kategoriTaskController.getAllKategoriTask();
+      return dataKategori;
+    } catch (e) {
+      print('Error fetching task data: $e');
+      QuickAlert.show(
+        context: context,
+        title: "Gagal Memuat Data",
+        type: QuickAlertType.error,
+      );
+      return [];
+    }
   }
 
   //date picker
@@ -124,15 +189,17 @@ class _EditTaskState extends State<EditTask> {
     }
   }
 
+  //file
+  PlatformFile? pickedFile;
+  File? fileToDisplay;
+  String fileName = "";
+  String filePath = "";
   //pick file
   void _pickFile() async {
     setState(() {
       isLoading = true;
     });
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'],
-    );
+    FilePickerResult? result = await FilePicker.platform.pickFiles();
     if (result != null) {
       setState(() {
         pickedFile = result.files.first;
@@ -146,12 +213,6 @@ class _EditTaskState extends State<EditTask> {
     setState(() {
       isLoading = false;
     });
-  }
-
-  @override
-  void dispose() {
-    // TODO: implement dispose
-    super.dispose();
   }
 
   @override
@@ -195,81 +256,57 @@ class _EditTaskState extends State<EditTask> {
                 SizedBox(height: 16),
                 //status task
                 buildLabel('Status Task *'),
-                FutureBuilder(
-                  future: getDataStatusTask(),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasError) {
-                      return Text('Error loading data');
-                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return Text('No data available');
-                    } else {
-                      List<StatusTaskModel> statusList = snapshot.data!;
-                      return DropdownButtonFormField<String>(
-                        value: idStatusTask,
-                        onChanged: (value) {
-                          setState(() {
-                            idStatusTask = value!;
-                          });
-                        },
-                        items: statusList.map((status) {
-                          return DropdownMenuItem<String>(
-                            value: status.id_status_task,
-                            child: Text(status.nama_status_task.toString()),
-                          );
-                        }).toList(),
-                        decoration: InputDecoration(
-                          contentPadding:
-                              EdgeInsets.symmetric(horizontal: 15, vertical: 3),
-                          border: OutlineInputBorder(),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Kolom Status Task harus diisi';
-                          }
-                          return null;
-                        },
-                      );
+                DropdownButtonFormField<String>(
+                  value: idStatusTask ?? '',
+                  onChanged: (value) {
+                    setState(() {
+                      idStatusTask = value!;
+                    });
+                  },
+                  items: statusList.map((status) {
+                    return DropdownMenuItem<String>(
+                      value: status.id_status_task,
+                      child: Text(status.nama_status_task.toString()),
+                    );
+                  }).toList(),
+                  decoration: InputDecoration(
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 15, vertical: 3),
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Kolom Status Task harus diisi';
                     }
+                    return null;
                   },
                 ),
                 SizedBox(height: 16),
                 //kategori task
                 buildLabel('Kategori Task *'),
-                FutureBuilder(
-                  future: getDataKategoriTask(),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasError) {
-                      return Text('Error loading data');
-                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return Text('No data available');
-                    } else {
-                      List<KategoriTaskModel> kategoriList = snapshot.data!;
-                      return DropdownButtonFormField<String>(
-                        value: idKategoriTask,
-                        onChanged: (value) {
-                          setState(() {
-                            idKategoriTask = value!;
-                          });
-                        },
-                        items: kategoriList.map((kategori) {
-                          return DropdownMenuItem<String>(
-                            value: kategori.id_kategori_task,
-                            child: Text(kategori.nama_kategori_task.toString()),
-                          );
-                        }).toList(),
-                        decoration: InputDecoration(
-                          contentPadding:
-                              EdgeInsets.symmetric(horizontal: 15, vertical: 3),
-                          border: OutlineInputBorder(),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Kolom Kategori Task harus diisi';
-                          }
-                          return null;
-                        },
-                      );
+                DropdownButtonFormField<String>(
+                  value: idKategoriTask ?? '',
+                  onChanged: (value) {
+                    setState(() {
+                      idKategoriTask = value!;
+                    });
+                  },
+                  items: kategoriList.map((kategori) {
+                    return DropdownMenuItem<String>(
+                      value: kategori.id_kategori_task,
+                      child: Text(kategori.nama_kategori_task.toString()),
+                    );
+                  }).toList(),
+                  decoration: InputDecoration(
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 15, vertical: 3),
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Kolom Kategori Task harus diisi';
                     }
+                    return null;
                   },
                 ),
                 SizedBox(height: 16),
@@ -347,7 +384,8 @@ class _EditTaskState extends State<EditTask> {
                             isLoading = true;
                           });
                           if (_formKey.currentState!.validate()) {
-                            bool submitTask = await taskController.submitTask(
+                            bool submitTask =
+                                await taskSubmitController.submitTask(
                               idTask.toString(),
                               idPekerjaan.toString(),
                               idStatusTask.toString(),
@@ -356,7 +394,8 @@ class _EditTaskState extends State<EditTask> {
                               _deskripsiTaskController.text,
                               _tautanTaskController.text,
                               _persentaseSelesaiController.text.toString(),
-                              File(filePath), //bukti selesai
+                              fileName,
+                              filePath, //bukti selesai
                             );
                             if (submitTask) {
                               Navigator.pushReplacementNamed(
@@ -416,8 +455,7 @@ class _EditTaskState extends State<EditTask> {
                             if (editTask) {
                               Navigator.pushReplacementNamed(
                                 context,
-                                '/task',
-                                arguments: idPekerjaan,
+                                '/task/$idPekerjaan',
                               );
                               QuickAlert.show(
                                   context: context,
@@ -438,22 +476,24 @@ class _EditTaskState extends State<EditTask> {
                             });
                           }
                         },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                            color: GlobalColors.mainColor,
-                          ),
-                          padding: const EdgeInsets.all(16.0),
-                          child: Text(
-                            'Ubah Task',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
+                        child: isLoading
+                            ? CircularProgressIndicator()
+                            : Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10),
+                                  color: Colors.green,
+                                ),
+                                padding: const EdgeInsets.all(16.0),
+                                child: Text(
+                                  'Edit Task',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
                       )
               ],
             ),

@@ -1,3 +1,5 @@
+import 'package:quickalert/quickalert.dart';
+
 import '../../controller/ganti_password_controller.dart';
 import '../../utils/global_colors.dart';
 import 'package:flutter/material.dart';
@@ -100,22 +102,20 @@ class _GantiPasswordState extends State<GantiPassword> {
                               _oldPasswordController.text,
                               _newPasswordController.text);
                       if (success) {
-                        Get.back();
-                        Get.snackbar(
-                          'Berhasil',
-                          'Password berhasil diganti',
-                          backgroundColor: Colors.green,
-                          colorText: Colors.white,
-                          snackPosition: SnackPosition.BOTTOM,
-                        );
+                        setState(() {
+                          _oldPasswordController.text = '';
+                          _newPasswordController.text = '';
+                          _confirmPasswordController.text = '';
+                        });
+                        QuickAlert.show(
+                            context: context,
+                            title: "Ganti Password Berhasil",
+                            type: QuickAlertType.success);
                       } else {
-                        Get.snackbar(
-                          'Gagal',
-                          'Password gagal diganti',
-                          backgroundColor: Colors.red,
-                          colorText: Colors.white,
-                          snackPosition: SnackPosition.BOTTOM,
-                        );
+                        QuickAlert.show(
+                            context: context,
+                            title: "Ganti Password Gagal",
+                            type: QuickAlertType.error);
                       }
                     }
                   },

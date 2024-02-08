@@ -429,7 +429,11 @@ class _TaskState extends State<Task> {
                                   child: GestureDetector(
                                     onTap: () {
                                       Get.toNamed(
-                                          '/edit_task/${taskData['id_task']}');
+                                          '/edit_task/${taskData['id_task']}',
+                                          arguments: {
+                                            'idpekerjaan':
+                                                taskData['id_pekerjaan']
+                                          });
                                     },
                                     child: Center(
                                       child: Icon(

@@ -89,4 +89,29 @@ class PekerjaanController {
       return [];
     }
   }
+
+  Future updateStatusPekerjaan(String idPekerjaan, String idStatus) async {
+    try {
+      var token = await getToken();
+      final data = {
+        'id_status_pekerjaan': idStatus,
+      };
+      var response = await http.put(
+        Uri.parse('$url/$idPekerjaan'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json'
+        },
+        body: json.encode(data),
+      );
+      print(response.body);
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      return false;
+    }
+  }
 }

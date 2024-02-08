@@ -3,8 +3,6 @@ import 'dart:async';
 import 'package:badges/badges.dart';
 import 'package:destask/controller/personil_controller.dart';
 import 'package:destask/controller/user_controller.dart';
-import 'package:destask/model/personil_model.dart';
-import 'package:destask/model/user_model.dart';
 import '../../controller/notifikasi_controller.dart';
 import '../../controller/pekerjaan_controller.dart';
 import '../../model/pekerjaan_model.dart';

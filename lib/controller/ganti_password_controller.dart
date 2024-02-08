@@ -23,18 +23,24 @@ class GantiPasswordController {
     try {
       var token = await getToken();
       var iduser = await getIdUser();
+      final data = json.encode({
+        'id_user': iduser,
+        'old_password': oldPassword,
+        'new_password': newPassword,
+      });
       final response = await http.put(
-        Uri.parse('$url/$iduser'),
-        headers: {'Authorization': 'Bearer $token'},
-        body: {
-          'id_user': iduser,
-          'old_password': oldPassword,
-          'new_password': newPassword,
+        Uri.parse(url),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
         },
+        body: data,
       );
-      Map<String, dynamic> jsonMap = jsonDecode(response.body);
-      int status = jsonMap['status'];
-      if (status == 200) {
+      print(iduser);
+      print(oldPassword);
+      print(newPassword);
+      print(response.body);
+      if (response.statusCode == 200) {
         return true;
       } else {
         return false;

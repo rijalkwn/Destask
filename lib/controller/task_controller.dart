@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import '../model/task_model.dart';
 import '../utils/constant_api.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -218,7 +216,7 @@ class TaskController {
       };
       print(jsonEncode(data));
       var response = await http.put(
-        Uri.parse('http://192.168.233.66/Destask/public/api/task/$idTask'),
+        Uri.parse('$url/$idTask'),
         headers: {
           'Content-Type': 'application/json', // Add Content-Type header
           'Authorization': 'Bearer $token',
@@ -240,57 +238,6 @@ class TaskController {
       }
     } catch (e) {
       print('Exception editing task: $e');
-      return false;
-    }
-  }
-
-  //submit task
-  Future submitTask(
-      String idTask,
-      String idPekerjaan,
-      String idStatusTask,
-      String idKategoriTask,
-      DateTime tglPlaning,
-      String deskripsiTask,
-      String tautanTask,
-      String persentaseSelesai,
-      File buktiSelesai) async {
-    try {
-      var token = await getToken();
-      var request = http.MultipartRequest('PUT', Uri.parse('$url/$idTask'))
-        ..headers['Authorization'] = 'Bearer $token';
-
-      Map<String, String> fieldsMap = {
-        'id_status_task': idStatusTask,
-        'id_kategori_task': idKategoriTask,
-        'tgl_planing': tglPlaning.toIso8601String(),
-        'deskripsi_task': deskripsiTask,
-        'tautan_task': tautanTask,
-        'persentase_selesai': persentaseSelesai,
-      };
-
-      request.fields.addAll(fieldsMap);
-
-      request.files.add(http.MultipartFile(
-        'bukti_selesai',
-        buktiSelesai.readAsBytes().asStream(),
-        buktiSelesai.lengthSync(),
-        filename: buktiSelesai.path.split("/").last,
-      ));
-
-      var response = await request.send();
-
-      if (response.statusCode == 200) {
-        Get.offAndToNamed('/task/$idPekerjaan');
-        return true;
-      } else {
-        print('$url/$idTask');
-
-        print('Error submiting task: ${response.statusCode}');
-        return false;
-      }
-    } catch (e) {
-      print('Exception submiting task: $e');
       return false;
     }
   }
