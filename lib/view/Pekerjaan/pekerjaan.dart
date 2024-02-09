@@ -32,13 +32,7 @@ class _PekerjaanState extends State<Pekerjaan>
   void initState() {
     super.initState();
     _tabController = TabController(length: 6, vsync: this);
-    pekerjaan = getDataPekerjaan();
-  }
-
-  // get data pekerjaan
-  Future<List<PekerjaanModel>> getDataPekerjaan() async {
-    var data = await pekerjaanController.getAllPekerjaanUser();
-    return data;
+    pekerjaan = pekerjaanController.showAllByUser();
   }
 
   @override
@@ -126,8 +120,7 @@ class _PekerjaanState extends State<Pekerjaan>
               searchQuery: searchController.text,
               onDismissed: () {
                 setState(() {
-                  pekerjaan =
-                      getDataPekerjaan(); // Ambil data pekerjaan kembali
+                  pekerjaan = pekerjaanController.showAllByUser();
                 });
               },
             ),
@@ -161,7 +154,7 @@ class StatusPekerjaan extends StatelessWidget {
         } else if (snapshot.hasError) {
           return Center(child: Text('Error: ${snapshot.error}'));
         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return Center(child: Text('No data available.'));
+          return Center(child: Text('Tidak ada pekerjaan yang tersedia'));
         } else if (snapshot.hasData) {
           List<PekerjaanModel> pekerjaan = snapshot.data!;
           final filteredList = pekerjaan
@@ -178,7 +171,7 @@ class StatusPekerjaan extends StatelessWidget {
             refresh: onDismissed,
           );
         } else {
-          return Center(child: Text('No data available.'));
+          return Center(child: Text('Tidak ada pekerjaan yang tersedia.'));
         }
       },
     );
@@ -211,23 +204,20 @@ class PekerjaanList extends StatelessWidget {
       itemBuilder: (context, index) {
         return Dismissible(
           key: Key(pekerjaan[index].id_pekerjaan.toString()),
-          direction: DismissDirection.horizontal, // Tetapkan arah ke horizontal
+          direction: DismissDirection.horizontal,
           background: Container(
-            color: Colors.green, // Warna latar belakang saat digeser
+            color: Colors.green,
             alignment: Alignment.centerLeft, // Geser ke kiri
             padding: EdgeInsets.only(left: 20.0),
-            child: Icon(Icons.check,
-                color: Colors.white), // Icon untuk menandakan "Selesai"
+            child: getStatusGeserKiri(status),
           ),
           secondaryBackground: Container(
-            color: Colors
-                .green, // Warna latar belakang saat digeser ke arah sebaliknya
-            alignment: Alignment.centerRight, // Geser ke kanan
+            color: Colors.green,
+            alignment: Alignment.centerRight,
             padding: EdgeInsets.only(right: 20.0),
-            child: Icon(Icons.cancel,
-                color: Colors.white), // Icon untuk menandakan "Cancel"
+            child: getStatusGeserKanan(status),
           ),
-          onDismissed: (direction) async {
+          confirmDismiss: (direction) async {
             showDialog(
               context: context,
               builder: (BuildContext context) {
@@ -267,7 +257,7 @@ class PekerjaanList extends StatelessWidget {
                           } else {
                             QuickAlert.show(
                                 context: context,
-                                title: "Anda Bukan PM",
+                                title: "Anda Bukan PM dari Pekerjaan Ini",
                                 type: QuickAlertType.error);
                           }
                         } else if (direction == DismissDirection.endToStart) {
@@ -291,7 +281,7 @@ class PekerjaanList extends StatelessWidget {
                           } else {
                             QuickAlert.show(
                                 context: context,
-                                title: "Anda Bukan PM",
+                                title: "Anda Bukan PM dari Pekerjaan Ini",
                                 type: QuickAlertType.error);
                           }
                         }
@@ -348,6 +338,86 @@ class PekerjaanList extends StatelessWidget {
         );
       },
     );
+  }
+
+  Widget getStatusGeserKanan(String status) {
+    switch (status) {
+      case '1':
+        return Text(
+          "Pindahkan ke Support",
+          style: TextStyle(color: Colors.white),
+        );
+      case '2':
+        return Text(
+          "Pindahkan ke On Progress",
+          style: TextStyle(color: Colors.white),
+        );
+      case '3':
+        return Text(
+          "Pindahkan ke Selesai",
+          style: TextStyle(color: Colors.white),
+        );
+      case '4':
+        return Text(
+          "Pindahkan ke Pending",
+          style: TextStyle(color: Colors.white),
+        );
+      case '5':
+        return Text(
+          "Pindahkan ke Cancel",
+          style: TextStyle(color: Colors.white),
+        );
+      case '6':
+        return Text(
+          "Pindahkan ke Bast",
+          style: TextStyle(color: Colors.white),
+        );
+      default:
+        return Text(
+          "Tidak Diketahui",
+          style: TextStyle(color: Colors.white),
+        );
+    }
+  }
+
+  Widget getStatusGeserKiri(String status) {
+    switch (status) {
+      case '1':
+        return Text(
+          "Pindahkan ke Selesai",
+          style: TextStyle(color: Colors.white),
+        );
+      case '2':
+        return Text(
+          "Pindahkan ke Pending",
+          style: TextStyle(color: Colors.white),
+        );
+      case '3':
+        return Text(
+          "Pindahkan ke Cancel",
+          style: TextStyle(color: Colors.white),
+        );
+      case '4':
+        return Text(
+          "Pindahkan ke Bast",
+          style: TextStyle(color: Colors.white),
+        );
+      case '5':
+        return Text(
+          "Pindahkan ke Support",
+          style: TextStyle(color: Colors.white),
+        );
+      case '6':
+        return Text(
+          "Pindahkan ke On Progress",
+          style: TextStyle(color: Colors.white),
+        );
+      default:
+        return Text(
+          "Tidak Diketahui",
+          style: TextStyle(color: Colors.white),
+        );
+    }
   }
 }
 

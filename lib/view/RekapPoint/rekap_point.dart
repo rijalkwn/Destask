@@ -167,44 +167,58 @@ class _RekapPointState extends State<RekapPoint> {
                   SizedBox(
                     height: 10,
                   ),
-                  Text(
-                    'List Pekerjaan',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
                 ],
               ),
             ),
-            SingleChildScrollView(
-              child: FutureBuilder<List<PekerjaanModel>>(
-                future: pekerjaan,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      child: Center(child: CircularProgressIndicator()),
-                    );
-                  } else if (snapshot.hasError) {
-                    return Center(child: Text('Error: ${snapshot.error}'));
-                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return Padding(
-                      padding: EdgeInsets.symmetric(vertical: 200),
-                      child: Center(child: Text('No data available.')),
-                    );
-                  } else if (snapshot.hasData) {
-                    List<PekerjaanModel> pekerjaan = snapshot.data!;
-                    return Padding(
-                      padding: const EdgeInsets.only(top: 20),
-                      child: _ListOfJob(
-                          pekerjaan: pekerjaan,
-                          totalPoinPerPekerjaan: totalPoinPerPekerjaan),
-                    );
-                  } else {
-                    return Center(child: Text('No data available.'));
-                  }
-                },
+            Expanded(
+              child: Container(
+                height: MediaQuery.of(context).size.height * 0.7,
+                padding: EdgeInsets.symmetric(horizontal: 10),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.2),
+                      spreadRadius: 5,
+                      blurRadius: 7,
+                      offset: Offset(0, 3),
+                    ),
+                  ],
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20),
+                  ),
+                ),
+                child: SingleChildScrollView(
+                  child: FutureBuilder<List<PekerjaanModel>>(
+                    future: pekerjaan,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          child: Center(child: CircularProgressIndicator()),
+                        );
+                      } else if (snapshot.hasError) {
+                        return Center(child: Text('Error: ${snapshot.error}'));
+                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                        return Padding(
+                          padding: EdgeInsets.symmetric(vertical: 200),
+                          child: Center(child: Text('No data available.')),
+                        );
+                      } else if (snapshot.hasData) {
+                        List<PekerjaanModel> pekerjaan = snapshot.data!;
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 20),
+                          child: _ListOfJob(
+                              pekerjaan: pekerjaan,
+                              totalPoinPerPekerjaan: totalPoinPerPekerjaan),
+                        );
+                      } else {
+                        return Center(child: Text('No data available.'));
+                      }
+                    },
+                  ),
+                ),
               ),
             ),
           ],
@@ -229,34 +243,35 @@ class _ListOfJob extends StatelessWidget {
     return Container(
       child: Column(
         children: pekerjaan.map((pekerjaanItem) {
-          return Card(
-            color: GlobalColors.mainColor,
-            child: GestureDetector(
-              onTap: () {
-                Get.toNamed(
-                    '/detail_rekap_point/' +
-                        pekerjaanItem.id_pekerjaan.toString(),
-                    arguments: pekerjaanItem.id_pekerjaan);
-              },
-              child: ListTile(
-                title: Text(
-                  pekerjaanItem.nama_pekerjaan ?? '-',
-                  style: TextStyle(color: Colors.white),
-                ),
-                trailing: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
+          return GestureDetector(
+            onTap: () {
+              Get.toNamed(
+                  '/detail_rekap_point/' +
+                      pekerjaanItem.id_pekerjaan.toString(),
+                  arguments: pekerjaanItem.id_pekerjaan);
+            },
+            child: Column(
+              children: [
+                ListTile(
+                  title: Text(
+                    pekerjaanItem.nama_pekerjaan ?? '-',
                   ),
-                  child: Text(
-                    "${totalPoinPerPekerjaan[pekerjaan.indexOf(pekerjaanItem)] == 0 ? '00' : totalPoinPerPekerjaan[pekerjaan.indexOf(pekerjaanItem)]}",
-                    style: TextStyle(
+                  trailing: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
                       color: GlobalColors.mainColor,
+                      shape: BoxShape.circle,
                     ),
+                    child: Text(
+                        "${totalPoinPerPekerjaan[pekerjaan.indexOf(pekerjaanItem)] == 0 ? '00' : totalPoinPerPekerjaan[pekerjaan.indexOf(pekerjaanItem)]}",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        )),
                   ),
                 ),
-              ),
+                Divider(),
+              ],
             ),
           );
         }).toList(),

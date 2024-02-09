@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 const String url = "$baseURL/authlogin";
 
 class AuthController {
+  //Fungsi Login
   Future login(String identitasController, String passwordController) async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -34,6 +35,7 @@ class AuthController {
     }
   }
 
+  //Fungsi Logout
   Future logout() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -45,6 +47,7 @@ class AuthController {
     }
   }
 
+  //fungsi cek email pada lupa password
   Future checkEmailExist(String email) async {
     try {
       final String url = "$baseURL/authcekuser";

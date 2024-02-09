@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:destask/controller/task_submit_controller.dart';
+import 'package:destask/model/task_model.dart';
 
 import '../../../controller/kategori_task_controller.dart';
 import '../../../controller/task_controller.dart';
@@ -45,12 +46,13 @@ class _EditTaskState extends State<EditTask> {
   bool completed = false;
   List<StatusTaskModel> statusList = [];
   List<KategoriTaskModel> kategoriList = [];
+  late Future<List<TaskModel>> task;
 
   @override
   void initState() {
     super.initState();
     loadData();
-    getDataTask().then((value) {
+    task = getDataTask().then((value) {
       setState(() {
         _deskripsiTaskController.text = value[0].deskripsi_task.toString();
         _persentaseSelesaiController.text =
@@ -70,7 +72,7 @@ class _EditTaskState extends State<EditTask> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    getDataTask().then((value) {
+    task = getDataTask().then((value) {
       setState(() {
         _deskripsiTaskController.text = value[0].deskripsi_task.toString();
         _persentaseSelesaiController.text =
@@ -226,266 +228,216 @@ class _EditTaskState extends State<EditTask> {
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                //deskripsi task
-                buildLabel('Deskripsi Task *'),
-                buildFormField(_deskripsiTaskController, 'Deskripsi Task',
-                    TextInputType.multiline),
-                SizedBox(height: 16),
-
-                //tanggal mulai
-                buildLabel('Deadline *'),
-                MyDateTimePicker(
-                  selectedDate: _selectedDateStart,
-                  onChanged: (date) {
-                    setState(() {
-                      _selectedDateStart = date;
-                    });
-                  },
-                  validator: (date) {
-                    if (date == null) {
-                      return 'Kolom Tanggal Deadline harus diisi';
-                    }
-                    return null;
-                  },
-                ),
-                SizedBox(height: 16),
-                //status task
-                buildLabel('Status Task *'),
-                DropdownButtonFormField<String>(
-                  value: idStatusTask ?? '',
-                  onChanged: (value) {
-                    setState(() {
-                      idStatusTask = value!;
-                    });
-                  },
-                  items: statusList.map((status) {
-                    return DropdownMenuItem<String>(
-                      value: status.id_status_task,
-                      child: Text(status.nama_status_task.toString()),
-                    );
-                  }).toList(),
-                  decoration: InputDecoration(
-                    contentPadding:
-                        EdgeInsets.symmetric(horizontal: 15, vertical: 3),
-                    border: OutlineInputBorder(),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Kolom Status Task harus diisi';
-                    }
-                    return null;
-                  },
-                ),
-                SizedBox(height: 16),
-                //kategori task
-                buildLabel('Kategori Task *'),
-                DropdownButtonFormField<String>(
-                  value: idKategoriTask ?? '',
-                  onChanged: (value) {
-                    setState(() {
-                      idKategoriTask = value!;
-                    });
-                  },
-                  items: kategoriList.map((kategori) {
-                    return DropdownMenuItem<String>(
-                      value: kategori.id_kategori_task,
-                      child: Text(kategori.nama_kategori_task.toString()),
-                    );
-                  }).toList(),
-                  decoration: InputDecoration(
-                    contentPadding:
-                        EdgeInsets.symmetric(horizontal: 15, vertical: 3),
-                    border: OutlineInputBorder(),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Kolom Kategori Task harus diisi';
-                    }
-                    return null;
-                  },
-                ),
-                SizedBox(height: 16),
-                //tautan task
-                buildLabel('Tautan Task *'),
-                buildFormField(
-                    _tautanTaskController, "Tautan Task", TextInputType.url),
-                SizedBox(height: 16),
-                //persentase selesai
-                buildLabel('Persentase Selesai *'),
-                buildFormField(_persentaseSelesaiController,
-                    'Persentase Selesai', TextInputType.number),
-                SizedBox(height: 5),
-                // Checkbox completed
-                Row(
-                  children: [
-                    Checkbox(
-                      value: completed,
-                      activeColor: Colors.green,
-                      onChanged: (value) {
-                        setState(() {
-                          completed = value!;
-                        });
-                      },
-                    ),
-                    Text('Task Selesai?', style: TextStyle(fontSize: 16)),
-                  ],
-                ),
-                if (completed)
-                  Column(
+          child: task == null
+              ? Text("gagal memuat data")
+              : Form(
+                  key: _formKey,
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      //bukti selesai
-                      buildLabel('Bukti Selesai *'),
-                      GestureDetector(
-                        onTap: () {
-                          _pickFile();
+                      //deskripsi task
+                      buildLabel('Deskripsi Task *'),
+                      buildFormField(_deskripsiTaskController, 'Deskripsi Task',
+                          TextInputType.multiline),
+                      SizedBox(height: 16),
+
+                      //tanggal mulai
+                      buildLabel('Deadline *'),
+                      MyDateTimePicker(
+                        selectedDate: _selectedDateStart,
+                        onChanged: (date) {
+                          setState(() {
+                            _selectedDateStart = date;
+                          });
                         },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                            color: Colors.grey[200],
-                          ),
-                          padding: EdgeInsets.all(16),
-                          child: Row(
-                            children: [
-                              Icon(Icons.upload_file),
-                              SizedBox(width: 16),
-                              if (pickedFile != null)
-                                Expanded(
-                                  child: Text(
-                                    fileName!,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                )
-                              else
-                                Expanded(
-                                  child: Text(
-                                    'Pilih file',
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
+                        validator: (date) {
+                          if (date == null) {
+                            return 'Kolom Tanggal Deadline harus diisi';
+                          }
+                          return null;
+                        },
                       ),
-                    ],
-                  ),
-                SizedBox(height: 35),
-                //button
-                completed
-                    ? GestureDetector(
-                        onTap: () async {
-                          setState(() {
-                            isLoading = true;
-                          });
-                          if (_formKey.currentState!.validate()) {
-                            bool submitTask =
-                                await taskSubmitController.submitTask(
-                              idTask.toString(),
-                              idPekerjaan.toString(),
-                              idStatusTask.toString(),
-                              idKategoriTask.toString(),
-                              _selectedDateStart!, //tgl planing
-                              _deskripsiTaskController.text,
-                              _tautanTaskController.text,
-                              _persentaseSelesaiController.text.toString(),
-                              fileName,
-                              filePath, //bukti selesai
-                            );
-                            if (submitTask) {
-                              Navigator.pushReplacementNamed(
-                                  context, '/task/$idPekerjaan');
-                              QuickAlert.show(
-                                  context: context,
-                                  title: "Submit Task Berhasil",
-                                  type: QuickAlertType.success);
-                            } else {
-                              QuickAlert.show(
-                                  context: context,
-                                  title: "Submit Task Gagal",
-                                  type: QuickAlertType.error);
-                            }
-                            setState(() {
-                              isLoading = false;
-                            });
-                          } else {
-                            setState(() {
-                              isLoading = false;
-                            });
-                          }
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                            color: Colors.green,
-                          ),
-                          padding: const EdgeInsets.all(16.0),
-                          child: Text(
-                            'Submit Task',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
+                      SizedBox(height: 16),
+                      //status task
+                      buildLabel('Status Task *'),
+                      idStatusTask == ""
+                          ? Text("Memuat data")
+                          : DropdownButtonFormField<String>(
+                              value: idStatusTask ?? '',
+                              onChanged: (value) {
+                                setState(() {
+                                  idStatusTask = value!;
+                                });
+                              },
+                              items: statusList.map((status) {
+                                return DropdownMenuItem<String>(
+                                  value: status.id_status_task,
+                                  child:
+                                      Text(status.nama_status_task.toString()),
+                                );
+                              }).toList(),
+                              decoration: InputDecoration(
+                                contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 15, vertical: 3),
+                                border: OutlineInputBorder(),
+                              ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Kolom Status Task harus diisi';
+                                }
+                                return null;
+                              },
                             ),
+                      SizedBox(height: 16),
+                      //kategori task
+                      buildLabel('Kategori Task *'),
+                      idKategoriTask == ""
+                          ? Text("Memuat data")
+                          : DropdownButtonFormField<String>(
+                              value: idKategoriTask ?? '1',
+                              onChanged: (value) {
+                                setState(() {
+                                  idKategoriTask = value!;
+                                });
+                              },
+                              items: kategoriList.map((kategori) {
+                                return DropdownMenuItem<String>(
+                                  value: kategori.id_kategori_task,
+                                  child: Text(
+                                      kategori.nama_kategori_task.toString()),
+                                );
+                              }).toList(),
+                              decoration: InputDecoration(
+                                contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 15, vertical: 3),
+                                border: OutlineInputBorder(),
+                              ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Kolom Kategori Task harus diisi';
+                                }
+                                return null;
+                              },
+                            ),
+                      SizedBox(height: 16),
+                      //tautan task
+                      buildLabel('Tautan Task *'),
+                      buildFormField(_tautanTaskController, "Tautan Task",
+                          TextInputType.url),
+                      SizedBox(height: 16),
+                      //persentase selesai
+                      buildLabel('Persentase Selesai *'),
+                      buildFormField(_persentaseSelesaiController,
+                          'Persentase Selesai', TextInputType.number),
+                      SizedBox(height: 5),
+                      // Checkbox completed
+                      Row(
+                        children: [
+                          Checkbox(
+                            value: completed,
+                            activeColor: Colors.green,
+                            onChanged: (value) {
+                              setState(() {
+                                completed = value!;
+                              });
+                            },
                           ),
+                          Text('Task Selesai?', style: TextStyle(fontSize: 16)),
+                        ],
+                      ),
+                      if (completed)
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            //bukti selesai
+                            buildLabel('Bukti Selesai *'),
+                            GestureDetector(
+                              onTap: () {
+                                _pickFile();
+                              },
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10),
+                                  color: Colors.grey[200],
+                                ),
+                                padding: EdgeInsets.all(16),
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.upload_file),
+                                    SizedBox(width: 16),
+                                    if (pickedFile != null)
+                                      Expanded(
+                                        child: Text(
+                                          fileName!,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      )
+                                    else
+                                      Expanded(
+                                        child: Text(
+                                          'Pilih file',
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      )
-                    : GestureDetector(
-                        onTap: () async {
-                          setState(() {
-                            isLoading = true;
-                          });
-                          if (_formKey.currentState!.validate()) {
-                            bool editTask = await taskController.editTask(
-                              idTask.toString(),
-                              idPekerjaan.toString(),
-                              idStatusTask,
-                              idKategoriTask,
-                              _selectedDateStart!, //tgl planing
-                              _deskripsiTaskController.text,
-                              _tautanTaskController.text,
-                              _persentaseSelesaiController.text.toString(),
-                            );
-                            if (editTask) {
-                              Navigator.pushReplacementNamed(
-                                context,
-                                '/task/$idPekerjaan',
-                              );
-                              QuickAlert.show(
-                                  context: context,
-                                  title: "Edit Task Berhasil",
-                                  type: QuickAlertType.success);
-                            } else {
-                              QuickAlert.show(
-                                  context: context,
-                                  title: "Edit Task Gagal",
-                                  type: QuickAlertType.error);
-                            }
-                            setState(() {
-                              isLoading = false;
-                            });
-                          } else {
-                            setState(() {
-                              isLoading = false;
-                            });
-                          }
-                        },
-                        child: isLoading
-                            ? CircularProgressIndicator()
-                            : Container(
+                      SizedBox(height: 35),
+                      //button
+                      completed
+                          ? GestureDetector(
+                              onTap: () async {
+                                setState(() {
+                                  isLoading = true;
+                                });
+                                if (_formKey.currentState!.validate()) {
+                                  bool submitTask =
+                                      await taskSubmitController.submitTask(
+                                    idTask.toString(),
+                                    idPekerjaan.toString(),
+                                    idStatusTask.toString(),
+                                    idKategoriTask.toString(),
+                                    _selectedDateStart!, //tgl planing
+                                    _deskripsiTaskController.text,
+                                    _tautanTaskController.text,
+                                    _persentaseSelesaiController.text
+                                        .toString(),
+                                    fileName,
+                                    filePath, //bukti selesai
+                                  );
+                                  if (submitTask) {
+                                    Navigator.pushReplacementNamed(
+                                        context, '/task/$idPekerjaan');
+                                    QuickAlert.show(
+                                        context: context,
+                                        title: "Submit Task Berhasil",
+                                        type: QuickAlertType.success);
+                                  } else {
+                                    QuickAlert.show(
+                                        context: context,
+                                        title: "Submit Task Gagal",
+                                        type: QuickAlertType.error);
+                                  }
+                                  setState(() {
+                                    isLoading = false;
+                                  });
+                                } else {
+                                  setState(() {
+                                    isLoading = false;
+                                  });
+                                }
+                              },
+                              child: Container(
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(10),
                                   color: Colors.green,
                                 ),
                                 padding: const EdgeInsets.all(16.0),
                                 child: Text(
-                                  'Edit Task',
+                                  'Submit Task',
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     color: Colors.white,
@@ -494,10 +446,70 @@ class _EditTaskState extends State<EditTask> {
                                   ),
                                 ),
                               ),
-                      )
-              ],
-            ),
-          ),
+                            )
+                          : GestureDetector(
+                              onTap: () async {
+                                setState(() {
+                                  isLoading = true;
+                                });
+                                if (_formKey.currentState!.validate()) {
+                                  bool editTask = await taskController.editTask(
+                                    idTask.toString(),
+                                    idPekerjaan.toString(),
+                                    idStatusTask,
+                                    idKategoriTask,
+                                    _selectedDateStart!, //tgl planing
+                                    _deskripsiTaskController.text,
+                                    _tautanTaskController.text,
+                                    _persentaseSelesaiController.text
+                                        .toString(),
+                                  );
+                                  if (editTask) {
+                                    Navigator.pushReplacementNamed(
+                                      context,
+                                      '/task/$idPekerjaan',
+                                    );
+                                    QuickAlert.show(
+                                        context: context,
+                                        title: "Edit Task Berhasil",
+                                        type: QuickAlertType.success);
+                                  } else {
+                                    QuickAlert.show(
+                                        context: context,
+                                        title: "Edit Task Gagal",
+                                        type: QuickAlertType.error);
+                                  }
+                                  setState(() {
+                                    isLoading = false;
+                                  });
+                                } else {
+                                  setState(() {
+                                    isLoading = false;
+                                  });
+                                }
+                              },
+                              child: isLoading
+                                  ? CircularProgressIndicator()
+                                  : Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(10),
+                                        color: Colors.green,
+                                      ),
+                                      padding: const EdgeInsets.all(16.0),
+                                      child: Text(
+                                        'Edit Task',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                            )
+                    ],
+                  ),
+                ),
         ),
       ),
     );

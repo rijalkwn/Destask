@@ -21,10 +21,7 @@ class Beranda extends StatefulWidget {
 
 class _BerandaState extends State<Beranda> {
   PekerjaanController pekerjaanController = PekerjaanController();
-  PersonilController personilController = PersonilController();
-  UserController userController = UserController();
   NotifikasiController notifikasiController = NotifikasiController();
-  late List<PekerjaanModel> pekerjaan;
   String nama = '';
   List<String> idPersonil = [];
   List<String> idPM = [];
@@ -43,17 +40,10 @@ class _BerandaState extends State<Beranda> {
     try {
       getJumlahPekerjaanSelesai();
       getNotifikasi();
-      pekerjaan = await getDataPekerjaan();
     } catch (e) {
       print("Error: $e");
       // Handle error appropriately
     }
-  }
-
-  //getdata pekerjaan
-  Future getDataPekerjaan() async {
-    var data = await pekerjaanController.getOnProgressUser();
-    return data;
   }
 
   getJumlahPekerjaanSelesai() async {
@@ -101,15 +91,11 @@ class _BerandaState extends State<Beranda> {
   }
 
   @override
-  void dispose() {
-    // TODO: implement dispose
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
     double screenWidth = MediaQuery.of(context).size.width;
+
+    //menampilkan tanggal
     DateTime currentDate = DateTime.now();
     String dayOfWeek = _getDayOfWeek(currentDate.weekday);
     String formattedDate =
@@ -168,7 +154,7 @@ class _BerandaState extends State<Beranda> {
       ),
       body: Stack(
         children: [
-          // Kotak Biru
+          // Kotak Biru Atas
           Positioned(
             top: 0,
             left: 0,
@@ -200,7 +186,7 @@ class _BerandaState extends State<Beranda> {
               ),
             ),
           ),
-          // Kotak Bawah
+          // Kotak Bawah Putih
           Positioned(
             top: screenHeight / 5,
             left: 0,
@@ -210,7 +196,7 @@ class _BerandaState extends State<Beranda> {
               color: Colors.white,
               child: SingleChildScrollView(
                 child: FutureBuilder(
-                  future: getDataPekerjaan(),
+                  future: pekerjaanController.showAllByUserOnProgress(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return Padding(
@@ -235,7 +221,7 @@ class _BerandaState extends State<Beranda> {
               ),
             ),
           ),
-          // Kotak Tengah
+          // Kotak Tengah Biru Muda
           Positioned(
             top: screenHeight / 17,
             left: 0,

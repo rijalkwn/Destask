@@ -14,9 +14,32 @@ Future getToken() async {
 }
 
 class StatusPekerjaanController {
-  Future getStatusById(String idStatusTask) async {
+  //fungsi mendapatkan semua status pekerjaan
+  Future getAllStatusPekerjaan() async {
     var token = await getToken();
-    var response = await http.get(Uri.parse('$url/$idStatusTask'),
+    var response = await http
+        .get(Uri.parse(url), headers: {'Authorization': 'Bearer $token'});
+    if (response.statusCode == 200) {
+      Iterable it = json.decode(response.body);
+      List<StatusPekerjaanModel> user = List<StatusPekerjaanModel>.from(
+          it.map((e) => StatusPekerjaanModel.fromJson(e)).toList());
+      return user;
+    } else {
+      // Handle error
+      return [];
+    }
+  }
+
+  //fungsi menampilkan semua status pekerjaan
+  Future<List<StatusPekerjaanModel>> showAll() async {
+    List<StatusPekerjaanModel> data = await getAllStatusPekerjaan();
+    return data;
+  }
+
+  //fungsi mendapatkan status pekerjaan berdasarkan id
+  Future getStatusById(String idStatusPekerjaan) async {
+    var token = await getToken();
+    var response = await http.get(Uri.parse('$url/$idStatusPekerjaan'),
         headers: {'Authorization': 'Bearer $token'});
     if (response.statusCode == 200) {
       Iterable it = json.decode(response.body);
@@ -27,5 +50,11 @@ class StatusPekerjaanController {
       // Handle error
       return [];
     }
+  }
+
+  //fungsi menampilkan status pekerjaan berdasarkan id
+  Future<List<StatusPekerjaanModel>> showById(String idStatusPekerjaan) async {
+    List<StatusPekerjaanModel> data = await getStatusById(idStatusPekerjaan);
+    return data;
   }
 }

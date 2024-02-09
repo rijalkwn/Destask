@@ -20,6 +20,7 @@ getUser() async {
 }
 
 class NotifikasiController {
+  //fungsi mendapatkan semua notifikasi
   Future getNotifikasi() async {
     try {
       var token = await getToken();
@@ -42,6 +43,12 @@ class NotifikasiController {
       // Returning an empty list in case of an exception
       return [];
     }
+  }
+
+  //fungsi menampilkan semua notifikasi
+  Future<List<NotifikasiModel>> showAll() async {
+    List<NotifikasiModel> data = await getNotifikasi();
+    return data;
   }
 
   //update notifikasi

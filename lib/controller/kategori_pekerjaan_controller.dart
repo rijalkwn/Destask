@@ -14,6 +14,7 @@ getToken() async {
 }
 
 class KategoriPekerjaanController {
+  //fungsi mendapatkan semua kategori pekerjaan
   Future getAllKategoriPekerjaan() async {
     try {
       var token = await getToken();
@@ -38,7 +39,13 @@ class KategoriPekerjaanController {
     }
   }
 
-  //get bobot kategori task by id
+  //fungsi menampilkan semua kategori pekerjaan
+  Future<List<KategoriPekerjaanModel>> showAll() async {
+    List<KategoriPekerjaanModel> data = await getAllKategoriPekerjaan();
+    return data;
+  }
+
+  //fungsi mendapatkan kategori pekerjaan berdasarkan id
   Future getKategoriPekerjaanById(String idKategoriPekerjaan) async {
     try {
       var token = await getToken();
@@ -58,5 +65,12 @@ class KategoriPekerjaanController {
     } catch (e) {
       return {}; // Mengembalikan map kosong jika terjadi exception
     }
+  }
+
+  //fungsi menampilkan kategori pekerjaan berdasarkan id
+  Future<KategoriPekerjaanModel> showById(String idKategoriPekerjaan) async {
+    KategoriPekerjaanModel data =
+        await getKategoriPekerjaanById(idKategoriPekerjaan);
+    return data;
   }
 }

@@ -17,26 +17,8 @@ class PekerjaanSelesai extends StatefulWidget {
 class _PekerjaanSelesaiState extends State<PekerjaanSelesai> {
   TextEditingController searchController = TextEditingController();
   PekerjaanController pekerjaanController = PekerjaanController();
-  PersonilController personilController = PersonilController();
-  UserController userController = UserController();
-  late Future<List<PekerjaanModel>> pekerjaan;
-  String idPersonil = "";
-  List<String> idUserPM = [];
-  String namaPM = "";
   bool isSearchBarVisible = false;
   String searchQuery = "";
-
-  //getdata pekerjaan
-  Future<List<PekerjaanModel>> getDataPekerjaan() async {
-    var data = await pekerjaanController.getAllPekerjaanUser();
-    return data;
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    pekerjaan = getDataPekerjaan();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -89,8 +71,8 @@ class _PekerjaanSelesaiState extends State<PekerjaanSelesai> {
             : null,
       ),
       body: Container(
-        child: FutureBuilder<List<PekerjaanModel>>(
-          future: pekerjaan,
+        child: FutureBuilder(
+          future: pekerjaanController.getAllPekerjaanUser(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return Center(child: CircularProgressIndicator());

@@ -21,27 +21,29 @@ Future getIdUser() async {
 }
 
 class TaskController {
-  Future<List<TaskModel>> getAllTask() async {
-    try {
-      var token = await getToken();
-      var response = await http
-          .get(Uri.parse(url), headers: {'Authorization': 'Bearer $token'});
-      if (response.statusCode == 200) {
-        Iterable it = json.decode(response.body);
-        List<TaskModel> task =
-            List<TaskModel>.from(it.map((e) => TaskModel.fromJson(e)).toList());
-        return task;
-      } else {
-        // Handle error
-        return [];
-      }
-    } catch (e) {
-      // Handle exception
+  //fungsi mendapatkan semua task
+  Future getAllTask() async {
+    var token = await getToken();
+    var response = await http
+        .get(Uri.parse(url), headers: {'Authorization': 'Bearer $token'});
+    if (response.statusCode == 200) {
+      Iterable it = json.decode(response.body);
+      List<TaskModel> task =
+          List<TaskModel>.from(it.map((e) => TaskModel.fromJson(e)).toList());
+      return task;
+    } else {
+      // Handle error
       return [];
     }
   }
 
-  //get task by id
+  //fungsi menampilkan semua task
+  Future<List<TaskModel>> showAll() async {
+    List<TaskModel> data = await getAllTask();
+    return data;
+  }
+
+  //fungsi mendapatkan task berdasarkan id
   Future<List<TaskModel>> getTaskById(String idTask) async {
     try {
       var token = await getToken();
@@ -53,15 +55,20 @@ class TaskController {
             List<TaskModel>.from(it.map((e) => TaskModel.fromJson(e)).toList());
         return user;
       } else {
-        // Handle error
         return [];
       }
     } catch (e) {
-      // Handle exception
       return [];
     }
   }
 
+  //fungsi menampilkan task berdasarkan id
+  Future<List<TaskModel>> showById(String idTask) async {
+    List<TaskModel> data = await getTaskById(idTask);
+    return data;
+  }
+
+  //boolean cek apakah task ada di tanggal yang dipilih
   bool isTaskOnSelectedDate(Map<String, dynamic> task, DateTime selectedDate) {
     DateTime createdTask = DateTime.parse(task['created_at']);
     DateTime? taskSelesai = task['tgl_selesai'] != null
@@ -72,32 +79,35 @@ class TaskController {
             selectedDate.isBefore(taskSelesai.add(Duration(days: 1))));
   }
 
-  //get task by pekerjaan
+  //fungsi mendapatkan task berdasarkan id pekerjaan dan tanggal
   Future<List<TaskModel>> getTasksByPekerjaanId(
       String idPekerjaan, DateTime selectedDate) async {
-    try {
-      const urlx = '$baseURL/api/taskbypekerjaan';
-      var token = await getToken();
-      var response = await http.get(Uri.parse('$urlx/$idPekerjaan'),
-          headers: {'Authorization': 'Bearer $token'});
-      if (response.statusCode == 200) {
-        Iterable it = json.decode(response.body);
-        List<TaskModel> task = List<TaskModel>.from(it
-            .where((element) => isTaskOnSelectedDate(element, selectedDate))
-            .map((e) => TaskModel.fromJson(e))
-            .toList());
-        return task;
-      } else {
-        print(response.statusCode);
-        return [];
-      }
-    } catch (e) {
-      print(e);
+    const urlx = '$baseURL/api/taskbypekerjaan';
+    var token = await getToken();
+    var response = await http.get(Uri.parse('$urlx/$idPekerjaan'),
+        headers: {'Authorization': 'Bearer $token'});
+    if (response.statusCode == 200) {
+      Iterable it = json.decode(response.body);
+      List<TaskModel> task = List<TaskModel>.from(it
+          .where((element) => isTaskOnSelectedDate(element, selectedDate))
+          .map((e) => TaskModel.fromJson(e))
+          .toList());
+      return task;
+    } else {
+      print(response.statusCode);
       return [];
     }
   }
 
-  //get task by user dan pekerjaan
+  //fungsi menampilkan task berdasarkan id pekerjaan
+  Future<List<TaskModel>> showByPekerjaanId(
+      String idPekerjaan, DateTime selectedDate) async {
+    List<TaskModel> data =
+        await getTasksByPekerjaanId(idPekerjaan, selectedDate);
+    return data;
+  }
+
+  //fungsi mendapatkan task berdasarkan id user dan id pekerjaan dan tanggal
   Future<List<TaskModel>> getTasksByUserPekerjaanDate(
       String idPekerjaan, DateTime selectedDate) async {
     try {
@@ -125,6 +135,15 @@ class TaskController {
     }
   }
 
+  //fungsi menampilkan task berdasarkan id user dan id pekerjaan dan tanggal
+  Future<List<TaskModel>> showByUserPekerjaanDate(
+      String idPekerjaan, DateTime selectedDate) async {
+    List<TaskModel> data =
+        await getTasksByUserPekerjaanDate(idPekerjaan, selectedDate);
+    return data;
+  }
+
+  //fungsi mendapatkan task berdasarkan id user dan id pekerjaan
   Future<List<TaskModel>> getTasksByUserPekerjaan(String idPekerjaan) async {
     try {
       const urlx = '$baseURL/api/taskbyuser';
@@ -147,6 +166,12 @@ class TaskController {
       print(e.toString());
       return [];
     }
+  }
+
+  //fungsi menampilkan task berdasarkan id user dan id pekerjaan
+  Future<List<TaskModel>> showByUserPekerjaan(String idPekerjaan) async {
+    List<TaskModel> data = await getTasksByUserPekerjaan(idPekerjaan);
+    return data;
   }
 
   //fungsi add task
@@ -188,6 +213,7 @@ class TaskController {
     }
   }
 
+  //fungsi edit task
   Future editTask(
     String idTask,
     String idPekerjaan,

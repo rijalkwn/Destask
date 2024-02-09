@@ -19,6 +19,7 @@ Future getIdUser() async {
 }
 
 class GantiPasswordController {
+  //fungsi ganti password
   Future gantiPassword(String oldPassword, String newPassword) async {
     try {
       var token = await getToken();
@@ -36,9 +37,6 @@ class GantiPasswordController {
         },
         body: data,
       );
-      print(iduser);
-      print(oldPassword);
-      print(newPassword);
       print(response.body);
       if (response.statusCode == 200) {
         return true;

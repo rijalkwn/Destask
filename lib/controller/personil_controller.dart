@@ -14,6 +14,7 @@ Future getToken() async {
 }
 
 class PersonilController {
+  //fungsi mendapatkan semua personil
   Future getAllPersonil() async {
     try {
       var token = await getToken();
@@ -34,27 +35,13 @@ class PersonilController {
     }
   }
 
-  Future getPersonilByIdUser(String idUser) async {
-    try {
-      var urlx = '$baseURL/api/personilbyuser';
-      var token = await getToken();
-      var response = await http.get(Uri.parse('$urlx/$idUser'),
-          headers: {'Authorization': 'Bearer $token'});
-      if (response.statusCode == 200) {
-        Iterable it = jsonDecode(response.body);
-        List<PersonilModel> personil =
-            List<PersonilModel>.from(it.map((e) => e).toList());
-        return personil;
-      } else {
-        // Handle error
-        return [];
-      }
-    } catch (e) {
-      // Handle exception
-      return [];
-    }
+  //fungsi menampilkan semua personil
+  Future<List<PersonilModel>> showAll() async {
+    List<PersonilModel> data = await getAllPersonil();
+    return data;
   }
 
+  //fungsi mendapatkan personil berdasarkan id
   Future getPersonilById(String idPersonil) async {
     var token = await getToken();
     var response = await http.get(Uri.parse('$url/$idPersonil'),
@@ -68,5 +55,11 @@ class PersonilController {
       // Handle error
       return [];
     }
+  }
+
+  //fungsi menampilkan personil berdasarkan id
+  Future<List<PersonilModel>> showById(String idPersonil) async {
+    List<PersonilModel> data = await getPersonilById(idPersonil);
+    return data;
   }
 }

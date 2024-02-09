@@ -14,6 +14,7 @@ getToken() async {
 }
 
 class BobotKategoriTaskController {
+  //fungsi mendapatkan semua bobot kategori task
   Future getAllBobotKategoriTask() async {
     try {
       var token = await getToken();
@@ -38,7 +39,13 @@ class BobotKategoriTaskController {
     }
   }
 
-  //get bobot kategori task by id
+  //fungsi menampilkan semua bobot kategori task
+  Future<List<BobotKategoriTaskModel>> showAll() async {
+    List<BobotKategoriTaskModel> data = await getAllBobotKategoriTask();
+    return data;
+  }
+
+  //fungsi mendapatkan bobot kategori task berdasarkan id
   Future getBobotKategoriTaskById(String idBobotKategoriTask) async {
     try {
       var token = await getToken();
@@ -53,10 +60,16 @@ class BobotKategoriTaskController {
                 it.map((e) => BobotKategoriTaskModel.fromJson(e)));
         return bobotKategori;
       } else {
-        return {}; // Mengembalikan map kosong jika tidak ada data
+        return {};
       }
     } catch (e) {
-      return {}; // Mengembalikan map kosong jika terjadi exception
+      return {};
     }
+  }
+
+  //fungsi menampilkan bobot kategori task berdasarkan id
+  Future<BobotKategoriTaskModel> showById(String idBobotKategoriTask) async {
+    var data = await getBobotKategoriTaskById(idBobotKategoriTask);
+    return data;
   }
 }

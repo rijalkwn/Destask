@@ -17,6 +17,7 @@ class _GantiPasswordState extends State<GantiPassword> {
   final TextEditingController _newPasswordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
       TextEditingController();
+  final gantiPasswordController = Get.put(GantiPasswordController());
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
@@ -95,8 +96,6 @@ class _GantiPasswordState extends State<GantiPassword> {
                 GestureDetector(
                   onTap: () async {
                     if (_formKey.currentState!.validate()) {
-                      GantiPasswordController gantiPasswordController =
-                          Get.put(GantiPasswordController());
                       bool success =
                           await gantiPasswordController.gantiPassword(
                               _oldPasswordController.text,

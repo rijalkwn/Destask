@@ -1,3 +1,5 @@
+import 'package:destask/utils/constant_api.dart';
+
 import '../../controller/auth_controller.dart';
 import '../../controller/user_controller.dart';
 import 'package:flutter/material.dart';
@@ -11,23 +13,30 @@ class Pengaturan extends StatefulWidget {
 }
 
 class _PengaturanState extends State<Pengaturan> {
+  UserController userController = UserController();
   String nama = '';
   String email = '';
   String id_user = '';
-  getUser() async {
+  String fotoProfil = '';
+
+  getDataUser() async {
     SharedPreferences pref = await SharedPreferences.getInstance();
+    var id_user = pref.getString('id_user') ?? '';
+    var data = await userController.getUserById(id_user);
+    print(data);
     setState(() {
-      nama = pref.getString('nama') ?? '';
-      email = pref.getString('email') ?? '';
-      id_user = pref.getString('id_user') ?? '';
+      nama = data[0].nama.toString();
+      email = data[0].email.toString();
+      fotoProfil = data[0].foto_profil.toString();
     });
+    return data;
   }
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    getUser();
+    getDataUser();
   }
 
   @override
@@ -45,7 +54,9 @@ class _PengaturanState extends State<Pengaturan> {
                 children: [
                   CircleAvatar(
                     radius: 100,
-                    backgroundImage: AssetImage('assets/img/logo.png'),
+                    backgroundImage: NetworkImage(
+                      '$baseURL/assets/foto_profil/$fotoProfil',
+                    ),
                   ),
                   SizedBox(height: 10),
                   Text(

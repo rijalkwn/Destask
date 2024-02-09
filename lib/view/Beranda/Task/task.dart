@@ -50,6 +50,13 @@ class _TaskState extends State<Task> {
     task = getDataTask();
   }
 
+  void refresh() {
+    setState(() {
+      // Memperbarui data tugas dengan memanggil getDataTask()
+      task = getDataTask();
+    });
+  }
+
   getIdUser() async {
     final prefs = await SharedPreferences.getInstance();
     var idUser = prefs.getString("id_user");
@@ -121,12 +128,6 @@ class _TaskState extends State<Task> {
     }
 
     return events;
-  }
-
-  @override
-  void dispose() {
-    // TODO: implement dispose
-    super.dispose();
   }
 
   @override
@@ -362,150 +363,117 @@ class _TaskState extends State<Task> {
                         taskColor = Colors.red;
                       }
                     }
-                    return Card(
-                      color: taskColor,
-                      child: Column(
-                        children: [
-                          GestureDetector(
-                            onTap: () {
-                              Get.toNamed('/detail_task/${taskData['id_task']}',
-                                  arguments: taskData);
-                            },
-                            child: ListTile(
-                              leading: Container(
-                                padding: EdgeInsets.all(15),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  shape: BoxShape.circle,
+                    return Dismissible(
+                      key: Key(taskData['id_task'].toString()),
+                      direction: DismissDirection.endToStart,
+                      background: Container(
+                        padding: EdgeInsets.only(right: 20),
+                        alignment: Alignment.centerRight,
+                        color: Colors.red,
+                        child: Icon(
+                          Icons.delete,
+                          color: Colors.white,
+                        ),
+                      ),
+                      confirmDismiss: (direction) async {
+                        return await showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: Text("Konfirmasi Hapus Task"),
+                              content: Text(
+                                  "Apakah Anda yakin ingin menghapus task ini?"),
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(context); // Close the dialog
+                                  },
+                                  child: Text("Batal"),
                                 ),
-                                child: Text(
-                                  taskData['persentase_selesai'].toString() +
-                                      '%',
+                                TextButton(
+                                  onPressed: () async {
+                                    Navigator.pop(context); // Close the dialog
+
+                                    await taskController.deleteTask(
+                                        taskData['id_task'].toString());
+                                    // Refresh task list
+                                    refresh();
+                                  },
+                                  child: Text("Hapus"),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      },
+                      child: Card(
+                        color: taskColor,
+                        child: Column(
+                          children: [
+                            GestureDetector(
+                              onTap: () {
+                                Get.toNamed(
+                                    '/detail_task/${taskData['id_task']}',
+                                    arguments: taskData);
+                              },
+                              child: ListTile(
+                                leading: Container(
+                                  padding: EdgeInsets.all(15),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Text(
+                                    taskData['persentase_selesai'].toString() +
+                                        '%',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                title: Text(
+                                  taskData['deskripsi_task'].length > 20
+                                      ? taskData['deskripsi_task']
+                                              .substring(0, 20) +
+                                          '...'
+                                      : taskData['deskripsi_task'],
                                   style: TextStyle(
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.bold,
+                                      color: Colors.white, fontSize: 18),
+                                ),
+                                subtitle: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Deadline : ${taskData['tgl_planing']}',
+                                      style: TextStyle(color: Colors.white),
+                                    ),
+                                    PM
+                                        ? taskData['data_tambahan'] != null
+                                            ? Text(
+                                                'PIC : ${taskData['data_tambahan']['nama_user']}',
+                                                style: TextStyle(
+                                                    color: Colors.white),
+                                              )
+                                            : SizedBox()
+                                        : SizedBox(),
+                                  ],
+                                ),
+                                trailing: GestureDetector(
+                                  onTap: () {
+                                    Get.toNamed(
+                                        '/edit_task/${taskData['id_task']}',
+                                        arguments: taskData);
+                                  },
+                                  child: Icon(
+                                    Icons.edit,
+                                    color: Colors.white,
                                   ),
                                 ),
-                              ),
-                              title: Text(
-                                taskData['deskripsi_task'].length > 20
-                                    ? taskData['deskripsi_task']
-                                            .substring(0, 20) +
-                                        '...'
-                                    : taskData['deskripsi_task'],
-                                style: TextStyle(
-                                    color: Colors.white, fontSize: 18),
-                              ),
-                              subtitle: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Deadline : ${taskData['tgl_planing']}',
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                  PM
-                                      ? taskData['data_tambahan'] != null
-                                          ? Text(
-                                              'PIC : ${taskData['data_tambahan']['nama_user']}',
-                                              style: TextStyle(
-                                                  color: Colors.white),
-                                            )
-                                          : SizedBox()
-                                      : SizedBox(),
-                                ],
-                              ),
-                              trailing: Icon(
-                                Icons.arrow_forward_ios,
-                                color: Colors.white,
                               ),
                             ),
-                          ),
-                          Divider(),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Container(
-                                  padding: EdgeInsets.only(top: 3, bottom: 13),
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      Get.toNamed(
-                                          '/edit_task/${taskData['id_task']}',
-                                          arguments: {
-                                            'idpekerjaan':
-                                                taskData['id_pekerjaan']
-                                          });
-                                    },
-                                    child: Center(
-                                      child: Icon(
-                                        Icons.edit,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              Divider(),
-                              Expanded(
-                                child: Container(
-                                  padding: EdgeInsets.only(top: 3, bottom: 13),
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      showDialog(
-                                        context: context,
-                                        builder: (BuildContext context) {
-                                          return AlertDialog(
-                                            title:
-                                                Text("Konfirmasi Hapus Task"),
-                                            content: Text(
-                                                "Apakah Anda yakin ingin menghapus task ini?"),
-                                            actions: [
-                                              TextButton(
-                                                onPressed: () {
-                                                  Navigator.pop(
-                                                      context); // Close the dialog
-                                                },
-                                                child: Text("Batal"),
-                                              ),
-                                              TextButton(
-                                                onPressed: () async {
-                                                  Navigator.pop(
-                                                      context); // Close the dialog
-                                                  bool taskDeleted =
-                                                      await taskController
-                                                          .deleteTask(taskData[
-                                                                  'id_task']
-                                                              .toString());
-                                                  if (taskDeleted) {
-                                                    Get.offAndToNamed(
-                                                        '/task/$idPekerjaan');
-                                                  } else {
-                                                    QuickAlert.show(
-                                                        context: context,
-                                                        title:
-                                                            "Hapus Task Gagal",
-                                                        type: QuickAlertType
-                                                            .error);
-                                                  }
-                                                },
-                                                child: Text("Hapus"),
-                                              ),
-                                            ],
-                                          );
-                                        },
-                                      );
-                                    },
-                                    child: Center(
-                                      child: Icon(
-                                        Icons.delete,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     );
                   },

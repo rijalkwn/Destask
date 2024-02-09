@@ -15,16 +15,10 @@ class LupaPassword extends StatefulWidget {
 
 class _LupaPasswordState extends State<LupaPassword> {
   final _FormKey = GlobalKey<FormState>();
-  TextEditingController emailController = TextEditingController();
+  final emailController = TextEditingController();
+  final authController = Get.put(AuthController());
   bool isLoading = false;
   List user = [];
-
-  //cek email
-  Future<bool> cekEmail(String email) async {
-    AuthController authController = AuthController();
-    bool isEmailExist = await authController.checkEmailExist(email);
-    return isEmailExist;
-  }
 
   //Mengirim email ke untuk mendapatkan link ganti password
   sendMail(String recipientEmail) async {
@@ -33,7 +27,7 @@ class _LupaPasswordState extends State<LupaPassword> {
     //recipent addressnya masih dump karena belum ada data user aktual!!!!
     final smtpServer = gmail(email, password);
     final equivalentMessage = Message()
-      ..from = Address(email, 'DESARMADA Reset Password')
+      ..from = Address(email, 'DESTASK Reset Password')
       ..recipients.add(Address(recipientEmail))
       ..subject = 'Reset Password'
       ..html =
@@ -151,8 +145,8 @@ class _LupaPasswordState extends State<LupaPassword> {
                           InkWell(
                             onTap: () async {
                               if (_FormKey.currentState!.validate()) {
-                                bool isExist =
-                                    await cekEmail(emailController.text);
+                                bool isExist = await authController
+                                    .checkEmailExist(emailController.text);
                                 if (isExist) {
                                   sendMail(emailController.text);
                                 } else {
@@ -185,11 +179,9 @@ class _LupaPasswordState extends State<LupaPassword> {
                                     width: double.infinity,
                                     padding: const EdgeInsets.symmetric(
                                         vertical: 15),
-                                    // margin: const EdgeInsets.symmetric(horizontal: 20),
                                     alignment: Alignment.center,
                                     decoration: BoxDecoration(
-                                      color: Colors
-                                          .blue, // Ganti warna sesuai kebutuhan
+                                      color: Colors.blue,
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: const Text(
@@ -205,7 +197,7 @@ class _LupaPasswordState extends State<LupaPassword> {
                           //lupa password
                           TextButton(
                             onPressed: () {
-                              Get.toNamed('/lo');
+                              Get.toNamed('/login');
                             },
                             child: Text(
                               'Kembali ke Menu Login',
