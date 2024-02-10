@@ -14,7 +14,7 @@ class LupaPassword extends StatefulWidget {
 }
 
 class _LupaPasswordState extends State<LupaPassword> {
-  final _FormKey = GlobalKey<FormState>();
+  final formkey = GlobalKey<FormState>();
   final emailController = TextEditingController();
   final authController = Get.put(AuthController());
   bool isLoading = false;
@@ -35,21 +35,22 @@ class _LupaPasswordState extends State<LupaPassword> {
     setState(() {
       isLoading = true;
     });
-    await send(equivalentMessage, smtpServer, timeout: Duration(seconds: 10));
+    await send(equivalentMessage, smtpServer,
+        timeout: const Duration(seconds: 10));
     setState(() {
       isLoading = false;
     });
     if (isLoading == false) {
       AlertDialog alert = AlertDialog(
-        title: Text("Email Berhasil Dikirim"),
-        content: Text("Silahkan cek inbox email anda"),
+        title: const Text("Email Berhasil Dikirim"),
+        content: const Text("Silahkan cek inbox email anda"),
         actions: [
           TextButton(
               onPressed: () {
                 Navigator.of(context).pushReplacement(MaterialPageRoute(
                     builder: (BuildContext context) => const Login()));
               },
-              child: Text("Kembali ke halaman login"))
+              child: const Text("Kembali ke halaman login"))
         ],
       );
       showDialog(
@@ -59,9 +60,9 @@ class _LupaPasswordState extends State<LupaPassword> {
           });
     } else {
       AlertDialog alert = AlertDialog(
-        title: Text("Email gagal dikirim "),
-        content: Text("Silahkan cek koneksi internet anda"),
-        actions: [TextButton(onPressed: () {}, child: Text("OK"))],
+        title: const Text("Email gagal dikirim "),
+        content: const Text("Silahkan cek koneksi internet anda"),
+        actions: [TextButton(onPressed: () {}, child: const Text("OK"))],
       );
       showDialog(
           context: context,
@@ -69,12 +70,6 @@ class _LupaPasswordState extends State<LupaPassword> {
             return alert;
           });
     }
-  }
-
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
   }
 
   @override
@@ -97,7 +92,7 @@ class _LupaPasswordState extends State<LupaPassword> {
                   child: Padding(
                     padding: const EdgeInsets.all(20.0),
                     child: Form(
-                      key: _FormKey,
+                      key: formkey,
                       child: Column(
                         children: [
                           Container(
@@ -109,8 +104,8 @@ class _LupaPasswordState extends State<LupaPassword> {
                               'assets/img/logo.png',
                             ),
                           ),
-                          SizedBox(height: 20),
-                          Text(
+                          const SizedBox(height: 20),
+                          const Text(
                             "Lupa Password",
                             style: TextStyle(
                               color: Colors.black,
@@ -118,17 +113,17 @@ class _LupaPasswordState extends State<LupaPassword> {
                               fontWeight: FontWeight.normal,
                             ),
                           ),
-                          SizedBox(height: 20),
+                          const SizedBox(height: 20),
                           TextFormField(
                             controller: emailController,
                             decoration: InputDecoration(
                               labelText: 'Email',
-                              contentPadding: EdgeInsets.symmetric(
+                              contentPadding: const EdgeInsets.symmetric(
                                   vertical: 5, horizontal: 15),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
-                              prefixIcon: Icon(Icons.email),
+                              prefixIcon: const Icon(Icons.email),
                               filled: true,
                               fillColor: Colors.white,
                             ),
@@ -141,25 +136,25 @@ class _LupaPasswordState extends State<LupaPassword> {
                             },
                           ),
 
-                          SizedBox(height: 20),
+                          const SizedBox(height: 20),
                           InkWell(
                             onTap: () async {
-                              if (_FormKey.currentState!.validate()) {
+                              if (formkey.currentState!.validate()) {
                                 bool isExist = await authController
                                     .checkEmailExist(emailController.text);
                                 if (isExist) {
                                   sendMail(emailController.text);
                                 } else {
                                   AlertDialog alert = AlertDialog(
-                                    title: Text("Email tidak terdaftar"),
-                                    content:
-                                        Text("Silahkan cek kembali email anda"),
+                                    title: const Text("Email tidak terdaftar"),
+                                    content: const Text(
+                                        "Silahkan cek kembali email anda"),
                                     actions: [
                                       TextButton(
                                           onPressed: () {
                                             Navigator.of(context).pop();
                                           },
-                                          child: Text("OK"))
+                                          child: const Text("OK"))
                                     ],
                                   );
                                   showDialog(
@@ -171,7 +166,7 @@ class _LupaPasswordState extends State<LupaPassword> {
                               }
                             },
                             child: isLoading
-                                ? CircularProgressIndicator(
+                                ? const CircularProgressIndicator(
                                     valueColor: AlwaysStoppedAnimation<Color>(
                                         Colors.blue),
                                   )
@@ -199,7 +194,7 @@ class _LupaPasswordState extends State<LupaPassword> {
                             onPressed: () {
                               Get.toNamed('/login');
                             },
-                            child: Text(
+                            child: const Text(
                               'Kembali ke Menu Login',
                               style: TextStyle(
                                 color: Colors.black,

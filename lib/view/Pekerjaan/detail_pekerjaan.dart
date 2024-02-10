@@ -88,44 +88,44 @@ class _DetailPekerjaanState extends State<DetailPekerjaan> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: GlobalColors.mainColor,
-        iconTheme: IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: Colors.white),
         title: Text(
-          "Detail " + namaPekerjaan,
-          style: TextStyle(fontSize: 20, color: Colors.white),
+          "Detail $namaPekerjaan",
+          style: const TextStyle(fontSize: 20, color: Colors.white),
         ),
       ),
       body: SingleChildScrollView(
         child: Column(
           children: [
             Container(
-              padding: EdgeInsets.all(10.0),
+              padding: const EdgeInsets.all(10.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   ListTile(
                     title: Text(
                       namaPekerjaan,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     subtitle: Text(
                       namaStatus,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.normal,
                       ),
                     ),
                     trailing: Container(
-                      padding: EdgeInsets.all(15),
-                      decoration: BoxDecoration(
+                      padding: const EdgeInsets.all(15),
+                      decoration: const BoxDecoration(
                         color: Colors.blue,
                         shape: BoxShape.circle,
                       ),
                       child: Text(
-                        persentaseSelesai + '%',
-                        style: TextStyle(
+                        '$persentaseSelesai%',
+                        style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
@@ -133,14 +133,14 @@ class _DetailPekerjaanState extends State<DetailPekerjaan> {
                       ),
                     ),
                   ),
-                  Divider(),
+                  const Divider(),
                 ],
               ),
             ),
             Container(
-              padding: EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(16.0),
               child: Table(
-                columnWidths: {
+                columnWidths: const {
                   0: FlexColumnWidth(7),
                   1: FlexColumnWidth(0.5),
                   2: FlexColumnWidth(10),
@@ -182,22 +182,22 @@ class _DetailPekerjaanState extends State<DetailPekerjaan> {
       children: [
         TableCell(
           child: Container(
-            padding: EdgeInsets.symmetric(vertical: 8.0),
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
             child: Text(
               label,
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
         ),
         TableCell(
           child: Container(
-            padding: EdgeInsets.symmetric(vertical: 8.0),
-            child: Text(":"),
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: const Text(":"),
           ),
         ),
         TableCell(
           child: Container(
-            padding: EdgeInsets.symmetric(vertical: 8.0),
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
             child: Text(value == null ? '-' : value.toString()),
           ),
         ),
@@ -211,22 +211,22 @@ class _DetailPekerjaanState extends State<DetailPekerjaan> {
       children: [
         TableCell(
           child: Container(
-            padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 3),
+            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 3),
             child: Text(
               label,
-              style: TextStyle(fontWeight: FontWeight.normal),
+              style: const TextStyle(fontWeight: FontWeight.normal),
             ),
           ),
         ),
         TableCell(
           child: Container(
-            padding: EdgeInsets.symmetric(vertical: 8.0),
-            child: Text(":"),
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: const Text(":"),
           ),
         ),
         TableCell(
           child: Container(
-            padding: EdgeInsets.symmetric(vertical: 8.0),
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
             child: Text(value.toString()),
           ),
         ),

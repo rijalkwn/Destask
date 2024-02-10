@@ -5,7 +5,8 @@ class MyDateTimePicker extends StatelessWidget {
   final ValueChanged<DateTime?> onChanged;
   final String? Function(DateTime?)? validator;
 
-  MyDateTimePicker({
+  const MyDateTimePicker({
+    super.key,
     required this.selectedDate,
     required this.onChanged,
     this.validator,
@@ -21,7 +22,7 @@ class MyDateTimePicker extends StatelessWidget {
             : 'No date selected',
       ),
       onTap: () => _selectDate(context),
-      decoration: InputDecoration(
+      decoration: const InputDecoration(
         contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 12),
         border: OutlineInputBorder(),
         prefixIcon: Icon(Icons.calendar_today),

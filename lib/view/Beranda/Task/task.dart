@@ -2,8 +2,6 @@ import 'package:destask/controller/user_controller.dart';
 import 'package:destask/model/user_model.dart';
 import 'package:destask/utils/global_colors.dart';
 import 'package:intl/intl.dart';
-import 'package:quickalert/quickalert.dart';
-
 import '../../../controller/pekerjaan_controller.dart';
 import '../../../controller/personil_controller.dart';
 import '../../../controller/task_controller.dart';
@@ -37,7 +35,7 @@ class _TaskState extends State<Task> {
 
   //pm
   bool isPM = false;
-  late bool PM;
+  late bool pm;
 
   late Future<List<TaskModel>> task;
   late Future<List> user;
@@ -88,20 +86,20 @@ class _TaskState extends State<Task> {
   //get data task
   Future<List<TaskModel>> getDataTask() async {
     //cek PM
-    PM = await cekPM();
+    pm = await cekPM();
 
     //untuk pm
-    List<TaskModel> task_PM =
+    List<TaskModel> taskPM =
         await taskController.getTasksByPekerjaanId(idPekerjaan, _selectedDay);
     //untuk non pm
-    List<TaskModel> task_nonPM = await taskController
+    List<TaskModel> tasknonPM = await taskController
         .getTasksByUserPekerjaanDate(idPekerjaan, _selectedDay);
 
     var pekerjaan = await pekerjaanController.getPekerjaanById(idPekerjaan);
     setState(() {
       namaPekerjaan = pekerjaan[0].nama_pekerjaan.toString();
     });
-    return PM ? task_PM : task_nonPM;
+    return pm ? taskPM : tasknonPM;
   }
 
   Future<void> _onDaySelected(DateTime selectedDay, DateTime focusedDay) async {
@@ -135,21 +133,21 @@ class _TaskState extends State<Task> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: GlobalColors.mainColor,
-        iconTheme: IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: Colors.white),
         title: isSearchBarVisible
             ? TextField(
                 controller: searchController,
-                style: TextStyle(color: Colors.white),
+                style: const TextStyle(color: Colors.white),
                 autofocus: true,
                 onChanged: (value) {
                   setState(() {});
                 },
                 decoration: InputDecoration(
                   hintText: 'Search...',
-                  hintStyle: TextStyle(color: Colors.white60),
+                  hintStyle: const TextStyle(color: Colors.white60),
                   border: InputBorder.none,
                   suffixIcon: IconButton(
-                    icon: Icon(Icons.clear, color: Colors.white),
+                    icon: const Icon(Icons.clear, color: Colors.white),
                     onPressed: () {
                       setState(() {
                         if (searchController.text.isNotEmpty) {
@@ -162,11 +160,11 @@ class _TaskState extends State<Task> {
                   ),
                 ),
               )
-            : Text(namaPekerjaan, style: TextStyle(color: Colors.white)),
+            : Text(namaPekerjaan, style: const TextStyle(color: Colors.white)),
         actions: !isSearchBarVisible
             ? [
                 IconButton(
-                  icon: Icon(Icons.search),
+                  icon: const Icon(Icons.search),
                   color: Colors.white,
                   onPressed: () {
                     setState(() {
@@ -178,7 +176,7 @@ class _TaskState extends State<Task> {
             : null,
       ),
       body: Padding(
-        padding: EdgeInsets.all(10),
+        padding: const EdgeInsets.all(10),
         child: Column(
           children: [
             //TABEL CALENDAR
@@ -196,7 +194,7 @@ class _TaskState extends State<Task> {
               selectedDayPredicate: _selectedDayPredicate,
               onDaySelected: _onDaySelected,
               startingDayOfWeek: StartingDayOfWeek.monday,
-              headerStyle: HeaderStyle(
+              headerStyle: const HeaderStyle(
                 formatButtonVisible: true,
               ),
               calendarStyle: const CalendarStyle(
@@ -213,11 +211,11 @@ class _TaskState extends State<Task> {
                 });
               },
             ),
-            Divider(),
+            const Divider(),
             //KETERANGAN
             Column(
               children: [
-                Text(
+                const Text(
                   'Keterangan : ',
                   style: TextStyle(
                     fontSize: 16,
@@ -234,34 +232,34 @@ class _TaskState extends State<Task> {
                           color: GlobalColors.mainColor,
                           shape: BoxShape.circle,
                         )),
-                    Text('On Progress'),
-                    SizedBox(
+                    const Text('On Progress'),
+                    const SizedBox(
                       width: 10,
                     ),
                     Container(
                         width: 20,
                         height: 20,
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           color: Colors.green,
                           shape: BoxShape.circle,
                         )),
-                    Text('Selesai'),
-                    SizedBox(
+                    const Text('Selesai'),
+                    const SizedBox(
                       width: 10,
                     ),
                     Container(
                         width: 20,
                         height: 20,
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           color: Colors.red,
                           shape: BoxShape.circle,
                         )),
-                    Text('Overdue'),
+                    const Text('Overdue'),
                   ],
                 ),
               ],
             ),
-            SizedBox(
+            const SizedBox(
               height: 20,
             ),
             //LIST TASK
@@ -277,8 +275,8 @@ class _TaskState extends State<Task> {
           Get.toNamed('/add_task/$idPekerjaan',
               arguments: Get.parameters['idpekerjaan']);
         },
-        child: Icon(Icons.add, color: Colors.white),
         backgroundColor: Colors.blueAccent,
+        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }
@@ -288,19 +286,18 @@ class _TaskState extends State<Task> {
       future: task,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(
+          return const Center(
             child: CircularProgressIndicator(),
           );
         } else if (snapshot.hasError) {
-          print(snapshot.error);
           return Center(
             child: Text(
               'Error: ${snapshot.error}',
-              style: TextStyle(fontSize: 16),
+              style: const TextStyle(fontSize: 16),
             ),
           );
         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return Center(
+          return const Center(
             child: Text(
               'Task Kosong',
               style: TextStyle(fontSize: 16),
@@ -316,7 +313,7 @@ class _TaskState extends State<Task> {
                   task.tgl_planing!.toString().contains(searchController.text))
               .toList();
           return allTasks.isEmpty
-              ? Center(
+              ? const Center(
                   child: Text(
                     'Task Kosong untuk hari ini',
                     style: TextStyle(fontSize: 16),
@@ -324,7 +321,7 @@ class _TaskState extends State<Task> {
                 )
               : ListView.builder(
                   shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
+                  physics: const NeverScrollableScrollPhysics(),
                   itemCount: filterTask.length,
                   itemBuilder: (context, index) {
                     Map<String, dynamic> taskData = allTasks[index].toJson();
@@ -367,10 +364,10 @@ class _TaskState extends State<Task> {
                       key: Key(taskData['id_task'].toString()),
                       direction: DismissDirection.endToStart,
                       background: Container(
-                        padding: EdgeInsets.only(right: 20),
+                        padding: const EdgeInsets.only(right: 20),
                         alignment: Alignment.centerRight,
                         color: Colors.red,
-                        child: Icon(
+                        child: const Icon(
                           Icons.delete,
                           color: Colors.white,
                         ),
@@ -380,15 +377,15 @@ class _TaskState extends State<Task> {
                           context: context,
                           builder: (BuildContext context) {
                             return AlertDialog(
-                              title: Text("Konfirmasi Hapus Task"),
-                              content: Text(
+                              title: const Text("Konfirmasi Hapus Task"),
+                              content: const Text(
                                   "Apakah Anda yakin ingin menghapus task ini?"),
                               actions: [
                                 TextButton(
                                   onPressed: () {
                                     Navigator.pop(context); // Close the dialog
                                   },
-                                  child: Text("Batal"),
+                                  child: const Text("Batal"),
                                 ),
                                 TextButton(
                                   onPressed: () async {
@@ -399,7 +396,7 @@ class _TaskState extends State<Task> {
                                     // Refresh task list
                                     refresh();
                                   },
-                                  child: Text("Hapus"),
+                                  child: const Text("Hapus"),
                                 ),
                               ],
                             );
@@ -418,15 +415,14 @@ class _TaskState extends State<Task> {
                               },
                               child: ListTile(
                                 leading: Container(
-                                  padding: EdgeInsets.all(15),
-                                  decoration: BoxDecoration(
+                                  padding: const EdgeInsets.all(15),
+                                  decoration: const BoxDecoration(
                                     color: Colors.white,
                                     shape: BoxShape.circle,
                                   ),
                                   child: Text(
-                                    taskData['persentase_selesai'].toString() +
-                                        '%',
-                                    style: TextStyle(
+                                    '${taskData['persentase_selesai']}%',
+                                    style: const TextStyle(
                                       color: Colors.black,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -438,7 +434,7 @@ class _TaskState extends State<Task> {
                                               .substring(0, 20) +
                                           '...'
                                       : taskData['deskripsi_task'],
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                       color: Colors.white, fontSize: 18),
                                 ),
                                 subtitle: Column(
@@ -446,26 +442,26 @@ class _TaskState extends State<Task> {
                                   children: [
                                     Text(
                                       'Deadline : ${taskData['tgl_planing']}',
-                                      style: TextStyle(color: Colors.white),
+                                      style:
+                                          const TextStyle(color: Colors.white),
                                     ),
-                                    PM
+                                    pm
                                         ? taskData['data_tambahan'] != null
                                             ? Text(
                                                 'PIC : ${taskData['data_tambahan']['nama_user']}',
-                                                style: TextStyle(
+                                                style: const TextStyle(
                                                     color: Colors.white),
                                               )
-                                            : SizedBox()
-                                        : SizedBox(),
+                                            : const SizedBox()
+                                        : const SizedBox(),
                                   ],
                                 ),
                                 trailing: GestureDetector(
                                   onTap: () {
                                     Get.toNamed(
-                                        '/edit_task/${taskData['id_task']}',
-                                        arguments: taskData);
+                                        '/edit_task/${taskData['id_task']}');
                                   },
-                                  child: Icon(
+                                  child: const Icon(
                                     Icons.edit,
                                     color: Colors.white,
                                   ),

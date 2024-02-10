@@ -15,7 +15,7 @@ Future getToken() async {
 }
 
 class PekerjaanController {
-  //fungsi mendapatkan semua pekerjaan
+  //get pekerjaan by id
   Future getPekerjaanById(String idPekerjaan) async {
     try {
       var token = await getToken();
@@ -29,20 +29,41 @@ class PekerjaanController {
             list.map((e) => PekerjaanModel.fromJson(e)).toList());
         return pekerjaan;
       } else {
-        return {};
+        return {}; // Mengembalikan map kosong jika tidak ada data
       }
     } catch (e) {
-      return {};
+      return {}; // Mengembalikan map kosong jika terjadi exception
     }
   }
 
-  //fungsi menampilkan pekerjaan berdasarkan id
-  Future<List<PekerjaanModel>> showById(String idPekerjaan) async {
-    List<PekerjaanModel> data = await getPekerjaanById(idPekerjaan);
-    return data;
+  //menampilkan list pekerjaan progres di beranda
+  Future getOnProgressUser() async {
+    try {
+      SharedPreferences pref = await SharedPreferences.getInstance();
+      var iduser = pref.getString('id_user');
+      var token = await getToken();
+      var response = await http.get(
+        Uri.parse('$urluser/$iduser'),
+        headers: {'Authorization': 'Bearer $token'},
+      );
+      if (response.statusCode == 200) {
+        Iterable list = json.decode(response.body);
+        List<PekerjaanModel> pekerjaan = List<PekerjaanModel>.from(list
+            .where((element) => element['id_status_pekerjaan'] == "1")
+            .map((e) => PekerjaanModel.fromJson(e)));
+        return pekerjaan;
+      } else {
+        // Handle error
+        return [];
+      }
+    } catch (e) {
+      print(e);
+      // Returning an empty list in case of an exception
+      return [];
+    }
   }
 
-  //fungsi mendapatkan pekerjaan yang dikerjakan oleh user
+//menampilakn list pekerjaan di menu pekerjaan
   Future getAllPekerjaanUser() async {
     try {
       SharedPreferences pref = await SharedPreferences.getInstance();
@@ -56,6 +77,7 @@ class PekerjaanController {
         Iterable it = json.decode(response.body);
         List<PekerjaanModel> pekerjaan = List<PekerjaanModel>.from(
             it.map((e) => PekerjaanModel.fromJson(e)));
+        print(pekerjaan);
         return pekerjaan;
       } else {
         // Handle error
@@ -68,26 +90,6 @@ class PekerjaanController {
     }
   }
 
-  //fungsi menampilkan pekerjaan yang dikerjakan oleh user
-  Future<List<PekerjaanModel>> showAllByUser() async {
-    List<PekerjaanModel> data = await getAllPekerjaanUser();
-    return data;
-  }
-
-  //fungsi menampilkan pekerjaan dengan status 1 berdasarkan id user
-  Future<List<PekerjaanModel>> showAllByUserOnProgress() async {
-    List<PekerjaanModel> data = await getAllPekerjaanUser();
-    //list pekerjaan yang statusnya 1
-    List<PekerjaanModel> pekerjaanOnProgress = [];
-    for (var i = 0; i < data.length; i++) {
-      if (data[i].id_status_pekerjaan == '1') {
-        pekerjaanOnProgress.add(data[i]);
-      }
-    }
-    return pekerjaanOnProgress;
-  }
-
-  //fungsi update status pekerjaan
   Future updateStatusPekerjaan(String idPekerjaan, String idStatus) async {
     try {
       var token = await getToken();

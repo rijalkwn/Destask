@@ -1,6 +1,4 @@
 import '../../../controller/pekerjaan_controller.dart';
-import '../../../controller/personil_controller.dart';
-import '../../../controller/user_controller.dart';
 import '../../../model/pekerjaan_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -25,11 +23,11 @@ class _PekerjaanSelesaiState extends State<PekerjaanSelesai> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blueAccent,
-        iconTheme: IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: Colors.white),
         title: isSearchBarVisible
             ? TextField(
                 controller: searchController,
-                style: TextStyle(color: Colors.white),
+                style: const TextStyle(color: Colors.white),
                 autofocus: true,
                 onChanged: (value) {
                   setState(() {
@@ -38,10 +36,10 @@ class _PekerjaanSelesaiState extends State<PekerjaanSelesai> {
                 },
                 decoration: InputDecoration(
                   hintText: 'Search...',
-                  hintStyle: TextStyle(color: Colors.white60),
+                  hintStyle: const TextStyle(color: Colors.white60),
                   border: InputBorder.none,
                   suffixIcon: IconButton(
-                    icon: Icon(Icons.clear, color: Colors.white),
+                    icon: const Icon(Icons.clear, color: Colors.white),
                     onPressed: () {
                       setState(() {
                         if (searchController.text.isNotEmpty) {
@@ -55,11 +53,12 @@ class _PekerjaanSelesaiState extends State<PekerjaanSelesai> {
                   ),
                 ),
               )
-            : Text('Pekerjaan Selesai', style: TextStyle(color: Colors.white)),
+            : const Text('Pekerjaan Selesai',
+                style: TextStyle(color: Colors.white)),
         actions: !isSearchBarVisible
             ? [
                 IconButton(
-                  icon: Icon(Icons.search),
+                  icon: const Icon(Icons.search),
                   color: Colors.white,
                   onPressed: () {
                     setState(() {
@@ -70,34 +69,32 @@ class _PekerjaanSelesaiState extends State<PekerjaanSelesai> {
               ]
             : null,
       ),
-      body: Container(
-        child: FutureBuilder(
-          future: pekerjaanController.getAllPekerjaanUser(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
-            } else if (snapshot.hasError) {
-              return Center(child: Text('Error: ${snapshot.error}'));
-            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return Center(child: Text('No data available.'));
-            } else if (snapshot.hasData) {
-              List<PekerjaanModel> pekerjaan = snapshot.data!;
-              final filteredList = pekerjaan
-                  .where((pekerjaan) =>
-                      pekerjaan.id_status_pekerjaan == "2" &&
-                      pekerjaan.nama_pekerjaan!
-                          .toLowerCase()
-                          .contains(searchQuery.toLowerCase()))
-                  .toList();
+      body: FutureBuilder(
+        future: pekerjaanController.getAllPekerjaanUser(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(child: Text('No data available.'));
+          } else if (snapshot.hasData) {
+            List<PekerjaanModel> pekerjaan = snapshot.data!;
+            final filteredList = pekerjaan
+                .where((pekerjaan) =>
+                    pekerjaan.id_status_pekerjaan == "2" &&
+                    pekerjaan.nama_pekerjaan!
+                        .toLowerCase()
+                        .contains(searchQuery.toLowerCase()))
+                .toList();
 
-              return PekerjaanList(
-                pekerjaan: filteredList,
-              );
-            } else {
-              return Center(child: Text('No data available.'));
-            }
-          },
-        ),
+            return PekerjaanList(
+              pekerjaan: filteredList,
+            );
+          } else {
+            return const Center(child: Text('No data available.'));
+          }
+        },
       ),
     );
   }
@@ -106,7 +103,7 @@ class _PekerjaanSelesaiState extends State<PekerjaanSelesai> {
 class PekerjaanList extends StatelessWidget {
   final List<dynamic> pekerjaan;
 
-  PekerjaanList({required this.pekerjaan});
+  const PekerjaanList({super.key, required this.pekerjaan});
 
   @override
   Widget build(BuildContext context) {
@@ -119,14 +116,14 @@ class PekerjaanList extends StatelessWidget {
             color: GlobalColors.mainColor,
             child: ListTile(
               leading: Container(
-                padding: EdgeInsets.all(15),
-                decoration: BoxDecoration(
+                padding: const EdgeInsets.all(15),
+                decoration: const BoxDecoration(
                   color: Colors.white,
                   shape: BoxShape.circle,
                 ),
                 child: Text(
-                  pekerjaan[index].persentase_selesai.toString() + '%',
-                  style: TextStyle(
+                  '${pekerjaan[index].persentase_selesai}%',
+                  style: const TextStyle(
                     color: Colors.black,
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
@@ -135,18 +132,18 @@ class PekerjaanList extends StatelessWidget {
               ),
               title: Text(
                 pekerjaan[index].nama_pekerjaan ?? '',
-                style: TextStyle(color: Colors.white),
+                style: const TextStyle(color: Colors.white),
               ),
               subtitle: Text(
                 "Persentase Selesai : ${pekerjaan[index].persentase_selesai}%",
-                style: TextStyle(color: Colors.white),
+                style: const TextStyle(color: Colors.white),
               ),
               trailing: GestureDetector(
                 onTap: () {
                   Get.toNamed(
                       '/detail_pekerjaan/${pekerjaan[index].id_pekerjaan}');
                 },
-                child: Icon(
+                child: const Icon(
                   Icons.density_small,
                   color: Colors.white,
                 ),

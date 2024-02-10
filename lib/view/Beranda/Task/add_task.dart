@@ -1,18 +1,14 @@
 import 'dart:io';
-
 import '../../../controller/kategori_task_controller.dart';
 import '../../../controller/task_controller.dart';
 import '../../../model/kategori_task_model.dart';
 import 'package:quickalert/quickalert.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
 import '../../../controller/status_task_controller.dart';
 import '../../../model/status_task_model.dart';
 import '../../../utils/global_colors.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 import 'my_date_time_picker.dart';
 
 class AddTask extends StatefulWidget {
@@ -45,8 +41,8 @@ class _AddTaskState extends State<AddTask> {
   @override
   void initState() {
     super.initState();
-    getDataStatusTask().then((value) => value);
-    getDataKategoriTask().then((value) => value);
+    getDataStatusTask();
+    getDataKategoriTask();
   }
 
   //get status task
@@ -86,8 +82,9 @@ class _AddTaskState extends State<AddTask> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: GlobalColors.mainColor,
-        title: Text('Tambahkan Task', style: TextStyle(color: Colors.white)),
-        iconTheme: IconThemeData(color: Colors.white),
+        title:
+            const Text('Tambahkan Task', style: TextStyle(color: Colors.white)),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -101,7 +98,7 @@ class _AddTaskState extends State<AddTask> {
                 buildLabel('Deskripsi Task *'),
                 buildFormField(_deskripsiTaskController, 'Deskripsi Task',
                     TextInputType.multiline),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
 
                 //tanggal mulai
                 buildLabel('Deadline *'),
@@ -119,16 +116,16 @@ class _AddTaskState extends State<AddTask> {
                     return null;
                   },
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 //status task
                 buildLabel('Status Task *'),
                 FutureBuilder<List<StatusTaskModel>>(
                   future: getDataStatusTask(),
                   builder: (context, snapshot) {
                     if (snapshot.hasError) {
-                      return Text('Error loading data');
+                      return const Text('Error loading data');
                     } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return Text('No data available');
+                      return const Text('No data available');
                     } else {
                       List<StatusTaskModel> statusList = snapshot.data!;
                       return DropdownButtonFormField<String>(
@@ -143,7 +140,7 @@ class _AddTaskState extends State<AddTask> {
                             child: Text(status.nama_status_task.toString()),
                           );
                         }).toList(),
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           contentPadding:
                               EdgeInsets.symmetric(horizontal: 15, vertical: 3),
                           border: OutlineInputBorder(),
@@ -158,16 +155,16 @@ class _AddTaskState extends State<AddTask> {
                     }
                   },
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 //kategori task
                 buildLabel('Kategori Task *'),
                 FutureBuilder<List<KategoriTaskModel>>(
                   future: getDataKategoriTask(),
                   builder: (context, snapshot) {
                     if (snapshot.hasError) {
-                      return Text('Error loading data');
+                      return const Text('Error loading data');
                     } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return Text('No data available');
+                      return const Text('No data available');
                     } else {
                       List<KategoriTaskModel> kategoriList = snapshot.data!;
                       return DropdownButtonFormField<String>(
@@ -182,7 +179,7 @@ class _AddTaskState extends State<AddTask> {
                             child: Text(kategori.nama_kategori_task.toString()),
                           );
                         }).toList(),
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           contentPadding:
                               EdgeInsets.symmetric(horizontal: 15, vertical: 3),
                           border: OutlineInputBorder(),
@@ -197,12 +194,12 @@ class _AddTaskState extends State<AddTask> {
                     }
                   },
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 //tautan task
                 buildLabel('Tautan Task *'),
                 buildFormField(
                     _tautanTaskController, "Tautan Task", TextInputType.url),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 //simpan
                 GestureDetector(
                   onTap: () async {
@@ -246,7 +243,7 @@ class _AddTaskState extends State<AddTask> {
                       color: GlobalColors.mainColor,
                     ),
                     padding: const EdgeInsets.all(16.0),
-                    child: Text(
+                    child: const Text(
                       'Simpan',
                       textAlign: TextAlign.center,
                       style: TextStyle(
@@ -270,7 +267,7 @@ class _AddTaskState extends State<AddTask> {
     return TextFormField(
       controller: controller,
       keyboardType: type,
-      decoration: InputDecoration(
+      decoration: const InputDecoration(
         contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 3),
         border: OutlineInputBorder(),
       ),
@@ -285,10 +282,10 @@ class _AddTaskState extends State<AddTask> {
 
   Widget buildLabel(String text) {
     return Padding(
-      padding: EdgeInsets.only(bottom: 5),
+      padding: const EdgeInsets.only(bottom: 5),
       child: Text(
         text,
-        style: TextStyle(
+        style: const TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.bold,
         ),

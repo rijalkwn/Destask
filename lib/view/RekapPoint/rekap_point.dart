@@ -90,7 +90,7 @@ class _RekapPointState extends State<RekapPoint> {
       }
       return totalPoin;
     } catch (e) {
-      print(e);
+      print('Error: $e');
       return 0;
     }
   }
@@ -106,14 +106,14 @@ class _RekapPointState extends State<RekapPoint> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Center(
+        title: const Center(
           child: Text(
             'Rekap Point',
             style: TextStyle(color: Colors.white),
           ),
         ),
         backgroundColor: GlobalColors.mainColor,
-        iconTheme: IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: Colors.white),
         automaticallyImplyLeading: false,
       ),
       body: Padding(
@@ -128,7 +128,7 @@ class _RekapPointState extends State<RekapPoint> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   //nama
-                  Column(
+                  const Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
@@ -148,19 +148,19 @@ class _RekapPointState extends State<RekapPoint> {
                     backgroundColor: GlobalColors.mainColor,
                     child: Text(
                       totalPoinPekerjaan.toString(),
-                      style: TextStyle(fontSize: 20, color: Colors.white),
+                      style: const TextStyle(fontSize: 20, color: Colors.white),
                     ),
                   ),
                 ],
               ),
             ),
 
-            SizedBox(
+            const SizedBox(
               height: 10,
             ),
             //judul list pekerjaan
-            Padding(
-              padding: const EdgeInsets.only(left: 8.0),
+            const Padding(
+              padding: EdgeInsets.only(left: 8.0),
               child: Column(
                 children: [
                   Divider(),
@@ -173,7 +173,7 @@ class _RekapPointState extends State<RekapPoint> {
             Expanded(
               child: Container(
                 height: MediaQuery.of(context).size.height * 0.7,
-                padding: EdgeInsets.symmetric(horizontal: 10),
+                padding: const EdgeInsets.symmetric(horizontal: 10),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   boxShadow: [
@@ -181,10 +181,10 @@ class _RekapPointState extends State<RekapPoint> {
                       color: Colors.grey.withOpacity(0.2),
                       spreadRadius: 5,
                       blurRadius: 7,
-                      offset: Offset(0, 3),
+                      offset: const Offset(0, 3),
                     ),
                   ],
-                  borderRadius: BorderRadius.only(
+                  borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(20),
                     topRight: Radius.circular(20),
                   ),
@@ -194,14 +194,14 @@ class _RekapPointState extends State<RekapPoint> {
                     future: pekerjaan,
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 10),
+                        return const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 10),
                           child: Center(child: CircularProgressIndicator()),
                         );
                       } else if (snapshot.hasError) {
                         return Center(child: Text('Error: ${snapshot.error}'));
                       } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                        return Padding(
+                        return const Padding(
                           padding: EdgeInsets.symmetric(vertical: 200),
                           child: Center(child: Text('No data available.')),
                         );
@@ -214,7 +214,7 @@ class _RekapPointState extends State<RekapPoint> {
                               totalPoinPerPekerjaan: totalPoinPerPekerjaan),
                         );
                       } else {
-                        return Center(child: Text('No data available.'));
+                        return const Center(child: Text('No data available.'));
                       }
                     },
                   ),
@@ -240,42 +240,38 @@ class _ListOfJob extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Column(
-        children: pekerjaan.map((pekerjaanItem) {
-          return GestureDetector(
-            onTap: () {
-              Get.toNamed(
-                  '/detail_rekap_point/' +
-                      pekerjaanItem.id_pekerjaan.toString(),
-                  arguments: pekerjaanItem.id_pekerjaan);
-            },
-            child: Column(
-              children: [
-                ListTile(
-                  title: Text(
-                    pekerjaanItem.nama_pekerjaan ?? '-',
-                  ),
-                  trailing: Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: GlobalColors.mainColor,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Text(
-                        "${totalPoinPerPekerjaan[pekerjaan.indexOf(pekerjaanItem)] == 0 ? '00' : totalPoinPerPekerjaan[pekerjaan.indexOf(pekerjaanItem)]}",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        )),
-                  ),
+    return Column(
+      children: pekerjaan.map((pekerjaanItem) {
+        return GestureDetector(
+          onTap: () {
+            Get.toNamed('/detail_rekap_point/${pekerjaanItem.id_pekerjaan}',
+                arguments: pekerjaanItem.id_pekerjaan);
+          },
+          child: Column(
+            children: [
+              ListTile(
+                title: Text(
+                  pekerjaanItem.nama_pekerjaan ?? '-',
                 ),
-                Divider(),
-              ],
-            ),
-          );
-        }).toList(),
-      ),
+                trailing: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: GlobalColors.mainColor,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Text(
+                      "${totalPoinPerPekerjaan[pekerjaan.indexOf(pekerjaanItem)] == 0 ? '00' : totalPoinPerPekerjaan[pekerjaan.indexOf(pekerjaanItem)]}",
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      )),
+                ),
+              ),
+              const Divider(),
+            ],
+          ),
+        );
+      }).toList(),
     );
   }
 }

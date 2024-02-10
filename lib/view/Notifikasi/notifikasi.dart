@@ -3,6 +3,8 @@ import '../../model/notifikasi_model.dart';
 import 'package:flutter/material.dart';
 
 class Notifikasi extends StatefulWidget {
+  const Notifikasi({super.key});
+
   @override
   State<Notifikasi> createState() => _NotifikasiState();
 }
@@ -26,7 +28,7 @@ class _NotifikasiState extends State<Notifikasi> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Notifikasi'),
+        title: const Text('Notifikasi'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -36,7 +38,7 @@ class _NotifikasiState extends State<Notifikasi> {
               future: _notifikasiData,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
+                  return const Center(child: CircularProgressIndicator());
                 } else if (snapshot.hasError) {
                   return Center(child: Text('Error: ${snapshot.error}'));
                 } else {
@@ -67,13 +69,13 @@ class _NotifikasiState extends State<Notifikasi> {
                                       }
                                     },
                                     child: Container(
-                                      padding: EdgeInsets.symmetric(
+                                      padding: const EdgeInsets.symmetric(
                                           horizontal: 10, vertical: 5),
                                       decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(10),
                                         color: Colors.green,
                                       ),
-                                      child: Text(
+                                      child: const Text(
                                         "Sudah dibaca",
                                         style: TextStyle(color: Colors.white),
                                       ),

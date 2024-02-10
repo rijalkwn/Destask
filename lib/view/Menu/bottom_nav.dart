@@ -14,7 +14,7 @@ class BottomNav extends StatefulWidget {
 
 class _BottomNavState extends State<BottomNav> {
   int _bottomNavCurrentIndex = 0;
-  final List<Widget> _container = [
+  final List<Widget> _container = const [
     Beranda(),
     Pekerjaan(),
     RekapPoint(),

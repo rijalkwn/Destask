@@ -24,12 +24,13 @@ class _GantiPasswordState extends State<GantiPassword> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Ganti Password", style: TextStyle(color: Colors.white)),
+        title:
+            const Text("Ganti Password", style: TextStyle(color: Colors.white)),
         backgroundColor: GlobalColors.mainColor,
-        iconTheme: IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Padding(
-        padding: EdgeInsets.only(top: 20, left: 10, right: 10),
+        padding: const EdgeInsets.only(top: 20, left: 10, right: 10),
         child: SingleChildScrollView(
           child: Form(
             key: _formKey,
@@ -45,7 +46,7 @@ class _GantiPasswordState extends State<GantiPassword> {
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    prefixIcon: Icon(Icons.lock),
+                    prefixIcon: const Icon(Icons.lock),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -54,7 +55,7 @@ class _GantiPasswordState extends State<GantiPassword> {
                     return null;
                   },
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 TextFormField(
                   controller: _newPasswordController,
                   obscureText: true,
@@ -63,7 +64,7 @@ class _GantiPasswordState extends State<GantiPassword> {
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    prefixIcon: Icon(Icons.vpn_key_rounded),
+                    prefixIcon: const Icon(Icons.vpn_key_rounded),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -72,7 +73,7 @@ class _GantiPasswordState extends State<GantiPassword> {
                     return null;
                   },
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 TextFormField(
                   controller: _confirmPasswordController,
                   obscureText: true,
@@ -81,7 +82,7 @@ class _GantiPasswordState extends State<GantiPassword> {
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    prefixIcon: Icon(Icons.key_rounded),
+                    prefixIcon: const Icon(Icons.key_rounded),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -92,7 +93,7 @@ class _GantiPasswordState extends State<GantiPassword> {
                     return null;
                   },
                 ),
-                SizedBox(height: 32),
+                const SizedBox(height: 32),
                 GestureDetector(
                   onTap: () async {
                     if (_formKey.currentState!.validate()) {
@@ -124,7 +125,7 @@ class _GantiPasswordState extends State<GantiPassword> {
                       color: GlobalColors.mainColor,
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Center(
+                    child: const Center(
                       child: Text(
                         'Ganti Password',
                         style: TextStyle(

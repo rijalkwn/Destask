@@ -10,7 +10,6 @@ import '../../utils/global_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:badges/badges.dart' as badges;
 import 'package:get/get.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class Beranda extends StatefulWidget {
   const Beranda({Key? key}) : super(key: key);
@@ -21,18 +20,17 @@ class Beranda extends StatefulWidget {
 
 class _BerandaState extends State<Beranda> {
   PekerjaanController pekerjaanController = PekerjaanController();
+  PersonilController personilController = PersonilController();
+  UserController userController = UserController();
   NotifikasiController notifikasiController = NotifikasiController();
+  late List<PekerjaanModel> pekerjaan;
   String nama = '';
-  List<String> idPersonil = [];
-  List<String> idPM = [];
-  List<String> namaPM = [];
   String jumlahPekerjaanSelesai = '';
   String jumlahNotifikasi = '';
 
   @override
   void initState() {
     super.initState();
-    startLaunching();
     loadData();
   }
 
@@ -40,22 +38,28 @@ class _BerandaState extends State<Beranda> {
     try {
       getJumlahPekerjaanSelesai();
       getNotifikasi();
+      pekerjaan = await getDataPekerjaan();
     } catch (e) {
       print("Error: $e");
       // Handle error appropriately
     }
   }
 
+  //getdata pekerjaan
+  Future getDataPekerjaan() async {
+    var data = await pekerjaanController.getOnProgressUser();
+    return data;
+  }
+
   getJumlahPekerjaanSelesai() async {
     var data = await pekerjaanController.getAllPekerjaanUser();
     int count = 0;
-
-    setState(() {
-      for (var i = 0; i < data.length; i++) {
-        if (data[i].id_status_pekerjaan.toString() == '2') {
-          count += 1;
-        }
+    for (var i = 0; i < data.length; i++) {
+      if (data[i].id_status_pekerjaan.toString() == '2') {
+        count += 1;
       }
+    }
+    setState(() {
       jumlahPekerjaanSelesai = count.toString();
     });
 
@@ -77,25 +81,10 @@ class _BerandaState extends State<Beranda> {
     return data;
   }
 
-  //cek login with token
-  startLaunching() async {
-    final prefs = await SharedPreferences.getInstance();
-    var token = prefs.getString("token");
-    var namaUser = prefs.getString("nama").toString();
-    setState(() {
-      nama = namaUser;
-    });
-    if (token == null) {
-      Get.offAllNamed('/login');
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     double screenHeight = MediaQuery.of(context).size.height;
     double screenWidth = MediaQuery.of(context).size.width;
-
-    //menampilkan tanggal
     DateTime currentDate = DateTime.now();
     String dayOfWeek = _getDayOfWeek(currentDate.weekday);
     String formattedDate =
@@ -109,13 +98,17 @@ class _BerandaState extends State<Beranda> {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Hi, " + nama,
-                  style: TextStyle(fontSize: 20, color: Colors.white)),
-              Text('Selamat Datang di Destask',
-                  style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w400,
-                      color: Colors.white)),
+              Text(
+                "Hi, $nama",
+                style: const TextStyle(fontSize: 20, color: Colors.white),
+              ),
+              const Text(
+                'Selamat Datang di Destask',
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w400,
+                    color: Colors.white),
+              ),
             ],
           ),
         ),
@@ -135,14 +128,14 @@ class _BerandaState extends State<Beranda> {
                 child: badges.Badge(
                   badgeContent: Text(
                     jumlahNotifikasi.toString(),
-                    style: TextStyle(color: Colors.white),
+                    style: const TextStyle(color: Colors.white),
                   ),
-                  badgeStyle: BadgeStyle(
+                  badgeStyle: const BadgeStyle(
                       badgeColor: Colors.red, // Red circle color
                       elevation: 4, // No shadow
                       padding: EdgeInsets.only(
                           top: 5, bottom: 5, left: 5, right: 5)),
-                  child: Icon(
+                  child: const Icon(
                     Icons.notifications,
                     color: Colors.white,
                   ),
@@ -154,7 +147,7 @@ class _BerandaState extends State<Beranda> {
       ),
       body: Stack(
         children: [
-          // Kotak Biru Atas
+          // Kotak Biru
           Positioned(
             top: 0,
             left: 0,
@@ -186,7 +179,7 @@ class _BerandaState extends State<Beranda> {
               ),
             ),
           ),
-          // Kotak Bawah Putih
+          // Kotak Bawah
           Positioned(
             top: screenHeight / 5,
             left: 0,
@@ -196,17 +189,17 @@ class _BerandaState extends State<Beranda> {
               color: Colors.white,
               child: SingleChildScrollView(
                 child: FutureBuilder(
-                  future: pekerjaanController.showAllByUserOnProgress(),
+                  future: getDataPekerjaan(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 200),
+                      return const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 200),
                         child: Center(child: CircularProgressIndicator()),
                       );
                     } else if (snapshot.hasError) {
                       return Center(child: Text('Error: ${snapshot.error}'));
                     } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return Padding(
+                      return const Padding(
                         padding: EdgeInsets.symmetric(vertical: 200),
                         child: Center(child: Text('No data available.')),
                       );
@@ -214,20 +207,20 @@ class _BerandaState extends State<Beranda> {
                       List<PekerjaanModel> pekerjaan = snapshot.data!;
                       return pekerjaanlist(pekerjaan);
                     } else {
-                      return Center(child: Text('No data available.'));
+                      return const Center(child: Text('No data available.'));
                     }
                   },
                 ),
               ),
             ),
           ),
-          // Kotak Tengah Biru Muda
+          // Kotak Tengah
           Positioned(
             top: screenHeight / 17,
             left: 0,
             right: 0,
             child: Container(
-              margin: EdgeInsets.only(left: 15, right: 15),
+              margin: const EdgeInsets.only(left: 15, right: 15),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
                 color: Colors.lightBlue[300],
@@ -248,20 +241,20 @@ class _BerandaState extends State<Beranda> {
                     if (index == 0) {
                       badgecontent = Text(
                         jumlahPekerjaanSelesai,
-                        style: TextStyle(color: Colors.white),
+                        style: const TextStyle(color: Colors.white),
                       );
                     } else if (index == 1) {
-                      badgecontent = Text(
+                      badgecontent = const Text(
                         '0',
                         style: TextStyle(color: Colors.white),
                       );
                     } else if (index == 2) {
-                      badgecontent = Text(
+                      badgecontent = const Text(
                         '0',
                         style: TextStyle(color: Colors.white),
                       );
                     } else {
-                      badgecontent = Text(
+                      badgecontent = const Text(
                         '0',
                         style: TextStyle(color: Colors.white),
                       );
@@ -270,7 +263,7 @@ class _BerandaState extends State<Beranda> {
                       children: [
                         badges.Badge(
                           badgeContent: badgecontent,
-                          badgeStyle: BadgeStyle(
+                          badgeStyle: const BadgeStyle(
                             badgeColor: Colors.red, // Red circle color
                             elevation: 0, // No shadow
                             padding: EdgeInsets.all(
@@ -325,16 +318,14 @@ class _BerandaState extends State<Beranda> {
       padding: const EdgeInsets.only(top: 20),
       child: Column(
         children: [
-          Container(
-            child: Text(
-              "ON PROGRESS",
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.black, // Choose your desired text color
-              ),
-              textAlign: TextAlign.center,
+          const Text(
+            "ON PROGRESS",
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.black, // Choose your desired text color
             ),
+            textAlign: TextAlign.center,
           ),
           const SizedBox(
             height: 10,
@@ -353,14 +344,14 @@ class _BerandaState extends State<Beranda> {
                         padding: const EdgeInsets.only(top: 8),
                         child: ListTile(
                           leading: Container(
-                            padding: EdgeInsets.all(15),
-                            decoration: BoxDecoration(
+                            padding: const EdgeInsets.all(15),
+                            decoration: const BoxDecoration(
                               color: Colors.white,
                               shape: BoxShape.circle,
                             ),
                             child: Text(
-                              pekerjaanItem.persentase_selesai.toString() + '%',
-                              style: TextStyle(
+                              '${pekerjaanItem.persentase_selesai}%',
+                              style: const TextStyle(
                                 color: Colors.black,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
@@ -369,28 +360,27 @@ class _BerandaState extends State<Beranda> {
                           ),
                           title: Text(
                             pekerjaanItem.nama_pekerjaan!,
-                            style: TextStyle(color: Colors.white),
+                            style: const TextStyle(color: Colors.white),
                           ),
                           subtitle: Text(
-                            "PM: " +
-                                pekerjaanItem.data_tambahan.nama_pm.toString(),
+                            "PM: ${pekerjaanItem.data_tambahan.nama_pm}",
                             style: const TextStyle(color: Colors.white),
                           ),
                         ),
                       ),
                     ),
-                    Divider(),
+                    const Divider(),
                     Row(
                       children: [
                         Expanded(
                           child: Container(
-                            padding: EdgeInsets.only(top: 3, bottom: 13),
+                            padding: const EdgeInsets.only(top: 3, bottom: 13),
                             child: GestureDetector(
                               onTap: () {
                                 Get.toNamed(
                                     '/detail_pekerjaan/${pekerjaanItem.id_pekerjaan}');
                               },
-                              child: Center(
+                              child: const Center(
                                 child: Text(
                                   'Detail',
                                   style: TextStyle(

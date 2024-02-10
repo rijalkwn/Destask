@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../controller/auth_controller.dart';
 import '../../utils/global_colors.dart';
 import 'package:flutter/material.dart';
@@ -28,273 +30,322 @@ class _LoginState extends State<Login> {
     });
   }
 
+  // cek login with token
+  startLaunching() async {
+    final prefs = await SharedPreferences.getInstance();
+    //cek expired token
+    var token = prefs.getString("token");
+    if (token != null) {
+      var jwt = token.split(".");
+      var payload = json.decode(ascii
+          .decode(base64.decode(base64.normalize(jwt[1])))); //decode payload
+      var exp = payload['exp'];
+      var now = DateTime.now().millisecondsSinceEpoch / 1000;
+      if (exp > now) {
+        Get.offAllNamed('/bottom_nav');
+      } else {
+        prefs.clear();
+      }
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    startLaunching();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: GlobalColors.backgroundColor,
       body: SingleChildScrollView(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.1,
-                ),
-                Card(
-                  color: Colors.white,
-                  child: Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        children: [
-                          Container(
-                            margin: EdgeInsets.only(
-                                top: MediaQuery.of(context).size.height * 0.04,
-                                bottom:
-                                    MediaQuery.of(context).size.height * 0.04),
-                            child: Image.asset(
-                              'assets/img/logo.png',
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SizedBox(
+                height: MediaQuery.of(context).size.height * 0.1,
+              ),
+              Card(
+                color: Colors.white,
+                child: Padding(
+                  padding:
+                      const EdgeInsets.only(left: 20, right: 20, bottom: 20),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          margin: EdgeInsets.only(
+                              top: MediaQuery.of(context).size.height * 0.02,
+                              bottom:
+                                  MediaQuery.of(context).size.height * 0.04),
+                          child: Image.asset(
+                            'assets/img/logo.png',
+                          ),
+                        ),
+                        const Text(
+                          'Selamat Datang',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const Text(
+                          'di Aplikasi Mobile Destask',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        const Text(
+                          'Silahkan login untuk melanjutkan',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 16,
+                            fontWeight: FontWeight.normal,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        TextFormField(
+                          controller: _identitasController,
+                          decoration: InputDecoration(
+                            labelText: 'Username atau Email',
+                            contentPadding: const EdgeInsets.symmetric(
+                                vertical: 5, horizontal: 15),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            prefixIcon: const Icon(Icons.person),
+                            filled: true,
+                            fillColor: Colors.white,
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Username or Email harus diisi';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 10),
+                        TextFormField(
+                          controller: _passwordController,
+                          obscureText: _obsecuretext,
+                          decoration: InputDecoration(
+                            labelText: 'Password',
+                            contentPadding: const EdgeInsets.symmetric(
+                                vertical: 5, horizontal: 15),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            prefixIcon: const Icon(Icons.lock),
+                            suffixIcon: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _obsecuretext = !_obsecuretext;
+                                });
+                              },
+                              child: _obsecuretext
+                                  ? const Icon(Icons.visibility_off)
+                                  : const Icon(Icons.visibility),
                             ),
                           ),
-                          Text(
-                            'Login In Here',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Password harus diisi';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 5),
+                        // Add the reCAPTCHA widget
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(5),
+                            border: Border.all(
+                              color: Colors.grey,
+                              width: 1,
                             ),
                           ),
-                          SizedBox(height: 20),
-                          TextFormField(
-                            controller: _identitasController,
-                            decoration: InputDecoration(
-                              labelText: 'Username or Email',
-                              contentPadding: EdgeInsets.symmetric(
-                                  vertical: 5, horizontal: 15),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              prefixIcon: Icon(Icons.person),
-                              filled: true,
-                              fillColor: Colors.white,
-                            ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Username or Email harus diisi';
-                              }
-                              return null;
-                            },
-                          ),
-                          SizedBox(height: 10),
-                          TextFormField(
-                            controller: _passwordController,
-                            obscureText: _obsecuretext,
-                            decoration: InputDecoration(
-                              labelText: 'Password',
-                              contentPadding: EdgeInsets.symmetric(
-                                  vertical: 5, horizontal: 15),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              prefixIcon: Icon(Icons.lock),
-                              suffixIcon: GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    _obsecuretext = !_obsecuretext;
-                                  });
-                                },
-                                child: _obsecuretext
-                                    ? const Icon(Icons.visibility_off)
-                                    : const Icon(Icons.visibility),
-                              ),
-                            ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Password harus diisi';
-                              }
-                              return null;
-                            },
-                          ),
-                          SizedBox(height: 5),
-                          // Add the reCAPTCHA widget
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(5),
-                              border: Border.all(
-                                color: Colors.grey,
-                                width: 1,
-                              ),
-                            ),
-                            margin: const EdgeInsets.only(top: 10),
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 15, vertical: 15),
-                            alignment: Alignment.centerLeft,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              children: [
-                                GestureDetector(
-                                    onTap: () {
-                                      showDialog(
-                                          context: context,
-                                          builder: (context) {
-                                            return Center(
-                                              child: Container(
-                                                margin:
-                                                    const EdgeInsets.all(30),
-                                                decoration: BoxDecoration(
-                                                    color: Colors.white,
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            40)),
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(20),
-                                                  child: SliderCaptcha(
-                                                    title:
-                                                        "Geser untuk verifikasi",
-                                                    titleStyle: TextStyle(
-                                                        color: Colors.black,
-                                                        fontSize: 20,
-                                                        fontWeight:
-                                                            FontWeight.bold),
-                                                    controller:
-                                                        _recaptchaController,
-                                                    image: Image.asset(
-                                                      'assets/img/captcha.jpg',
-                                                      fit: BoxFit.fitWidth,
-                                                    ),
-                                                    onConfirm: (value) async {
-                                                      if (value == true) {
-                                                        _onCaptcha();
-                                                        Navigator.pop(context);
-                                                      } else {
-                                                        _iscaptcha = false;
-                                                        Navigator.pop(context);
-                                                        QuickAlert.show(
-                                                            context: context,
-                                                            title:
-                                                                "Captcha Salah, Coba Lagi",
-                                                            type: QuickAlertType
-                                                                .error);
-                                                      }
-                                                    },
-                                                    colorBar: Colors.white,
-                                                    colorCaptChar: Colors.blue,
+                          margin: const EdgeInsets.only(top: 10),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 15, vertical: 15),
+                          alignment: Alignment.centerLeft,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              GestureDetector(
+                                  onTap: () {
+                                    showDialog(
+                                        context: context,
+                                        builder: (context) {
+                                          return Center(
+                                            child: Container(
+                                              margin: const EdgeInsets.all(30),
+                                              decoration: BoxDecoration(
+                                                  color: Colors.white,
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          40)),
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.all(20),
+                                                child: SliderCaptcha(
+                                                  title:
+                                                      "Geser untuk verifikasi",
+                                                  titleStyle: const TextStyle(
+                                                      color: Colors.black,
+                                                      fontSize: 20,
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                  controller:
+                                                      _recaptchaController,
+                                                  image: Image.asset(
+                                                    'assets/img/captcha.jpg',
+                                                    fit: BoxFit.fitWidth,
                                                   ),
+                                                  onConfirm: (value) async {
+                                                    if (value == true) {
+                                                      _onCaptcha();
+                                                      Navigator.pop(context);
+                                                    } else {
+                                                      _iscaptcha = false;
+                                                      Navigator.pop(context);
+                                                      QuickAlert.show(
+                                                          context: context,
+                                                          title:
+                                                              "Captcha Salah, Coba Lagi",
+                                                          type: QuickAlertType
+                                                              .error);
+                                                    }
+                                                  },
+                                                  colorBar: Colors.white,
+                                                  colorCaptChar: Colors.blue,
                                                 ),
                                               ),
-                                            );
-                                          });
-                                    },
-                                    child: _iscaptcha
-                                        ? Icon(
-                                            Icons.check_box_outlined,
-                                            color: Colors.green,
-                                            size: 30,
-                                          )
-                                        : Icon(
-                                            Icons.crop_square_sharp,
-                                            color: Colors.grey,
-                                          )),
-                                SizedBox(width: 20),
-                                Text(
-                                  "Saya bukan robot",
-                                  style: TextStyle(fontSize: 18),
-                                ),
-                              ],
-                            ),
+                                            ),
+                                          );
+                                        });
+                                  },
+                                  child: Row(
+                                    children: [
+                                      _iscaptcha
+                                          ? const Icon(
+                                              Icons.check_box_outlined,
+                                              color: Colors.green,
+                                              size: 30,
+                                            )
+                                          : const Icon(
+                                              Icons.crop_square_sharp,
+                                              color: Colors.grey,
+                                            ),
+                                      const SizedBox(width: 20),
+                                      const Text(
+                                        "I'm not a robot",
+                                        style: TextStyle(fontSize: 18),
+                                      ),
+                                    ],
+                                  )),
+                            ],
                           ),
-                          SizedBox(height: 20),
-                          GestureDetector(
-                            onTap: () async {
-                              setState(() {
-                                isLoading = true;
-                              });
-                              if (_formKey.currentState!.validate()) {
-                                if (_iscaptcha == false) {
+                        ),
+                        const SizedBox(height: 20),
+                        //tombo login
+                        GestureDetector(
+                          onTap: () async {
+                            setState(() {
+                              isLoading = true;
+                            });
+                            if (_formKey.currentState!.validate()) {
+                              if (_iscaptcha == false) {
+                                QuickAlert.show(
+                                    context: context,
+                                    title: "Captcha Salah, Coba Lagi",
+                                    type: QuickAlertType.error);
+                              }
+                              AuthController authController =
+                                  Get.put(AuthController());
+                              bool login = await authController.login(
+                                  _identitasController.text,
+                                  _passwordController.text);
+                              if (login == true && _iscaptcha == true) {
+                                Get.offAllNamed('/bottom_nav');
+                                QuickAlert.show(
+                                    context: context,
+                                    title: "Login Berhasil",
+                                    type: QuickAlertType.success);
+                              } else {
+                                if (_iscaptcha == true && login == false) {
                                   QuickAlert.show(
                                       context: context,
-                                      title: "Captcha Salah, Coba Lagi",
+                                      title: "Login Gagal",
                                       type: QuickAlertType.error);
                                 }
-                                AuthController authController =
-                                    Get.put(AuthController());
-                                bool login = await authController.login(
-                                    _identitasController.text,
-                                    _passwordController.text);
-                                if (login == true && _iscaptcha == true) {
-                                  Get.offAllNamed('/bottom_nav');
-                                  QuickAlert.show(
-                                      context: context,
-                                      title: "Login Berhasil",
-                                      type: QuickAlertType.success);
-                                } else {
-                                  if (_iscaptcha == true && login == false) {
-                                    QuickAlert.show(
-                                        context: context,
-                                        title: "Login Gagal",
-                                        type: QuickAlertType.error);
-                                  }
-                                }
-                                setState(() {
-                                  isLoading = false;
-                                });
-                              } else {
-                                setState(() {
-                                  isLoading = false;
-                                });
                               }
                               setState(() {
                                 isLoading = false;
                               });
-                            },
-                            child: isLoading
-                                ? CircularProgressIndicator(
+                            } else {
+                              setState(() {
+                                isLoading = false;
+                              });
+                            }
+                            setState(() {
+                              isLoading = false;
+                            });
+                          },
+                          child: isLoading
+                              ? const Center(
+                                  child: CircularProgressIndicator(
                                     valueColor: AlwaysStoppedAnimation<Color>(
                                         Colors.blue),
-                                  )
-                                : Container(
-                                    width: double.infinity,
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 15),
-                                    alignment: Alignment.center,
-                                    decoration: BoxDecoration(
-                                      color: Colors
-                                          .blue, // Ganti warna sesuai kebutuhan
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: const Text(
-                                      'Login',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                                  ),
+                                )
+                              : Container(
+                                  width: double.infinity,
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 15),
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    color: Colors
+                                        .blue, // Ganti warna sesuai kebutuhan
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Text(
+                                    'Login',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
+                                ),
+                        ),
+                        //lupa password
+                        TextButton(
+                          onPressed: () {
+                            Get.toNamed('/lupa_password');
+                          },
+                          child: const Text(
+                            'Lupa Password?',
+                            style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 16,
+                                fontWeight: FontWeight.normal,
+                                decoration: TextDecoration.underline),
                           ),
-                          //lupa password
-                          TextButton(
-                            onPressed: () {
-                              Get.toNamed('/lupa_password');
-                            },
-                            child: Text(
-                              'Lupa Password?',
-                              style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.normal,
-                                  decoration: TextDecoration.underline),
-                            ),
-                          ),
-                          SizedBox(height: 20),
-                          //versi aplikasi
-                          Text(
+                        ),
+                        const SizedBox(height: 20),
+                        //versi aplikasi
+                        const Center(
+                          child: Text(
                             'Versi 1.0.0',
                             style: TextStyle(
                               color: Colors.black,
@@ -302,13 +353,13 @@ class _LoginState extends State<Login> {
                               fontWeight: FontWeight.normal,
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

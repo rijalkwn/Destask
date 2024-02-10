@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import '../model/task_model.dart';
 import '../utils/constant_api.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'package:path/path.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 
@@ -74,9 +77,10 @@ class TaskController {
     DateTime? taskSelesai = task['tgl_selesai'] != null
         ? DateTime.parse(task['tgl_selesai'])
         : null;
-    return selectedDate.isAfter(createdTask.subtract(Duration(days: 1))) &&
+    return selectedDate
+            .isAfter(createdTask.subtract(const Duration(days: 1))) &&
         (taskSelesai == null ||
-            selectedDate.isBefore(taskSelesai.add(Duration(days: 1))));
+            selectedDate.isBefore(taskSelesai.add(const Duration(days: 1))));
   }
 
   //fungsi mendapatkan task berdasarkan id pekerjaan dan tanggal
@@ -264,6 +268,45 @@ class TaskController {
       }
     } catch (e) {
       print('Exception editing task: $e');
+      return false;
+    }
+  }
+
+  //update foto profil
+  Future<bool> uploadImage(File imageFile, String idTask) async {
+    var stream = http.ByteStream(imageFile.openRead());
+    var length = await imageFile.length();
+    var uri = Uri.parse('$url/submit');
+    var token = await getToken();
+
+    var request = http.MultipartRequest("POST", uri);
+    request.headers['Authorization'] = 'Bearer $token';
+
+    var MultiPartFile = http.MultipartFile('bukti_selesai', stream, length,
+        filename: basename(imageFile.path));
+
+    Map<String, String> body = {'id_task': idTask};
+
+    request.fields.addAll(body);
+    request.files.add(MultiPartFile);
+
+    try {
+      var streamedResponse = await request.send();
+      if (streamedResponse.statusCode == 200) {
+        var response = await http.Response.fromStream(streamedResponse);
+        Map<String, dynamic> parsed = jsonDecode(response.body);
+        print(parsed);
+        return true;
+      } else {
+        print(streamedResponse.statusCode);
+        print(streamedResponse.reasonPhrase);
+        var response = await http.Response.fromStream(streamedResponse);
+        Map<String, dynamic> parsed = jsonDecode(response.body);
+        print(parsed);
+        return false;
+      }
+    } catch (e) {
+      print(e);
       return false;
     }
   }

@@ -27,6 +27,7 @@ class AuthController {
         return true;
       } else {
         print(res.statusCode);
+        print(res.body);
         return false;
       }
     } catch (e) {

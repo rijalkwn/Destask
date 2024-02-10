@@ -9,7 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:quickalert/quickalert.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-const url = '$baseURL/api/user/fotoprofil';
+const url = '$baseURL/assets/foto_profil';
 
 class EditProfile extends StatefulWidget {
   @override
@@ -17,16 +17,16 @@ class EditProfile extends StatefulWidget {
 }
 
 class _EditProfileState extends State<EditProfile> {
-  TextEditingController _nameController = TextEditingController();
-  TextEditingController _emailController = TextEditingController();
-  TextEditingController _usernameController = TextEditingController();
-  TextEditingController _usergroupController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _usergroupController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   UserController userController = UserController();
   String namafoto = '';
   File? _image;
-  bool isUploading = false;
+  bool isLoading = false;
   bool isFailed = false;
 
   getToken() async {
@@ -83,12 +83,12 @@ class _EditProfileState extends State<EditProfile> {
     var iduser = Get.parameters['iduser'] ?? '';
     return Scaffold(
       appBar: AppBar(
-        title: Text('Edit Profil', style: TextStyle(color: Colors.white)),
+        title: const Text('Edit Profil', style: TextStyle(color: Colors.white)),
         backgroundColor: GlobalColors.mainColor,
-        iconTheme: IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
           child: Form(
             key: _formKey,
@@ -114,7 +114,7 @@ class _EditProfileState extends State<EditProfile> {
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
                   child: TextField(
                     controller: _usergroupController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'Usergroup',
                       border: OutlineInputBorder(),
                       prefixIcon: Icon(Icons.group),
@@ -126,37 +126,59 @@ class _EditProfileState extends State<EditProfile> {
                 // Tombol Simpan
                 GestureDetector(
                   onTap: () async {
-                    if (_formKey.currentState!.validate()) {
-                      UserController userController = UserController();
-                      bool editProfile = await userController.editProfile(
-                          iduser,
-                          _nameController.text,
-                          _emailController.text,
-                          _usernameController.text);
-                      if (editProfile) {
-                        QuickAlert.show(
-                          context: context,
-                          type: QuickAlertType.success,
-                          text: 'Profil berhasil diupdate!',
-                        );
-                      } else {
-                        QuickAlert.show(
-                          context: context,
-                          type: QuickAlertType.error,
-                          title: 'Oops...',
-                          text: 'Profil gagal diupdate, silahkan coba lagi!',
-                        );
+                    try {
+                      if (_formKey.currentState!.validate()) {
+                        setState(() {
+                          isLoading = true;
+                        });
+                        bool editProfile = await userController.editProfile(
+                            iduser,
+                            _nameController.text,
+                            _emailController.text,
+                            _usernameController.text);
+
+                        bool success =
+                            await userController.uploadImage(_image!);
+
+                        if (editProfile && success) {
+                          QuickAlert.show(
+                            context: context,
+                            type: QuickAlertType.success,
+                            text: 'Profil berhasil diupdate!',
+                          );
+                        } else {
+                          QuickAlert.show(
+                            context: context,
+                            type: QuickAlertType.error,
+                            title: 'Oops...',
+                            text: 'Profil gagal diupdate, silahkan coba lagi!',
+                          );
+                        }
+                        setState(() {
+                          isLoading = false;
+                        });
                       }
+                    } catch (e) {
+                      print(e);
+                      QuickAlert.show(
+                        context: context,
+                        type: QuickAlertType.error,
+                        title: 'Oops...',
+                        text: 'Profil gagal diupdate, silahkan coba lagi!',
+                      );
+                      setState(() {
+                        isLoading = false;
+                      });
                     }
                   },
                   child: Container(
-                    margin: EdgeInsets.symmetric(vertical: 16.0),
-                    padding: EdgeInsets.symmetric(vertical: 16.0),
+                    margin: const EdgeInsets.symmetric(vertical: 16.0),
+                    padding: const EdgeInsets.symmetric(vertical: 16.0),
                     decoration: BoxDecoration(
                       color: Colors.blue,
                       borderRadius: BorderRadius.circular(8.0),
                     ),
-                    child: Text(
+                    child: const Text(
                       'Simpan',
                       style: TextStyle(
                         color: Colors.white,
@@ -177,13 +199,13 @@ class _EditProfileState extends State<EditProfile> {
   Widget buildTextField(String label, TextEditingController controller,
       {TextInputType keyboardType = TextInputType.text, IconData? iconData}) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: TextFormField(
         controller: controller,
         keyboardType: keyboardType,
         decoration: InputDecoration(
           labelText: label,
-          border: OutlineInputBorder(),
+          border: const OutlineInputBorder(),
           prefixIcon: iconData != null ? Icon(iconData) : null,
         ),
       ),
@@ -192,7 +214,7 @@ class _EditProfileState extends State<EditProfile> {
 
   Widget buildPhotoField() {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Column(
         children: [
           Stack(children: [
@@ -204,7 +226,7 @@ class _EditProfileState extends State<EditProfile> {
                         shape: BoxShape.circle,
                         image: DecorationImage(
                           image: NetworkImage(
-                            '$baseURL/assets/foto_profil/$namafoto',
+                            '$url/$namafoto',
                           ),
                           fit: BoxFit.cover,
                         ),
@@ -226,81 +248,49 @@ class _EditProfileState extends State<EditProfile> {
                       ),
                     ),
             ),
-            if (_image != null)
-              Positioned(
-                bottom: 0,
-                right: 0,
-                child: GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _image = null;
-                    });
-                  },
-                  child: Container(
-                    padding: EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: Colors.blue,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(Icons.close, color: Colors.white),
-                  ),
-                ),
-              ),
-          ]),
-          SizedBox(height: 8),
-          GestureDetector(
-            onTap: () async {
-              if (_image != null) {
-                setState(() {
-                  isUploading = true;
-                });
-                // Jika gambar sudah dipilih, maka lakukan upload
-                bool success = await userController.uploadImage(_image!);
-                if (success) {
-                  QuickAlert.show(
-                    context: context,
-                    type: QuickAlertType.success,
-                    text: 'Foto berhasil diupload!',
-                  );
-                } else {
-                  QuickAlert.show(
-                    context: context,
-                    type: QuickAlertType.error,
-                    title: 'Oops...',
-                    text: 'Foto gagal diupload, silahkan coba lagi!',
-                  );
-                }
-                setState(() {
-                  isUploading = false;
-                });
-              } else {
-                // Jika belum, tampilkan dialog pilihan
-                _showChoiceDialog(context);
-              }
-            },
-            child: Container(
-              padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 25),
-              decoration: BoxDecoration(
-                color: GlobalColors.mainColor,
-                borderRadius: BorderRadius.circular(15.0),
-              ),
+            Positioned(
+              bottom: 0,
+              right: 0,
               child: _image == null
-                  ? Text(
-                      'Ganti Foto',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16.0,
+                  ? GestureDetector(
+                      onTap: () {
+                        _showChoiceDialog(context);
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 10.0, horizontal: 25),
+                        decoration: BoxDecoration(
+                          color: GlobalColors.mainColor,
+                          borderRadius: BorderRadius.circular(15.0),
+                        ),
+                        child: isLoading
+                            ? const CircularProgressIndicator(
+                                valueColor:
+                                    AlwaysStoppedAnimation(Colors.white),
+                              )
+                            : const Icon(
+                                Icons.camera_alt,
+                                color: Colors.white,
+                              ),
                       ),
                     )
-                  : Text(
-                      'Upload Foto',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16.0,
+                  : GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _image = null;
+                        });
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: Colors.blue,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.close, color: Colors.white),
                       ),
                     ),
             ),
-          ),
+          ]),
         ],
       ),
     );

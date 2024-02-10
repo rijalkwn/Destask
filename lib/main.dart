@@ -1,5 +1,4 @@
 import 'package:destask/view/RekapPoint/detail_rekap_point.dart';
-
 import '../view/Beranda/Informasi/pekerjaan_selesai.dart';
 import '../view/Beranda/Task/detail_task.dart';
 import '../view/Beranda/Task/add_task.dart';
@@ -38,7 +37,7 @@ class MyApp extends StatelessWidget {
         initialRoute: '/',
         getPages: [
           GetPage(name: '/', page: () => const BottomNav()),
-          GetPage(name: '/bottomnav', page: () => const BottomNav()),
+          GetPage(name: '/bottom_nav', page: () => const BottomNav()),
           GetPage(name: '/login', page: () => const Login()),
           GetPage(name: '/lupa_password', page: () => const LupaPassword()),
           GetPage(name: '/beranda', page: () => const Beranda()),
@@ -52,7 +51,7 @@ class MyApp extends StatelessWidget {
             name: '/task/:idpekerjaan',
             page: () => const Task(),
           ),
-          GetPage(name: '/add_task/:idpekerjaan', page: () => AddTask()),
+          GetPage(name: '/add_task/:idpekerjaan', page: () => const AddTask()),
           GetPage(name: '/edit_task/:idtask', page: () => const EditTask()),
           GetPage(name: '/detail_task/:idtask', page: () => const DetailTask()),
           GetPage(name: '/pekerjaan', page: () => const Pekerjaan()),
@@ -73,6 +72,6 @@ class MyApp extends StatelessWidget {
           GlobalCupertinoLocalizations.delegate,
         ],
         supportedLocales: const [Locale('en', 'US'), Locale('id', 'ID')],
-        home: const BottomNav());
+        home: const Login());
   }
 }

@@ -7,22 +7,26 @@ import 'package:get/get.dart';
 import 'package:quickalert/quickalert.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+const url = '$baseURL/assets/foto_profil';
+
 class Pengaturan extends StatefulWidget {
+  const Pengaturan({super.key});
+
   @override
-  _PengaturanState createState() => _PengaturanState();
+  State<Pengaturan> createState() => _PengaturanState();
 }
 
 class _PengaturanState extends State<Pengaturan> {
   UserController userController = UserController();
   String nama = '';
   String email = '';
-  String id_user = '';
+  String iduser = '';
   String fotoProfil = '';
 
   getDataUser() async {
     SharedPreferences pref = await SharedPreferences.getInstance();
-    var id_user = pref.getString('id_user') ?? '';
-    var data = await userController.getUserById(id_user);
+    var iduser = pref.getString('id_user') ?? '';
+    var data = await userController.getUserById(iduser);
     print(data);
     setState(() {
       nama = data[0].nama.toString();
@@ -34,7 +38,6 @@ class _PengaturanState extends State<Pengaturan> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     getDataUser();
   }
@@ -49,27 +52,27 @@ class _PengaturanState extends State<Pengaturan> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Container(
-              padding: EdgeInsets.only(top: 50, bottom: 20),
+              padding: const EdgeInsets.only(top: 50, bottom: 20),
               child: Column(
                 children: [
                   CircleAvatar(
                     radius: 100,
                     backgroundImage: NetworkImage(
-                      '$baseURL/assets/foto_profil/$fotoProfil',
+                      '$url/$fotoProfil',
                     ),
                   ),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
                   Text(
                     nama,
-                    style: TextStyle(
+                    style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: Colors.black),
                   ),
-                  SizedBox(height: 5),
+                  const SizedBox(height: 5),
                   Text(
                     email,
-                    style: TextStyle(fontSize: 16, color: Colors.grey),
+                    style: const TextStyle(fontSize: 16, color: Colors.grey),
                   ),
                 ],
               ),
@@ -78,17 +81,17 @@ class _PengaturanState extends State<Pengaturan> {
             Card(
               child: ListTile(
                 iconColor: Colors.black,
-                title: Text('Edit Profil'),
-                leading: Icon(
+                title: const Text('Edit Profil'),
+                leading: const Icon(
                   Icons.person_2,
                   size: 20,
                 ),
-                trailing: Icon(
+                trailing: const Icon(
                   Icons.keyboard_arrow_right,
                   size: 15,
                 ),
                 onTap: () {
-                  Get.toNamed('/edit_profile/$id_user');
+                  Get.toNamed('/edit_profile/$iduser');
                 },
               ),
             ),
@@ -96,12 +99,12 @@ class _PengaturanState extends State<Pengaturan> {
             Card(
               child: ListTile(
                 iconColor: Colors.black,
-                title: Text('Ganti Password'),
-                leading: Icon(
+                title: const Text('Ganti Password'),
+                leading: const Icon(
                   Icons.vpn_key_rounded,
                   size: 20,
                 ),
-                trailing: Icon(
+                trailing: const Icon(
                   Icons.keyboard_arrow_right,
                   size: 15,
                 ),
@@ -113,12 +116,12 @@ class _PengaturanState extends State<Pengaturan> {
             // Logout
             Card(
               child: ListTile(
-                title: Text('Logout'),
-                leading: Icon(
+                title: const Text('Logout'),
+                leading: const Icon(
                   Icons.logout_outlined,
                   size: 20,
                 ),
-                trailing: Icon(
+                trailing: const Icon(
                   Icons.keyboard_arrow_right,
                   size: 15,
                 ),

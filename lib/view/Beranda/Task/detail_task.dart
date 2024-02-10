@@ -1,16 +1,8 @@
-import 'package:destask/controller/kategori_task_controller.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
-import 'package:url_launcher/url_launcher.dart';
-
-import '../../../controller/pekerjaan_controller.dart';
-import '../../../controller/status_task_controller.dart';
 import '../../../controller/task_controller.dart';
-import '../../../controller/user_controller.dart';
 import '../../../utils/global_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 
 class DetailTask extends StatefulWidget {
   const DetailTask({Key? key}) : super(key: key);
@@ -66,10 +58,10 @@ class _DetailTaskState extends State<DetailTask> {
       alasanVerifikasi = data[0].alasan_verifikasi ?? '-';
       buktiSelesai = data[0].bukti_selesai ?? '-';
       tautanTask = data[0].tautan_task ?? '-';
-      namaUserTask = data[0].data_tambahan.nama_user ?? '-';
-      namaPekerjaan = data[0].data_tambahan.nama_pekerjaan ?? '-';
-      namaStatusTask = data[0].data_tambahan.nama_status_task ?? '-';
-      namaKategoriTask = data[0].data_tambahan.nama_kategori_task ?? '-';
+      namaUserTask = data[0].data_tambahan.nama_user;
+      namaPekerjaan = data[0].data_tambahan.nama_pekerjaan;
+      namaStatusTask = data[0].data_tambahan.nama_status_task;
+      namaKategoriTask = data[0].data_tambahan.nama_kategori_task;
     });
     return data;
   }
@@ -85,19 +77,19 @@ class _DetailTaskState extends State<DetailTask> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: GlobalColors.mainColor,
-        iconTheme: IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: Colors.white),
         title: Text(
-          "Detail " + deskripsiTask,
-          style: TextStyle(fontSize: 20, color: Colors.white),
+          "Detail $deskripsiTask",
+          style: const TextStyle(fontSize: 20, color: Colors.white),
         ),
       ),
       body: SingleChildScrollView(
         child: Container(
-          padding: EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
               Table(
-                columnWidths: {
+                columnWidths: const {
                   0: FlexColumnWidth(7),
                   1: FlexColumnWidth(0.5),
                   2: FlexColumnWidth(10),
@@ -142,22 +134,22 @@ class _DetailTaskState extends State<DetailTask> {
       children: [
         TableCell(
           child: Container(
-            padding: EdgeInsets.symmetric(vertical: 8.0),
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
             child: Text(
               label,
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
         ),
         TableCell(
           child: Container(
-            padding: EdgeInsets.symmetric(vertical: 8.0),
-            child: Text(":"),
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: const Text(":"),
           ),
         ),
         TableCell(
           child: Container(
-            padding: EdgeInsets.symmetric(vertical: 8.0),
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
             child: Text(value.toString()),
           ),
         ),
@@ -170,17 +162,17 @@ class _DetailTaskState extends State<DetailTask> {
       children: [
         TableCell(
           child: Container(
-            padding: EdgeInsets.symmetric(vertical: 8.0),
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
             child: Text(
               label,
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
         ),
         TableCell(
           child: Container(
-            padding: EdgeInsets.symmetric(vertical: 8.0),
-            child: Text(":"),
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: const Text(":"),
           ),
         ),
         TableCell(
@@ -192,22 +184,22 @@ class _DetailTaskState extends State<DetailTask> {
                   child: Text(
                     link.isNotEmpty
                         ? link.length > 30
-                            ? link.substring(0, 30) + '...'
+                            ? '${link.substring(0, 30)}...'
                             : link
                         : "Tidak ada tautan",
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Colors.blue,
                       decoration: TextDecoration.underline,
                     ),
                   ),
                 ),
                 IconButton(
-                  icon: Icon(Icons.copy),
+                  icon: const Icon(Icons.copy),
                   onPressed: () {
-                    if (link != null) {
+                    if (link.isNotEmpty) {
                       Clipboard.setData(ClipboardData(text: link));
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
+                        const SnackBar(
                           content: Text('Tautan berhasil disalin!'),
                         ),
                       );

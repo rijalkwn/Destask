@@ -4,7 +4,6 @@ import 'package:destask/controller/pekerjaan_controller.dart';
 import 'package:destask/controller/task_controller.dart';
 import 'package:destask/model/bobot_kategori_task_model.dart';
 import 'package:destask/model/kategori_task_model.dart';
-import 'package:destask/model/pekerjaan_model.dart';
 import 'package:destask/model/task_model.dart';
 import 'package:destask/utils/global_colors.dart';
 import 'package:flutter/material.dart';
@@ -99,7 +98,7 @@ class _DetailRekapPointState extends State<DetailRekapPoint> {
         }
 
         setState(() {
-          namaPekerjaan = value[0].data_tambahan.nama_pekerjaan ?? '';
+          namaPekerjaan = value[0].data_tambahan.nama_pekerjaan;
           // Update the state with the initialized lists
           this.namaKategoriTask = namaKategoriTask;
           this.pointKategoriTask = pointKategoriTask;
@@ -116,12 +115,12 @@ class _DetailRekapPointState extends State<DetailRekapPoint> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'Detail Rekap Point',
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: GlobalColors.mainColor,
-        iconTheme: IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Padding(
         padding: const EdgeInsets.all(10.0),
@@ -138,10 +137,10 @@ class _DetailRekapPointState extends State<DetailRekapPoint> {
                     children: [
                       Text(
                         namaPekerjaan,
-                        style: TextStyle(
+                        style: const TextStyle(
                             fontSize: 20, fontWeight: FontWeight.bold),
                       ),
-                      Text(
+                      const Text(
                         'Total Point',
                         style: TextStyle(fontSize: 16),
                       ),
@@ -155,18 +154,18 @@ class _DetailRekapPointState extends State<DetailRekapPoint> {
                       pointKategoriTask
                           .fold<int>(0, (p, c) => p + c)
                           .toString(),
-                      style: TextStyle(fontSize: 20, color: Colors.white),
+                      style: const TextStyle(fontSize: 20, color: Colors.white),
                     ),
                   ),
                 ],
               ),
             ),
-            Divider(),
-            SizedBox(
+            const Divider(),
+            const SizedBox(
               height: 10,
             ),
             //task terselesaikan
-            Text(
+            const Text(
               'Task Terselesaikan',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
@@ -175,7 +174,7 @@ class _DetailRekapPointState extends State<DetailRekapPoint> {
                 future: task,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Center(
+                    return const Center(
                       child: CircularProgressIndicator(),
                     );
                   } else if (snapshot.hasError) {
@@ -183,7 +182,7 @@ class _DetailRekapPointState extends State<DetailRekapPoint> {
                       child: Text('Error: ${snapshot.error}'),
                     );
                   } else if (snapshot.hasData && snapshot.data!.isEmpty) {
-                    return Center(
+                    return const Center(
                       child: Text('No tasks available.'),
                     );
                   } else {
@@ -206,7 +205,7 @@ class _DetailRekapPointState extends State<DetailRekapPoint> {
                             subtitle: Text('Kategori Task: $kategoriTask'),
                             trailing: Text(
                               'Point: $pointTask',
-                              style: TextStyle(fontSize: 14),
+                              style: const TextStyle(fontSize: 14),
                             ),
                           ),
                         );
