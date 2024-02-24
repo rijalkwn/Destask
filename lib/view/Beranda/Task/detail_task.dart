@@ -1,3 +1,4 @@
+import 'package:destask/utils/constant_api.dart';
 import 'package:flutter/services.dart';
 import '../../../controller/task_controller.dart';
 import '../../../utils/global_colors.dart';
@@ -12,6 +13,7 @@ class DetailTask extends StatefulWidget {
 }
 
 class _DetailTaskState extends State<DetailTask> {
+  var url = '$baseURL/assets/bukti_task/';
   final String idtask = Get.parameters['idtask'] ?? '';
   TaskController taskController = TaskController();
 
@@ -118,8 +120,7 @@ class _DetailTaskState extends State<DetailTask> {
                       tglVerifikasiDiterima == ''
                           ? '-'
                           : tglVerifikasiDiterima),
-                  _buildTableRow(
-                      'Bukti Selesai', buktiSelesai == '' ? '-' : buktiSelesai),
+                  _buildBuktiSelesai('Bukti Selesai', buktiSelesai),
                 ],
               ),
             ],
@@ -206,6 +207,64 @@ class _DetailTaskState extends State<DetailTask> {
                     }
                   },
                 ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  TableRow _buildBuktiSelesai(String label, String namafoto) {
+    return TableRow(
+      children: [
+        TableCell(
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: Text(
+              label,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+        ),
+        TableCell(
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: const Text(":"),
+          ),
+        ),
+        TableCell(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                //cek apakah ada bukti selesai
+                namafoto == ''
+                    ? const Text('Tidak ada bukti selesai')
+                    : GestureDetector(
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return Dialog(
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    image: DecorationImage(
+                                      fit: BoxFit.cover,
+                                      image: NetworkImage('$url/$namafoto'),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          );
+                        },
+                        child: Image.network(
+                          '$url/$namafoto',
+                          width: 100,
+                          height: 100,
+                        ),
+                      ),
               ],
             ),
           ),

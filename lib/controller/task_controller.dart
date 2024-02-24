@@ -1,15 +1,19 @@
 import 'dart:io';
 
+import 'package:destask/controller/bobot_kategori_task_controller.dart';
+import 'package:destask/model/bobot_kategori_task_model.dart';
+
 import '../model/task_model.dart';
 import '../utils/constant_api.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:path/path.dart';
-import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 
 // API link
 const url = '$baseURL/api/task';
+const urluser = '$baseURL/api/taskbyuser';
+const urlpekerjaan = '$baseURL/api/taskbypekerjaan';
 
 Future getToken() async {
   final prefs = await SharedPreferences.getInstance();
@@ -86,9 +90,8 @@ class TaskController {
   //fungsi mendapatkan task berdasarkan id pekerjaan dan tanggal
   Future<List<TaskModel>> getTasksByPekerjaanId(
       String idPekerjaan, DateTime selectedDate) async {
-    const urlx = '$baseURL/api/taskbypekerjaan';
     var token = await getToken();
-    var response = await http.get(Uri.parse('$urlx/$idPekerjaan'),
+    var response = await http.get(Uri.parse('$urlpekerjaan/$idPekerjaan'),
         headers: {'Authorization': 'Bearer $token'});
     if (response.statusCode == 200) {
       Iterable it = json.decode(response.body);
@@ -115,10 +118,9 @@ class TaskController {
   Future<List<TaskModel>> getTasksByUserPekerjaanDate(
       String idPekerjaan, DateTime selectedDate) async {
     try {
-      const urlx = '$baseURL/api/taskbyuser';
       var token = await getToken();
       var idUser = await getIdUser();
-      var response = await http.get(Uri.parse('$urlx/$idUser'),
+      var response = await http.get(Uri.parse('$urluser/$idUser'),
           headers: {'Authorization': 'Bearer $token'});
       if (response.statusCode == 200) {
         Iterable it = json.decode(response.body);
@@ -150,10 +152,9 @@ class TaskController {
   //fungsi mendapatkan task berdasarkan id user dan id pekerjaan
   Future<List<TaskModel>> getTasksByUserPekerjaan(String idPekerjaan) async {
     try {
-      const urlx = '$baseURL/api/taskbyuser';
       var token = await getToken();
       var idUser = await getIdUser();
-      var response = await http.get(Uri.parse('$urlx/$idUser'),
+      var response = await http.get(Uri.parse('$urluser/$idUser'),
           headers: {'Authorization': 'Bearer $token'});
       if (response.statusCode == 200) {
         Iterable it = json.decode(response.body);
@@ -259,7 +260,6 @@ class TaskController {
       if (response.statusCode == 200) {
         print(response.statusCode);
         print(response.body);
-        Get.offAndToNamed('/task/$idPekerjaan');
         return true;
       } else {
         print('$url/$idTask');
@@ -330,6 +330,83 @@ class TaskController {
     } catch (e) {
       print('Exception deleting task: $e');
       return false;
+    }
+  }
+
+  Future getTaskBulanIni() async {
+    try {
+      final now = DateTime.now();
+      final month = now.month.toString().padLeft(2, '0');
+      final year = now.year.toString();
+      var token = await getToken();
+      var idUser = await getIdUser();
+      var response = await http.get(Uri.parse('$urluser/$idUser'),
+          headers: {'Authorization': 'Bearer $token'});
+      if (response.statusCode == 200) {
+        Iterable it = json.decode(response.body);
+        List<TaskModel> tasks =
+            List<TaskModel>.from(it.map((e) => TaskModel.fromJson(e)).toList());
+        final List<TaskModel> filteredTasks = [];
+        for (var i = 0; i < tasks.length; i++) {
+          final task = tasks[i];
+          if (task.tgl_selesai != null) {
+            final taskDate = DateTime.parse(task.tgl_selesai!);
+            if (taskDate.month.toString().padLeft(2, '0') == month &&
+                taskDate.year.toString() == year) {
+              filteredTasks.add(task);
+            }
+          }
+        }
+
+        return filteredTasks;
+      } else {
+        print(response.statusCode);
+        return [];
+      }
+    } catch (e) {
+      print(e);
+      return [];
+    }
+  }
+
+  Future<int> TotalBobotPoinTaskBulanIni() async {
+    try {
+      final List<TaskModel> tasks =
+          await getTaskBulanIni(); // Dapatkan semua task untuk bulan ini
+      final BobotKategoriTaskController bobotKategoriTaskController =
+          BobotKategoriTaskController();
+      int totalBobotPoin = 0;
+
+      // Iterasi semua task
+      for (var task in tasks) {
+        // Dapatkan bobot poin dari tabel bobot kategori untuk setiap task
+        final BobotKategoriTaskModel bobotKategoriTask =
+            await bobotKategoriTaskController
+                .getBobotKategoriTaskById(task.id_kategori_task.toString());
+        if (bobotKategoriTask != null) {
+          totalBobotPoin += bobotKategoriTask.bobot_poin! as int;
+        }
+      }
+
+      return totalBobotPoin;
+    } catch (e) {
+      print('Error: $e');
+      return 0;
+    }
+  }
+
+  getTaskVerifikasi() async {
+    var token = await getToken();
+    var iduser = await getIdUser();
+    var response = await http.get(Uri.parse('$url/verifikasi/$iduser'),
+        headers: {'Authorization': 'Bearer' + token});
+    if (response.statusCode == 200) {
+      Iterable it = json.decode(response.body);
+      List<TaskModel> task =
+          List<TaskModel>.from(it.map((e) => TaskModel.fromJson(e)).toList());
+      return task;
+    } else {
+      return [];
     }
   }
 }

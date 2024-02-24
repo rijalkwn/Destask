@@ -95,13 +95,12 @@ class _PekerjaanState extends State<Pekerjaan>
             : null,
         bottom: TabBar(
           controller: _tabController,
-          isScrollable: true,
           labelPadding: const EdgeInsets.symmetric(horizontal: 10),
           tabs: [
             for (var i = 0; i < statusNames.length; i++)
               Tab(
                 icon: Icon(statusIcon[i]),
-                text: statusNames[i],
+                iconMargin: const EdgeInsets.only(bottom: 5),
               ),
           ],
           labelStyle: const TextStyle(fontSize: 17),
@@ -365,7 +364,7 @@ final List<String> statusNames = [
 ];
 
 final List<IconData> statusIcon = [
-  Icons.work,
+  Icons.timer,
   Icons.check_circle,
   Icons.pending,
   Icons.cancel,

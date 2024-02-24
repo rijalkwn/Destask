@@ -30,12 +30,6 @@ class StatusPekerjaanController {
     }
   }
 
-  //fungsi menampilkan semua status pekerjaan
-  Future<List<StatusPekerjaanModel>> showAll() async {
-    List<StatusPekerjaanModel> data = await getAllStatusPekerjaan();
-    return data;
-  }
-
   //fungsi mendapatkan status pekerjaan berdasarkan id
   Future getStatusById(String idStatusPekerjaan) async {
     var token = await getToken();

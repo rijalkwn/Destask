@@ -64,6 +64,8 @@ class _TaskState extends State<Task> {
   //cek user pm apa bukan berdasarkan pekerjaan id
   cekPM() async {
     var idUser = await getIdUser();
+    print("id user: $idUser");
+    print("id pekerjaan: $idPekerjaan");
     var dataPekerjaan = await pekerjaanController.getPekerjaanById(idPekerjaan);
     String idPersonil = dataPekerjaan[0].id_personil.toString();
     var dataPersonil = await personilController.getPersonilById(idPersonil);
@@ -441,7 +443,7 @@ class _TaskState extends State<Task> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'Deadline : ${taskData['tgl_planing']}',
+                                      'Deadline : ${formatDate(taskData['tgl_planing'])}',
                                       style:
                                           const TextStyle(color: Colors.white),
                                     ),
@@ -477,5 +479,11 @@ class _TaskState extends State<Task> {
         }
       },
     );
+  }
+
+  //ubah format tanggal
+  String formatDate(String date) {
+    DateTime dateTime = DateTime.parse(date);
+    return DateFormat('d MMMM yyyy', 'id').format(dateTime);
   }
 }

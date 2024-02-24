@@ -1,4 +1,7 @@
 import 'dart:io';
+import 'package:destask/controller/pekerjaan_controller.dart';
+import 'package:destask/model/pekerjaan_model.dart';
+
 import '../../../controller/kategori_task_controller.dart';
 import '../../../controller/task_controller.dart';
 import '../../../model/kategori_task_model.dart';
@@ -28,6 +31,7 @@ class _AddTaskState extends State<AddTask> {
   StatusTaskController statusTaskController = StatusTaskController();
   KategoriTaskController kategoriTaskController = KategoriTaskController();
   TaskController taskController = TaskController();
+  PekerjaanController pekerjaanController = PekerjaanController();
 
   //file
   PlatformFile? pickedFile;
@@ -37,12 +41,30 @@ class _AddTaskState extends State<AddTask> {
   bool isLoading = false;
   String idStatusTask = "";
   String idKategoriTask = "";
+  String namaPekerjaan = "";
 
   @override
   void initState() {
     super.initState();
+    getDataPekerjaan();
     getDataStatusTask();
     getDataKategoriTask();
+  }
+
+  getDataPekerjaan() async {
+    List<PekerjaanModel> dataPekerjaan =
+        await pekerjaanController.getPekerjaanById(idpekerjaan);
+    if (dataPekerjaan.isNotEmpty) {
+      setState(() {
+        namaPekerjaan = dataPekerjaan[0].nama_pekerjaan.toString();
+      });
+    } else {
+      setState(() {
+        namaPekerjaan = "Pekerjaan tidak ditemukan";
+      });
+    }
+    print(namaPekerjaan);
+    return dataPekerjaan;
   }
 
   //get status task
@@ -78,6 +100,13 @@ class _AddTaskState extends State<AddTask> {
   }
 
   @override
+  void dispose() {
+    _deskripsiTaskController.dispose();
+    _tautanTaskController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -94,6 +123,23 @@ class _AddTaskState extends State<AddTask> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                //nama pekerjaan
+                buildLabel('Nama Pekerjaan'),
+                Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+                  child: Text(
+                    namaPekerjaan,
+                    style: const TextStyle(
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
                 //deskripsi task
                 buildLabel('Deskripsi Task *'),
                 buildFormField(_deskripsiTaskController, 'Deskripsi Task',

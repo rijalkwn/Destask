@@ -1,14 +1,14 @@
 class UserModel {
-  final String id_user;
-  String id_usergroup;
-  String username;
-  String email;
-  String password;
-  String user_role;
-  String user_level;
-  String nama;
-  String status_keaktifan;
-  String foto_profil;
+  String? id_user;
+  String? id_usergroup;
+  String? username;
+  String? email;
+  String? password;
+  String? user_role;
+  String? user_level;
+  String? nama;
+  String? status_keaktifan;
+  String? foto_profil;
 
   UserModel({
     required this.id_user,
@@ -25,16 +25,16 @@ class UserModel {
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
-      id_user: json['id_user'],
-      id_usergroup: json['id_usergroup'],
-      username: json['username'],
-      email: json['email'],
-      password: json['password'],
-      user_role: json['user_role'],
-      user_level: json['user_level'],
-      nama: json['nama'],
-      status_keaktifan: json['status_keaktifan'],
-      foto_profil: json['foto_profil'],
+      id_user: json['id_user']?.toString(),
+      id_usergroup: json['id_usergroup']?.toString(),
+      username: json['username']?.toString(),
+      email: json['email']?.toString(),
+      password: json['password']?.toString(),
+      user_role: json['user_role']?.toString(),
+      user_level: json['user_level']?.toString(),
+      nama: json['nama']?.toString(),
+      status_keaktifan: json['status_keaktifan']?.toString(),
+      foto_profil: json['foto_profil']?.toString(),
     );
   }
 }

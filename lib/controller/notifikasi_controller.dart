@@ -26,16 +26,18 @@ class NotifikasiController {
       var token = await getToken();
       var iduser = await getUser();
       var response = await http.get(
-        Uri.parse(url + 'touser/' + iduser),
+        Uri.parse('$url/user/$iduser'),
         headers: {'Authorization': 'Bearer $token'},
       );
       if (response.statusCode == 200) {
         Iterable it = json.decode(response.body);
         List<NotifikasiModel> notifikasi = List<NotifikasiModel>.from(
             it.map((e) => NotifikasiModel.fromJson(e)));
+        print(response.body);
         return notifikasi;
       } else {
         // Handle error
+        print(response.body);
         return [];
       }
     } catch (e) {

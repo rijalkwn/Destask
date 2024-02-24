@@ -65,7 +65,7 @@ class UserController {
     }
   }
 
-  Future<bool> editProfile(
+  Future editProfile(
     String iduser,
     String nama,
     String email,
@@ -74,24 +74,25 @@ class UserController {
     try {
       var token = await getToken();
       var uri = Uri.parse('$url/$iduser');
-      var response = await http.put(
-        uri,
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json'
-        },
-        body: jsonEncode({
-          'nama': nama,
-          'email': email,
-          'username': username,
-        }),
-      );
+      final data = {
+        'id_user': iduser,
+        'nama': nama,
+        'email': email,
+        'username': username,
+      };
+      var response = await http.put(uri,
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json',
+          },
+          body: jsonEncode(data));
 
       if (response.statusCode == 200) {
         print(response.body);
         return true;
       } else {
         print('Failed to edit profile. Status code: ${response.statusCode}');
+        print(response.body);
         return false;
       }
     } catch (e) {
@@ -100,7 +101,7 @@ class UserController {
   }
 
   //update foto profil
-  Future<bool> uploadImage(File imageFile) async {
+  Future uploadImage(File imageFile) async {
     var stream = http.ByteStream(imageFile.openRead());
     var length = await imageFile.length();
     var id_user = await getIdUser();

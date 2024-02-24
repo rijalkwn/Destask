@@ -34,7 +34,7 @@ class _DetailPekerjaanState extends State<DetailPekerjaan> {
   String jenisLayanan = '';
   String nominalHarga = '';
   String deskripsiPekerjaan = '';
-  DateTime targetWaktuSelesai = DateTime.now();
+  String targetWaktuSelesai = '';
   String persentaseSelesai = '';
   String waktuSelesai = '';
 
@@ -60,19 +60,28 @@ class _DetailPekerjaanState extends State<DetailPekerjaan> {
   getDataPekerjaan() async {
     var data = await pekerjaanController.getPekerjaanById(idpekerjaan);
     setState(() {
-      namaPM = data[0].dataTambahan.nama_pm ?? '-';
-      desainer1 = data[0].dataTambahan.nama_desainer1 ?? '-';
-      desainer2 = data[0].dataTambahan.nama_desainer2 ?? '-';
-      beWeb1 = data[0].dataTambahan.nama_backend_web1 ?? '-';
-      beWeb2 = data[0].dataTambahan.nama_backend_web2 ?? '-';
-      beWeb3 = data[0].dataTambahan.nama_backend_web3 ?? '-';
-      beMobile1 = data[0].dataTambahan.nama_backend_mobile1 ?? '-';
-      beMobile2 = data[0].dataTambahan.nama_backend_mobile2 ?? '-';
-      beMobile3 = data[0].dataTambahan.nama_backend_mobile3 ?? '-';
-      feWeb1 = data[0].dataTambahan.nama_frontend_web1 ?? '-';
-      feMobile1 = data[0].dataTambahan.nama_frontend_mobile1 ?? '-';
-      namaStatus = data[0].dataTambahan.nama_status ?? '-';
-      namaKategori = data[0].dataTambahan.nama_kategori ?? '-';
+      namaPekerjaan = data[0].nama_pekerjaan ?? '-';
+      pelanggan = data[0].pelanggan ?? '-';
+      jenisLayanan = data[0].jenis_layanan ?? '-';
+      nominalHarga = data[0].nominal_harga ?? '-';
+      deskripsiPekerjaan = data[0].deskripsi_pekerjaan ?? '-';
+      targetWaktuSelesai = data[0].target_waktu_selesai.toString();
+      persentaseSelesai = data[0].persentase_selesai ?? '-';
+      waktuSelesai = data[0].waktu_selesai ?? '-';
+      idPersonil = data[0].id_personil ?? '-';
+      namaPM = data[0].data_tambahan.nama_pm ?? '-';
+      desainer1 = data[0].data_tambahan.nama_desainer1 ?? '-';
+      desainer2 = data[0].data_tambahan.nama_desainer2 ?? '-';
+      beWeb1 = data[0].data_tambahan.nama_be_web1 ?? '-';
+      beWeb2 = data[0].data_tambahan.nama_be_web2 ?? '-';
+      beWeb3 = data[0].data_tambahan.nama_be_web3 ?? '-';
+      beMobile1 = data[0].data_tambahan.nama_be_mobile1 ?? '-';
+      beMobile2 = data[0].data_tambahan.nama_be_mobile2 ?? '-';
+      beMobile3 = data[0].data_tambahan.nama_be_mobile3 ?? '-';
+      feWeb1 = data[0].data_tambahan.nama_fe_web1 ?? '-';
+      feMobile1 = data[0].data_tambahan.nama_fe_mobile1 ?? '-';
+      namaStatus = data[0].data_tambahan.nama_status ?? '-';
+      namaKategori = data[0].data_tambahan.nama_kategori ?? '-';
     });
     return data;
   }
@@ -152,9 +161,13 @@ class _DetailPekerjaanState extends State<DetailPekerjaan> {
                   _buildTableRow('Jenis Layanan', jenisLayanan),
                   _buildTableRow('Nominal Harga', _formatRupiah(nominalHarga)),
                   _buildTableRow('Deskripsi Pekerjaan', deskripsiPekerjaan),
-                  _buildTableRow('Target Waktu Selesai', targetWaktuSelesai),
                   _buildTableRow(
-                      'Waktu Selesai', waktuSelesai == '' ? '-' : waktuSelesai),
+                      'Target Waktu Selesai',
+                      targetWaktuSelesai == ''
+                          ? '-'
+                          : formatDate(targetWaktuSelesai)),
+                  _buildTableRow('Waktu Selesai',
+                      waktuSelesai == '' ? '-' : formatDate(waktuSelesai)),
                   //personil
                   _buildTableRow('ID Personil', idPersonil),
                   _buildTableRowPersonil('- Project Manager', namaPM),
@@ -245,5 +258,14 @@ class _DetailPekerjaanState extends State<DetailPekerjaan> {
       print('Error parsing amount: $e');
       return amount;
     }
+  }
+
+  //ubah format tanggal
+  String formatDate(String date) {
+    if (date == '-') {
+      return '-';
+    }
+    DateTime dateTime = DateTime.parse(date);
+    return DateFormat('d MMMM yyyy', 'id').format(dateTime);
   }
 }

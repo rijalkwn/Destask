@@ -1,28 +1,57 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../utils/global_colors.dart';
 import '../../view/Beranda/beranda.dart';
 import '../../view/RekapPoint/rekap_point.dart';
 import '../../view/Pekerjaan/pekerjaan.dart';
 import '../../view/Pengaturan/pengaturan.dart';
 
+import '../../view/verifikasi/verifikasi.dart';
+
 class BottomNav extends StatefulWidget {
-  const BottomNav({super.key});
+  const BottomNav({Key? key}) : super(key: key);
 
   @override
   State<BottomNav> createState() => _BottomNavState();
 }
 
 class _BottomNavState extends State<BottomNav> {
+  bool supervisi = false;
+
+  @override
+  void initState() {
+    super.initState();
+    cek();
+  }
+
+  cek() async {
+    var prefs = await SharedPreferences.getInstance();
+    var level = prefs.getString("user_level");
+    if (level == "supervisi") {
+      setState(() {
+        supervisi = true;
+      });
+    } else {
+      setState(() {
+        supervisi = false;
+      });
+    }
+  }
+
   int _bottomNavCurrentIndex = 0;
-  final List<Widget> _container = const [
-    Beranda(),
-    Pekerjaan(),
-    RekapPoint(),
-    Pengaturan(),
-  ];
+  late List<Widget> _container;
 
   @override
   Widget build(BuildContext context) {
+    _container = [
+      const Beranda(),
+      const Pekerjaan(),
+      const RekapPoint(),
+      if (supervisi) const Verifikasi(),
+      const Pengaturan(),
+    ];
+
     return Scaffold(
       body: _container[_bottomNavCurrentIndex],
       bottomNavigationBar: BottomNavigationBar(
@@ -40,18 +69,23 @@ class _BottomNavState extends State<BottomNav> {
           });
         },
         currentIndex: _bottomNavCurrentIndex,
-        items: const [
-          BottomNavigationBarItem(
+        items: [
+          const BottomNavigationBarItem(
               icon: Icon(Icons.home), label: "Beranda", tooltip: "Beranda"),
-          BottomNavigationBarItem(
+          const BottomNavigationBarItem(
               icon: Icon(Icons.assignment),
               label: "Pekerjaan",
               tooltip: "Pekerjaan"),
-          BottomNavigationBarItem(
+          const BottomNavigationBarItem(
               icon: Icon(Icons.calendar_today),
               label: "Point",
               tooltip: "Point"),
-          BottomNavigationBarItem(
+          if (supervisi)
+            const BottomNavigationBarItem(
+                icon: Icon(Icons.verified_user),
+                label: "Verifikasi",
+                tooltip: "Verifikasi"),
+          const BottomNavigationBarItem(
               icon: Icon(Icons.settings),
               label: "Pengaturan",
               tooltip: "Pengaturan"),

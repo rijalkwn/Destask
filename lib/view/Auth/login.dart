@@ -56,6 +56,13 @@ class _LoginState extends State<Login> {
   }
 
   @override
+  void dispose() {
+    super.dispose();
+    _identitasController.dispose();
+    _passwordController.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: GlobalColors.backgroundColor,
@@ -80,38 +87,15 @@ class _LoginState extends State<Login> {
                       children: [
                         Container(
                           margin: EdgeInsets.only(
-                              top: MediaQuery.of(context).size.height * 0.02,
-                              bottom:
-                                  MediaQuery.of(context).size.height * 0.04),
+                              top: MediaQuery.of(context).size.height * 0.05,
+                              bottom: MediaQuery.of(context).size.height * 0.04,
+                              left: MediaQuery.of(context).size.width * 0.1,
+                              right: MediaQuery.of(context).size.width * 0.1),
                           child: Image.asset(
                             'assets/img/logo.png',
                           ),
                         ),
-                        const Text(
-                          'Selamat Datang',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const Text(
-                          'di Aplikasi Mobile Destask',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        const Text(
-                          'Silahkan login untuk melanjutkan',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 16,
-                            fontWeight: FontWeight.normal,
-                          ),
-                        ),
+
                         const SizedBox(height: 20),
                         TextFormField(
                           controller: _identitasController,

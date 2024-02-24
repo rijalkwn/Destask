@@ -83,6 +83,8 @@ class _PekerjaanSelesaiState extends State<PekerjaanSelesai> {
             final filteredList = pekerjaan
                 .where((pekerjaan) =>
                     pekerjaan.id_status_pekerjaan == "2" &&
+                    pekerjaan.persentase_selesai == "100" &&
+                    pekerjaan.waktu_selesai != null &&
                     pekerjaan.nama_pekerjaan!
                         .toLowerCase()
                         .contains(searchQuery.toLowerCase()))

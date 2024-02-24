@@ -2,7 +2,10 @@ import 'dart:async';
 
 import 'package:badges/badges.dart';
 import 'package:destask/controller/personil_controller.dart';
+import 'package:destask/controller/target_poin_harian_controller.dart';
+import 'package:destask/controller/task_controller.dart';
 import 'package:destask/controller/user_controller.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../controller/notifikasi_controller.dart';
 import '../../controller/pekerjaan_controller.dart';
 import '../../model/pekerjaan_model.dart';
@@ -19,30 +22,54 @@ class Beranda extends StatefulWidget {
 }
 
 class _BerandaState extends State<Beranda> {
+  TargetPoinHarianController targetPoinHarianController =
+      TargetPoinHarianController();
   PekerjaanController pekerjaanController = PekerjaanController();
   PersonilController personilController = PersonilController();
+  TaskController taskController = TaskController();
   UserController userController = UserController();
   NotifikasiController notifikasiController = NotifikasiController();
   late List<PekerjaanModel> pekerjaan;
   String nama = '';
   String jumlahPekerjaanSelesai = '';
   String jumlahNotifikasi = '';
+  String target = '';
+  String taskpoin = '';
+  bool aktif = false;
 
   @override
   void initState() {
     super.initState();
+    aktif = true;
     loadData();
+    getDataUser();
   }
 
   void loadData() async {
     try {
-      getJumlahPekerjaanSelesai();
-      getNotifikasi();
-      pekerjaan = await getDataPekerjaan();
+      await getJumlahPekerjaanSelesai();
+      await getNotifikasi();
+      await getDataTarget();
+      await getTaskPoint();
+      if (aktif) {
+        var data = await getDataPekerjaan();
+        setState(() {
+          pekerjaan = data;
+        });
+      }
     } catch (e) {
       print("Error: $e");
       // Handle error appropriately
     }
+  }
+
+  getDataUser() async {
+    var prefs = await SharedPreferences.getInstance();
+    var namauser = prefs.getString('nama');
+    setState(() {
+      nama = namauser!;
+    });
+    return nama;
   }
 
   //getdata pekerjaan
@@ -51,11 +78,35 @@ class _BerandaState extends State<Beranda> {
     return data;
   }
 
+  getDataTarget() async {
+    var data = await targetPoinHarianController.getTargetPoinHarian();
+    print(data);
+    if (data.isEmpty) {
+      return;
+    } else {
+      setState(() {
+        target = data[0].jumlah_target_poin_sebulan.toString();
+      });
+    }
+    return data;
+  }
+
+  //task poin
+  getTaskPoint() async {
+    var data = await taskController.TotalBobotPoinTaskBulanIni();
+    setState(() {
+      taskpoin = data.toString();
+    });
+    return data;
+  }
+
   getJumlahPekerjaanSelesai() async {
     var data = await pekerjaanController.getAllPekerjaanUser();
     int count = 0;
     for (var i = 0; i < data.length; i++) {
-      if (data[i].id_status_pekerjaan.toString() == '2') {
+      if (data[i].id_status_pekerjaan.toString() == '2' &&
+          data[i].persentase_selesai.toString() == '100' &&
+          data[i].waktu_selesai != null) {
         count += 1;
       }
     }
@@ -79,6 +130,12 @@ class _BerandaState extends State<Beranda> {
       jumlahNotifikasi = count.toString();
     });
     return data;
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    aktif = false;
   }
 
   @override
@@ -244,14 +301,14 @@ class _BerandaState extends State<Beranda> {
                         style: const TextStyle(color: Colors.white),
                       );
                     } else if (index == 1) {
-                      badgecontent = const Text(
-                        '0',
-                        style: TextStyle(color: Colors.white),
+                      badgecontent = Text(
+                        target,
+                        style: const TextStyle(color: Colors.white),
                       );
                     } else if (index == 2) {
-                      badgecontent = const Text(
-                        '0',
-                        style: TextStyle(color: Colors.white),
+                      badgecontent = Text(
+                        taskpoin,
+                        style: const TextStyle(color: Colors.white),
                       );
                     } else {
                       badgecontent = const Text(
@@ -274,10 +331,7 @@ class _BerandaState extends State<Beranda> {
                               if (index == 0) {
                                 Get.toNamed('/pekerjaan_selesai');
                               } else if (index == 1) {
-                                Get.toNamed('/target_bulan_ini');
-                              } else if (index == 2) {
-                                Get.toNamed('/task_selesai');
-                              }
+                              } else if (index == 2) {}
                             },
                             child: Container(
                               padding: const EdgeInsets.all(10),

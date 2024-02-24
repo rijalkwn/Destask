@@ -20,19 +20,27 @@ class _PengaturanState extends State<Pengaturan> {
   UserController userController = UserController();
   String nama = '';
   String email = '';
-  String iduser = '';
-  String fotoProfil = '';
+  String idUser = '';
+  String fotoProfil = 'user.png';
+
+  Future getIdUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    var idUser = prefs.getString("id_user");
+    return idUser;
+  }
 
   getDataUser() async {
-    SharedPreferences pref = await SharedPreferences.getInstance();
-    var iduser = pref.getString('id_user') ?? '';
+    var iduser = await getIdUser();
     var data = await userController.getUserById(iduser);
-    print(data);
-    setState(() {
-      nama = data[0].nama.toString();
-      email = data[0].email.toString();
-      fotoProfil = data[0].foto_profil.toString();
-    });
+    if (data != null && data.isNotEmpty) {
+      setState(() {
+        idUser = data[0].id_user != null ? data[0].id_user : '';
+        nama = data[0].nama != null ? data[0].nama : '';
+        email = data[0].email != null ? data[0].email : '';
+        fotoProfil =
+            data[0].foto_profil != null ? data[0].foto_profil : 'user.png';
+      });
+    }
     return data;
   }
 
@@ -91,7 +99,7 @@ class _PengaturanState extends State<Pengaturan> {
                   size: 15,
                 ),
                 onTap: () {
-                  Get.toNamed('/edit_profile/$iduser');
+                  Get.toNamed('/edit_profile/$idUser');
                 },
               ),
             ),

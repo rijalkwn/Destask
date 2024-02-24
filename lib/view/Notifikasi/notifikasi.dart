@@ -11,17 +11,17 @@ class Notifikasi extends StatefulWidget {
 
 class _NotifikasiState extends State<Notifikasi> {
   NotifikasiController notifikasiController = NotifikasiController();
-  late Future<List<NotifikasiModel>> _notifikasiData;
+  late Future<List<NotifikasiModel>> notifikasiData;
   //getdata notifikasi
   Future<List<NotifikasiModel>> getDataNotifikasi() async {
-    var data = await notifikasiController.getNotifikasi();
+    List<NotifikasiModel> data = await notifikasiController.getNotifikasi();
     return data;
   }
 
   @override
   void initState() {
     super.initState();
-    _notifikasiData = getDataNotifikasi();
+    notifikasiData = getDataNotifikasi();
   }
 
   @override
@@ -35,7 +35,7 @@ class _NotifikasiState extends State<Notifikasi> {
         child: Column(
           children: [
             FutureBuilder<List<NotifikasiModel>>(
-              future: _notifikasiData,
+              future: notifikasiData,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -64,7 +64,7 @@ class _NotifikasiState extends State<Notifikasi> {
                                                   .toString());
                                       if (sudahBaca) {
                                         setState(() {
-                                          _notifikasiData = getDataNotifikasi();
+                                          notifikasiData = getDataNotifikasi();
                                         });
                                       }
                                     },

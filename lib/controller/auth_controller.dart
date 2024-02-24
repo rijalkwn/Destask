@@ -23,6 +23,8 @@ class AuthController {
         prefs.setString("username", response['data']['username']);
         prefs.setString("nama", response['data']['nama']);
         prefs.setString("email", response['data']['email']);
+        prefs.setString("id_usergroup", response['data']['id_usergroup']);
+        prefs.setString("user_level", response['data']['user_level']);
         prefs.setString("token", response['token']);
         return true;
       } else {

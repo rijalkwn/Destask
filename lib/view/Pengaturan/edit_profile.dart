@@ -66,7 +66,7 @@ class _EditProfileState extends State<EditProfile> {
       _emailController.text = data[0].email;
       _usernameController.text = data[0].username;
       _usergroupController.text = data[0].id_usergroup;
-      namafoto = data[0].foto_profil;
+      namafoto = data[0].foto_profil != null ? data[0].foto_profil : 'user.png';
     });
     return data;
   }
@@ -97,6 +97,62 @@ class _EditProfileState extends State<EditProfile> {
               children: [
                 // Foto (Placeholder)
                 buildPhotoField(),
+                _image != null
+                    ? Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: FilledButton.icon(
+                          onPressed: () async {
+                            try {
+                              setState(() {
+                                isLoading = true;
+                              });
+                              bool uploadImage =
+                                  await userController.uploadImage(_image!);
+                              if (uploadImage) {
+                                setState(() {
+                                  _image = null;
+                                });
+                                QuickAlert.show(
+                                  context: context,
+                                  type: QuickAlertType.success,
+                                  text: 'Foto berhasil diupdate!',
+                                );
+                              } else {
+                                QuickAlert.show(
+                                  context: context,
+                                  type: QuickAlertType.error,
+                                  title: 'Oops...',
+                                  text: 'Foto gagal diupdate!',
+                                );
+                              }
+                              setState(() {
+                                isLoading = false;
+                              });
+                            } catch (e) {
+                              print(e);
+                              QuickAlert.show(
+                                context: context,
+                                type: QuickAlertType.error,
+                                title: 'Oops...',
+                                text:
+                                    'Foto gagal diupdate, silahkan coba lagi!',
+                              );
+                              setState(() {
+                                isLoading = false;
+                              });
+                            }
+                          },
+                          icon: const Icon(Icons.upload_outlined),
+                          label: const Text('Update Foto',
+                              style: TextStyle(fontWeight: FontWeight.bold)),
+                          style: FilledButton.styleFrom(
+                              backgroundColor: Colors.amber,
+                              shape: const RoundedRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(10)))),
+                        ),
+                      )
+                    : const SizedBox(),
                 // Nama
                 buildTextField("Nama", _nameController, iconData: Icons.person),
 
@@ -137,10 +193,7 @@ class _EditProfileState extends State<EditProfile> {
                             _emailController.text,
                             _usernameController.text);
 
-                        bool success =
-                            await userController.uploadImage(_image!);
-
-                        if (editProfile && success) {
+                        if (editProfile) {
                           QuickAlert.show(
                             context: context,
                             type: QuickAlertType.success,
@@ -151,7 +204,7 @@ class _EditProfileState extends State<EditProfile> {
                             context: context,
                             type: QuickAlertType.error,
                             title: 'Oops...',
-                            text: 'Profil gagal diupdate, silahkan coba lagi!',
+                            text: 'Profil gagal diupdate!',
                           );
                         }
                         setState(() {
