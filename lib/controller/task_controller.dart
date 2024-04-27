@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:destask/controller/bobot_kategori_task_controller.dart';
 import 'package:destask/model/bobot_kategori_task_model.dart';
+import 'package:get/get.dart';
+import 'package:quickalert/quickalert.dart';
 
 import '../model/task_model.dart';
 import '../utils/constant_api.dart';
@@ -13,6 +15,7 @@ import 'package:http/http.dart' as http;
 // API link
 const url = '$baseURL/api/task';
 const urluser = '$baseURL/api/taskbyuser';
+const urlverifikasi = '$baseURL/api/task/verifikasi';
 const urlpekerjaan = '$baseURL/api/taskbypekerjaan';
 
 Future getToken() async {
@@ -38,6 +41,15 @@ class TaskController {
       List<TaskModel> task =
           List<TaskModel>.from(it.map((e) => TaskModel.fromJson(e)).toList());
       return task;
+    } else if (response.statusCode == 401) {
+      SharedPreferences pref = await SharedPreferences.getInstance();
+      pref.clear();
+      Get.offAllNamed('/login');
+      QuickAlert.show(
+        context: Get.context!,
+        title: 'Token Expired, Login Ulang',
+        type: QuickAlertType.error,
+      );
     } else {
       // Handle error
       return [];
@@ -51,7 +63,7 @@ class TaskController {
   }
 
   //fungsi mendapatkan task berdasarkan id
-  Future<List<TaskModel>> getTaskById(String idTask) async {
+  Future getTaskById(String idTask) async {
     try {
       var token = await getToken();
       var response = await http.get(Uri.parse('$url/$idTask'),
@@ -61,6 +73,15 @@ class TaskController {
         List<TaskModel> user =
             List<TaskModel>.from(it.map((e) => TaskModel.fromJson(e)).toList());
         return user;
+      } else if (response.statusCode == 401) {
+        SharedPreferences pref = await SharedPreferences.getInstance();
+        pref.clear();
+        Get.offAllNamed('/login');
+        QuickAlert.show(
+          context: Get.context!,
+          title: 'Token Expired, Login Ulang',
+          type: QuickAlertType.error,
+        );
       } else {
         return [];
       }
@@ -88,7 +109,7 @@ class TaskController {
   }
 
   //fungsi mendapatkan task berdasarkan id pekerjaan dan tanggal
-  Future<List<TaskModel>> getTasksByPekerjaanId(
+  Future getTasksByPekerjaanId(
       String idPekerjaan, DateTime selectedDate) async {
     var token = await getToken();
     var response = await http.get(Uri.parse('$urlpekerjaan/$idPekerjaan'),
@@ -100,6 +121,15 @@ class TaskController {
           .map((e) => TaskModel.fromJson(e))
           .toList());
       return task;
+    } else if (response.statusCode == 401) {
+      SharedPreferences pref = await SharedPreferences.getInstance();
+      pref.clear();
+      Get.offAllNamed('/login');
+      QuickAlert.show(
+        context: Get.context!,
+        title: 'Token Expired, Login Ulang',
+        type: QuickAlertType.error,
+      );
     } else {
       print(response.statusCode);
       return [];
@@ -115,7 +145,7 @@ class TaskController {
   }
 
   //fungsi mendapatkan task berdasarkan id user dan id pekerjaan dan tanggal
-  Future<List<TaskModel>> getTasksByUserPekerjaanDate(
+  Future getTasksByUserPekerjaanDate(
       String idPekerjaan, DateTime selectedDate) async {
     try {
       var token = await getToken();
@@ -131,6 +161,15 @@ class TaskController {
             .map((e) => TaskModel.fromJson(e))
             .toList());
         return tasks;
+      } else if (response.statusCode == 401) {
+        SharedPreferences pref = await SharedPreferences.getInstance();
+        pref.clear();
+        Get.offAllNamed('/login');
+        QuickAlert.show(
+          context: Get.context!,
+          title: 'Token Expired, Login Ulang',
+          type: QuickAlertType.error,
+        );
       } else {
         print(response.statusCode);
         return [];
@@ -150,7 +189,7 @@ class TaskController {
   }
 
   //fungsi mendapatkan task berdasarkan id user dan id pekerjaan
-  Future<List<TaskModel>> getTasksByUserPekerjaan(String idPekerjaan) async {
+  Future getTasksByUserPekerjaan(String idPekerjaan) async {
     try {
       var token = await getToken();
       var idUser = await getIdUser();
@@ -163,6 +202,15 @@ class TaskController {
             .map((e) => TaskModel.fromJson(e))
             .toList());
         return tasks;
+      } else if (response.statusCode == 401) {
+        SharedPreferences pref = await SharedPreferences.getInstance();
+        pref.clear();
+        Get.offAllNamed('/login');
+        QuickAlert.show(
+          context: Get.context!,
+          title: 'Token Expired, Login Ulang',
+          type: QuickAlertType.error,
+        );
       } else {
         print(response.statusCode);
         return [];
@@ -182,11 +230,11 @@ class TaskController {
   //fungsi add task
   Future addTask(
     String idPekerjaan,
-    String idStatusTask,
+    String idanggotauser,
+    // String idStatusTask,
     String idKategoriTask,
     DateTime tglPlaning,
     String deskripsiTask,
-    String tautanTask,
   ) async {
     try {
       var token = await getToken();
@@ -196,18 +244,27 @@ class TaskController {
         headers: {'Authorization': 'Bearer $token'},
         body: {
           'id_pekerjaan': idPekerjaan,
-          'id_user': idUser,
-          'id_status_task': idStatusTask,
+          'id_user': idanggotauser,
+          'id_status_task': "1", //default pending
           'id_kategori_task': idKategoriTask,
           'tgl_planing':
               tglPlaning.toIso8601String(), // Convert DateTime to string
           'deskripsi_task': deskripsiTask,
-          'tautan_task': tautanTask,
+          'status_verifikasi': '0', //default belum diverifikasi
         },
       );
 
       if (response.statusCode == 200) {
         return true;
+      } else if (response.statusCode == 401) {
+        SharedPreferences pref = await SharedPreferences.getInstance();
+        pref.clear();
+        Get.offAllNamed('/login');
+        QuickAlert.show(
+          context: Get.context!,
+          title: 'Token Expired, Login Ulang',
+          type: QuickAlertType.error,
+        );
       } else {
         print('Error adding task: ${response.body}');
         return false;
@@ -261,6 +318,15 @@ class TaskController {
         print(response.statusCode);
         print(response.body);
         return true;
+      } else if (response.statusCode == 401) {
+        SharedPreferences pref = await SharedPreferences.getInstance();
+        pref.clear();
+        Get.offAllNamed('/login');
+        QuickAlert.show(
+          context: Get.context!,
+          title: 'Token Expired, Login Ulang',
+          type: QuickAlertType.error,
+        );
       } else {
         print('$url/$idTask');
         print('Error editing task: ${response.body}');
@@ -273,19 +339,24 @@ class TaskController {
   }
 
   //update foto profil
-  Future<bool> uploadImage(File imageFile, String idTask) async {
+  Future<bool> uploadImage(
+    File imageFile,
+    String idTask,
+  ) async {
     var stream = http.ByteStream(imageFile.openRead());
     var length = await imageFile.length();
     var uri = Uri.parse('$url/submit');
     var token = await getToken();
-
     var request = http.MultipartRequest("POST", uri);
     request.headers['Authorization'] = 'Bearer $token';
 
     var MultiPartFile = http.MultipartFile('bukti_selesai', stream, length,
         filename: basename(imageFile.path));
 
-    Map<String, String> body = {'id_task': idTask};
+    Map<String, String> body = {
+      'id_task': idTask,
+      'status_verifikasi': '1',
+    };
 
     request.fields.addAll(body);
     request.files.add(MultiPartFile);
@@ -323,6 +394,15 @@ class TaskController {
       if (response.statusCode == 200) {
         print(response.body);
         return true;
+      } else if (response.statusCode == 401) {
+        SharedPreferences pref = await SharedPreferences.getInstance();
+        pref.clear();
+        Get.offAllNamed('/login');
+        QuickAlert.show(
+          context: Get.context!,
+          title: 'Token Expired, Login Ulang',
+          type: QuickAlertType.error,
+        );
       } else {
         print('Error deleting task: ${response.body}');
         return false;
@@ -350,15 +430,23 @@ class TaskController {
         for (var i = 0; i < tasks.length; i++) {
           final task = tasks[i];
           if (task.tgl_selesai != null) {
-            final taskDate = DateTime.parse(task.tgl_selesai!);
+            final taskDate = task.tgl_selesai!;
             if (taskDate.month.toString().padLeft(2, '0') == month &&
                 taskDate.year.toString() == year) {
               filteredTasks.add(task);
             }
           }
         }
-
         return filteredTasks;
+      } else if (response.statusCode == 401) {
+        SharedPreferences pref = await SharedPreferences.getInstance();
+        pref.clear();
+        Get.offAllNamed('/login');
+        QuickAlert.show(
+          context: Get.context!,
+          title: 'Token Expired, Login Ulang',
+          type: QuickAlertType.error,
+        );
       } else {
         print(response.statusCode);
         return [];
@@ -384,7 +472,7 @@ class TaskController {
             await bobotKategoriTaskController
                 .getBobotKategoriTaskById(task.id_kategori_task.toString());
         if (bobotKategoriTask != null) {
-          totalBobotPoin += bobotKategoriTask.bobot_poin! as int;
+          totalBobotPoin += bobotKategoriTask.bobot_poin as int;
         }
       }
 
@@ -395,18 +483,108 @@ class TaskController {
     }
   }
 
-  getTaskVerifikasi() async {
+  //fungsi mendapatkan task berdasarkan id user
+  Future getTaskByUser() async {
     var token = await getToken();
     var iduser = await getIdUser();
-    var response = await http.get(Uri.parse('$url/verifikasi/$iduser'),
-        headers: {'Authorization': 'Bearer' + token});
+    var response = await http.get(Uri.parse('$urluser/$iduser'),
+        headers: {'Authorization': 'Bearer $token'});
     if (response.statusCode == 200) {
       Iterable it = json.decode(response.body);
       List<TaskModel> task =
           List<TaskModel>.from(it.map((e) => TaskModel.fromJson(e)).toList());
       return task;
+    } else if (response.statusCode == 401) {
+      SharedPreferences pref = await SharedPreferences.getInstance();
+      pref.clear();
+      Get.offAllNamed('/login');
+      QuickAlert.show(
+        context: Get.context!,
+        title: 'Token Expired, Login Ulang',
+        type: QuickAlertType.error,
+      );
     } else {
+      print(response.statusCode);
+      print(response.body);
       return [];
+    }
+  }
+
+  Future getTaskVerifikasi() async {
+    var token = await getToken();
+    var iduser = await getIdUser();
+    var response = await http.get(Uri.parse('$url/verifikasi/$iduser'),
+        headers: {'Authorization': 'Bearer $token'});
+    if (response.statusCode == 200) {
+      print(response.body);
+      Iterable it = json.decode(response.body);
+      List<TaskModel> task =
+          List<TaskModel>.from(it.map((e) => TaskModel.fromJson(e)).toList());
+      return task;
+    } else if (response.statusCode == 401) {
+      SharedPreferences pref = await SharedPreferences.getInstance();
+      pref.clear();
+      Get.offAllNamed('/login');
+      QuickAlert.show(
+        context: Get.context!,
+        title: 'Token Expired, Login Ulang',
+        type: QuickAlertType.error,
+      );
+    } else {
+      print(response.statusCode);
+      print(response.body);
+      return [];
+    }
+  }
+
+  Future editTaskVerikasi(
+    String idTask,
+    String alasanVerifikasi,
+    String statusVerifikasi,
+  ) async {
+    try {
+      var token = await getToken();
+      final dataok = {
+        'id_task': idTask,
+        "alasan_verifikasi": alasanVerifikasi,
+        'status_verifikasi': statusVerifikasi,
+        'tgl_verifikasi_diterima': DateTime.now().toIso8601String(),
+      };
+      final datatolak = {
+        'id_task': idTask.toString(),
+        "alasan_verifikasi": alasanVerifikasi.toString(),
+        'status_verifikasi': statusVerifikasi.toString(),
+      };
+      var response = await http.put(
+        Uri.parse('$urlverifikasi/$idTask'),
+        headers: {
+          'Content-Type': 'application/json', // Add Content-Type header
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode(statusVerifikasi == "3" ? dataok : datatolak),
+      );
+
+      if (response.statusCode == 200) {
+        print(response.statusCode);
+        print(response.body);
+        return true;
+      } else if (response.statusCode == 401) {
+        SharedPreferences pref = await SharedPreferences.getInstance();
+        pref.clear();
+        Get.offAllNamed('/login');
+        QuickAlert.show(
+          context: Get.context!,
+          title: 'Token Expired, Login Ulang',
+          type: QuickAlertType.error,
+        );
+      } else {
+        print('$url/$idTask');
+        print('Error editing task: ${response.body}');
+        return false;
+      }
+    } catch (e) {
+      print('Exception editing task: $e');
+      return false;
     }
   }
 }

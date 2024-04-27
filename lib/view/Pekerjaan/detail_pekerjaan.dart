@@ -31,6 +31,10 @@ class _DetailPekerjaanState extends State<DetailPekerjaan> {
   String idPersonil = '';
   String namaPekerjaan = '';
   String pelanggan = '';
+  String jenisPelanggan = '';
+  String namaPIC = '';
+  String emailPIC = '';
+  String noWaPIC = '';
   String jenisLayanan = '';
   String nominalHarga = '';
   String deskripsiPekerjaan = '';
@@ -46,42 +50,54 @@ class _DetailPekerjaanState extends State<DetailPekerjaan> {
 
   //personil
   String namaPM = '';
-  String desainer1 = '';
-  String desainer2 = '';
-  String beWeb1 = '';
-  String beWeb2 = '';
-  String beWeb3 = '';
-  String beMobile1 = '';
-  String beMobile2 = '';
-  String beMobile3 = '';
-  String feWeb1 = '';
-  String feMobile1 = '';
+  List<String> desainerList = [];
+  List<String> backendWebList = [];
+  List<String> backendMobileList = [];
+  List<String> frontendWebList = [];
+  List<String> frontendMobileList = [];
 
   getDataPekerjaan() async {
     var data = await pekerjaanController.getPekerjaanById(idpekerjaan);
     setState(() {
       namaPekerjaan = data[0].nama_pekerjaan ?? '-';
       pelanggan = data[0].pelanggan ?? '-';
+      jenisPelanggan = data[0].jenis_pelanggan ?? '-';
+      namaPIC = data[0].nama_pic ?? '-';
+      emailPIC = data[0].email_pic ?? '-';
+      noWaPIC = data[0].nowa_pic ?? '-';
       jenisLayanan = data[0].jenis_layanan ?? '-';
       nominalHarga = data[0].nominal_harga ?? '-';
       deskripsiPekerjaan = data[0].deskripsi_pekerjaan ?? '-';
       targetWaktuSelesai = data[0].target_waktu_selesai.toString();
       persentaseSelesai = data[0].persentase_selesai ?? '-';
-      waktuSelesai = data[0].waktu_selesai ?? '-';
-      idPersonil = data[0].id_personil ?? '-';
-      namaPM = data[0].data_tambahan.nama_pm ?? '-';
-      desainer1 = data[0].data_tambahan.nama_desainer1 ?? '-';
-      desainer2 = data[0].data_tambahan.nama_desainer2 ?? '-';
-      beWeb1 = data[0].data_tambahan.nama_be_web1 ?? '-';
-      beWeb2 = data[0].data_tambahan.nama_be_web2 ?? '-';
-      beWeb3 = data[0].data_tambahan.nama_be_web3 ?? '-';
-      beMobile1 = data[0].data_tambahan.nama_be_mobile1 ?? '-';
-      beMobile2 = data[0].data_tambahan.nama_be_mobile2 ?? '-';
-      beMobile3 = data[0].data_tambahan.nama_be_mobile3 ?? '-';
-      feWeb1 = data[0].data_tambahan.nama_fe_web1 ?? '-';
-      feMobile1 = data[0].data_tambahan.nama_fe_mobile1 ?? '-';
-      namaStatus = data[0].data_tambahan.nama_status ?? '-';
-      namaKategori = data[0].data_tambahan.nama_kategori ?? '-';
+      waktuSelesai = data[0].waktu_selesai != null
+          ? data[0].waktu_selesai.toString()
+          : '-';
+      namaKategori = data[0].data_tambahan.nama_kategori_pekerjaan ?? '-';
+      namaStatus = data[0].data_tambahan.nama_status_pekerjaan ?? '-';
+      if (data[0].data_tambahan.pm.isNotEmpty) {
+        namaPM = data[0].data_tambahan.pm[0].nama;
+      }
+      if (data[0].data_tambahan.desainer.isNotEmpty) {
+        desainerList = List<String>.from(
+            data[0].data_tambahan.desainer.map((e) => e.nama).toList());
+      }
+      if (data[0].data_tambahan.backend_web.isNotEmpty) {
+        backendWebList = List<String>.from(
+            data[0].data_tambahan.backend_web.map((e) => e.nama).toList());
+      }
+      if (data[0].data_tambahan.backend_mobile.isNotEmpty) {
+        backendMobileList = List<String>.from(
+            data[0].data_tambahan.backend_mobile.map((e) => e.nama).toList());
+      }
+      if (data[0].data_tambahan.frontend_web.isNotEmpty) {
+        frontendWebList = List<String>.from(
+            data[0].data_tambahan.frontend_web.map((e) => e.nama).toList());
+      }
+      if (data[0].data_tambahan.frontend_mobile.isNotEmpty) {
+        frontendMobileList = List<String>.from(
+            data[0].data_tambahan.frontend_mobile.map((e) => e.nama).toList());
+      }
     });
     return data;
   }
@@ -157,6 +173,10 @@ class _DetailPekerjaanState extends State<DetailPekerjaan> {
                 children: [
                   _buildTableRow('ID Pekerjaan', idpekerjaan),
                   _buildTableRow('Pelanggan', pelanggan),
+                  _buildTableRow('Jenis Pelanggan', jenisPelanggan),
+                  _buildTableRow('Nama PIC', namaPIC),
+                  _buildTableRow('Email PIC', emailPIC),
+                  _buildTableRow('No. WA PIC', noWaPIC),
                   _buildTableRow('Kategori Pekerjaan', namaKategori),
                   _buildTableRow('Jenis Layanan', jenisLayanan),
                   _buildTableRow('Nominal Harga', _formatRupiah(nominalHarga)),
@@ -169,18 +189,17 @@ class _DetailPekerjaanState extends State<DetailPekerjaan> {
                   _buildTableRow('Waktu Selesai',
                       waktuSelesai == '' ? '-' : formatDate(waktuSelesai)),
                   //personil
-                  _buildTableRow('ID Personil', idPersonil),
+                  _buildTableRow('Personil', ''),
                   _buildTableRowPersonil('- Project Manager', namaPM),
-                  _buildTableRowPersonil('- Desainer 1', desainer1),
-                  _buildTableRowPersonil('- Desainer 2', desainer2),
-                  _buildTableRowPersonil('- Backend Web 1', beWeb1),
-                  _buildTableRowPersonil('- Backend Web 2', beWeb2),
-                  _buildTableRowPersonil('- Backend Web 3', beWeb3),
-                  _buildTableRowPersonil('- Backend Mobile 1', beMobile1),
-                  _buildTableRowPersonil('- Backend Mobile 2', beMobile2),
-                  _buildTableRowPersonil('- Backend Mobile 3', beMobile3),
-                  _buildTableRowPersonil('- Frontend Web 1', feWeb1),
-                  _buildTableRowPersonil('- Frontend Mobile 1', feMobile1),
+                  _buildTableRowPersonil('- Desainer', desainerList.join('\n')),
+                  _buildTableRowPersonil(
+                      '- Backend Web', backendWebList.join('\n')),
+                  _buildTableRowPersonil(
+                      '- Backend Mobile', backendMobileList.join('\n')),
+                  _buildTableRowPersonil(
+                      '- Frontend Web', frontendWebList.join('\n')),
+                  _buildTableRowPersonil(
+                      '- Frontend Mobile', frontendMobileList.join('\n')),
                 ],
               ),
             ),

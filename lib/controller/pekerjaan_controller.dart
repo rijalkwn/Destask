@@ -1,3 +1,6 @@
+import 'package:get/get.dart';
+import 'package:quickalert/quickalert.dart';
+
 import '../model/pekerjaan_model.dart';
 import '../utils/constant_api.dart';
 import 'dart:convert';
@@ -28,6 +31,15 @@ class PekerjaanController {
         List<PekerjaanModel> pekerjaan = List<PekerjaanModel>.from(
             list.map((e) => PekerjaanModel.fromJson(e)).toList());
         return pekerjaan;
+      } else if (response.statusCode == 401) {
+        QuickAlert.show(
+          context: Get.context!,
+          title: 'Token Expired, Login Ulang',
+          type: QuickAlertType.error,
+        );
+        SharedPreferences pref = await SharedPreferences.getInstance();
+        pref.clear();
+        Get.offAllNamed('/login');
       } else {
         return {}; // Mengembalikan map kosong jika tidak ada data
       }
@@ -49,9 +61,18 @@ class PekerjaanController {
       if (response.statusCode == 200) {
         Iterable list = json.decode(response.body);
         List<PekerjaanModel> pekerjaan = List<PekerjaanModel>.from(list
-            .where((element) => element['id_status_pekerjaan'] == "1")
+            .where((element) => element['id_status_pekerjaan'] == "2")
             .map((e) => PekerjaanModel.fromJson(e)));
         return pekerjaan;
+      } else if (response.statusCode == 401) {
+        SharedPreferences pref = await SharedPreferences.getInstance();
+        pref.clear();
+        Get.offAllNamed('/login');
+        QuickAlert.show(
+          context: Get.context!,
+          title: 'Token Expired, Login Ulang',
+          type: QuickAlertType.error,
+        );
       } else {
         // Handle error
         return [];
@@ -77,8 +98,16 @@ class PekerjaanController {
         Iterable it = json.decode(response.body);
         List<PekerjaanModel> pekerjaan = List<PekerjaanModel>.from(
             it.map((e) => PekerjaanModel.fromJson(e)));
-        print(pekerjaan);
         return pekerjaan;
+      } else if (response.statusCode == 401) {
+        SharedPreferences pref = await SharedPreferences.getInstance();
+        pref.clear();
+        Get.offAllNamed('/login');
+        QuickAlert.show(
+          context: Get.context!,
+          title: 'Token Expired, Login Ulang',
+          type: QuickAlertType.error,
+        );
       } else {
         // Handle error
         return [];
@@ -107,6 +136,15 @@ class PekerjaanController {
       print(response.body);
       if (response.statusCode == 200) {
         return true;
+      } else if (response.statusCode == 401) {
+        SharedPreferences pref = await SharedPreferences.getInstance();
+        pref.clear();
+        Get.offAllNamed('/login');
+        QuickAlert.show(
+          context: Get.context!,
+          title: 'Token Expired, Login Ulang',
+          type: QuickAlertType.error,
+        );
       } else {
         return false;
       }

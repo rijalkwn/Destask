@@ -1,5 +1,6 @@
 import 'package:destask/utils/constant_api.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import '../../../controller/task_controller.dart';
 import '../../../utils/global_colors.dart';
 import 'package:flutter/material.dart';
@@ -26,12 +27,13 @@ class _DetailTaskState extends State<DetailTask> {
   DateTime tglPlaning = DateTime.now();
   String tglSelesai = '';
   String tglVerifikasiDiterima = '';
-  String statusVerifikasi = '';
+  String idstatusVerifikasi = '';
   String persentaseSelesai = '';
   String deskripsiTask = '';
   String alasanVerifikasi = '';
   String buktiSelesai = '';
   String tautanTask = '';
+  String statusVerifikasi = '';
 
   //bantuan
   String namaUserTask = '';
@@ -54,7 +56,7 @@ class _DetailTaskState extends State<DetailTask> {
       tglVerifikasiDiterima = data[0].tgl_verifikasi_diterima == null
           ? '-'
           : data[0].tgl_verifikasi_diterima.toString();
-      statusVerifikasi = data[0].status_verifikasi ?? '-';
+      idstatusVerifikasi = data[0].status_verifikasi ?? '-';
       persentaseSelesai = data[0].persentase_selesai ?? '-';
       deskripsiTask = data[0].deskripsi_task ?? '-';
       alasanVerifikasi = data[0].alasan_verifikasi ?? '-';
@@ -64,6 +66,18 @@ class _DetailTaskState extends State<DetailTask> {
       namaPekerjaan = data[0].data_tambahan.nama_pekerjaan;
       namaStatusTask = data[0].data_tambahan.nama_status_task;
       namaKategoriTask = data[0].data_tambahan.nama_kategori_task;
+      if (idstatusVerifikasi == '0') {
+        statusVerifikasi = 'Belum Diverifikasi';
+      } else if (idstatusVerifikasi == '1') {
+        statusVerifikasi = 'Sedang Diverifikasi';
+      } else if (idstatusVerifikasi == '2') {
+        statusVerifikasi = 'Verifikasi Ditolak';
+      } else if (idstatusVerifikasi == '3') {
+        statusVerifikasi = 'Verifikasi Diterima';
+      } else {
+        statusVerifikasi = '-';
+      }
+      ;
     });
     return data;
   }
@@ -103,12 +117,8 @@ class _DetailTaskState extends State<DetailTask> {
                   _buildTableRow('Deskripsi Task', deskripsiTask),
                   _buildTableRow('Status Task', namaStatusTask),
                   _buildTableRow('Kategori Task', namaKategoriTask),
-                  _buildTableRow('Deadline', tglPlaning),
-                  _buildTableRow(
-                      'Status Verifikasi',
-                      statusVerifikasi == ''
-                          ? 'Belum Diverifikasi'
-                          : statusVerifikasi),
+                  _buildTableRow('Deadline', formatDate(tglPlaning.toString())),
+                  _buildTableRow('Status Verifikasi', statusVerifikasi),
                   _buildTableRow('Persentase Selesai', '$persentaseSelesai%'),
                   _buildTableRowLink('Tautan Task', tautanTask),
                   _buildTableRow('Alasan Verifikasi',
@@ -271,5 +281,14 @@ class _DetailTaskState extends State<DetailTask> {
         ),
       ],
     );
+  }
+
+  //format tanggal
+  String formatDate(String date) {
+    if (date == '-') {
+      return '-';
+    }
+    DateTime dateTime = DateTime.parse(date);
+    return DateFormat('d MMMM yyyy', 'id').format(dateTime);
   }
 }

@@ -1,14 +1,15 @@
 import 'package:destask/controller/bobot_kategori_task_controller.dart';
 import 'package:destask/controller/kategori_task_controller.dart';
-import 'package:destask/controller/pekerjaan_controller.dart';
+import 'package:destask/controller/rekap_point_controller.dart';
 import 'package:destask/controller/task_controller.dart';
 import 'package:destask/model/bobot_kategori_task_model.dart';
 import 'package:destask/model/kategori_task_model.dart';
-import 'package:destask/model/pekerjaan_model.dart';
 import 'package:destask/model/task_model.dart';
-import 'package:get/get.dart';
-import '../../utils/global_colors.dart';
+import 'package:destask/utils/global_colors.dart';
+import 'package:destask/view/Beranda/Task/task.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 
 class RekapPoint extends StatefulWidget {
   const RekapPoint({Key? key}) : super(key: key);
@@ -18,88 +19,37 @@ class RekapPoint extends StatefulWidget {
 }
 
 class _RekapPointState extends State<RekapPoint> {
-  PekerjaanController pekerjaanController = PekerjaanController();
-  TaskController taskController = TaskController();
-  KategoriTaskController kategoriTaskController = KategoriTaskController();
-  BobotKategoriTaskController bobotKategoriTaskController =
-      BobotKategoriTaskController();
+  RekapPointController rekapPointController = RekapPointController();
+  DateTime? startDate;
+  DateTime? endDate;
+  int totalPoint = 0;
 
-  late Future<List<PekerjaanModel>> pekerjaan;
-  List<KategoriTaskModel> listKategoriTask = [];
-  List<BobotKategoriTaskModel> listBobotKategoriTask = [];
-  List<int> totalPoinPerPekerjaan = [];
-  int totalPoinPekerjaan = 0;
-
-  // Mendapatkan data pekerjaan beserta total poin task untuk setiap pekerjaan
-  Future<List<PekerjaanModel>> getDataPekerjaan() async {
-    try {
-      // Mendapatkan data pekerjaan
-      var dataPekerjaan = await pekerjaanController.getAllPekerjaanUser();
-
-      // Mendapatkan data kategori task dan bobot kategori task
-      listKategoriTask = await kategoriTaskController.getAllKategoriTask();
-      listBobotKategoriTask =
-          await bobotKategoriTaskController.getAllBobotKategoriTask();
-
-      // Mendapatkan total poin task untuk setiap pekerjaan
-      List<int> totalPoinPerPekerjaan = [];
-      for (var i = 0; i < dataPekerjaan.length; i++) {
-        // Mendapatkan data task untuk pekerjaan saat ini
-        var tasksForPekerjaan = await taskController
-            .getTasksByUserPekerjaan(dataPekerjaan[i].id_pekerjaan.toString());
-
-        // Menghitung total poin untuk setiap task pada pekerjaan saat ini
-        int totalPoin = 0;
-        for (var task in tasksForPekerjaan) {
-          totalPoin += await calculateTotalPoinForTask(task);
-        }
-
-        // Menambahkan total poin pekerjaan saat ini ke dalam list
-        totalPoinPerPekerjaan.add(totalPoin);
-        //jumlah value dari totalPoinPerPekerjaan
-        totalPoinPekerjaan = totalPoinPerPekerjaan.fold(
-            0, (previousValue, element) => previousValue + element);
-      }
-
-      // Set state dengan total poin per pekerjaan
-      setState(() {
-        this.totalPoinPerPekerjaan = totalPoinPerPekerjaan;
-      });
-
-      // Mengembalikan data pekerjaan
-      return dataPekerjaan;
-    } catch (e) {
-      print(e);
-      return [];
+  getData() async {
+    var data = await rekapPointController.getRekapPoint();
+    if (startDate != null && endDate != null) {
+      data = data.where((task) {
+        DateTime taskDate = DateTime.parse(task['tgl_selesai']);
+        return taskDate.isAfter(startDate!.subtract(const Duration(days: 1))) &&
+            taskDate.isBefore(endDate!.add(const Duration(days: 1)));
+      }).toList();
+    } else if (startDate != null) {
+      data = data.where((task) {
+        DateTime taskDate = DateTime.parse(task['tgl_selesai']);
+        return taskDate.isAfter(startDate!.subtract(const Duration(days: 1)));
+      }).toList();
+    } else if (endDate != null) {
+      data = data.where((task) {
+        DateTime taskDate = DateTime.parse(task['tgl_selesai']);
+        return taskDate.isBefore(endDate!.add(const Duration(days: 1)));
+      }).toList();
     }
-  }
-
-  // Menghitung total poin untuk sebuah task
-  Future<int> calculateTotalPoinForTask(TaskModel task) async {
-    try {
-      int totalPoin = 0;
-      for (var kategoriTask in listKategoriTask) {
-        if (task.id_kategori_task == kategoriTask.id_kategori_task) {
-          for (var bobotKategori in listBobotKategoriTask) {
-            if (kategoriTask.id_kategori_task ==
-                bobotKategori.id_kategori_task) {
-              totalPoin += int.parse(bobotKategori.bobot_poin.toString());
-            }
-          }
-        }
-      }
-      return totalPoin;
-    } catch (e) {
-      print('Error: $e');
-      return 0;
-    }
+    return data;
   }
 
   @override
   void initState() {
     super.initState();
-    // Mendapatkan data pekerjaan saat inisialisasi widget
-    pekerjaan = getDataPekerjaan();
+    getData();
   }
 
   @override
@@ -117,161 +67,204 @@ class _RekapPointState extends State<RekapPoint> {
         automaticallyImplyLeading: false,
       ),
       body: Padding(
-        padding: const EdgeInsets.only(left: 10, right: 10),
+        padding: const EdgeInsets.only(left: 10, right: 10, top: 10),
         child: Column(
           children: [
-            //total point
             Padding(
-              padding: const EdgeInsets.only(
-                  top: 10.0, bottom: 10.0, right: 8.0, left: 8.0),
+              padding: const EdgeInsets.all(8.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  //nama
-                  const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  // Filter tanggal
+                  Row(
                     children: [
-                      Text(
-                        "Total Point",
-                        style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: const [
+                          Text('Dari:'),
+                          SizedBox(height: 15),
+                          Text('Sampai:'),
+                        ],
                       ),
-                      Text(
-                        'Total Point',
-                        style: TextStyle(fontSize: 16),
+                      const SizedBox(width: 10),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          GestureDetector(
+                            onTap: () async {
+                              DateTime? picked = await showDatePicker(
+                                context: context,
+                                initialDate: DateTime.now(),
+                                firstDate: DateTime(2015, 8),
+                                lastDate: DateTime(2101),
+                              );
+                              if (picked != null) {
+                                if (endDate != null) {
+                                  if (picked.isAfter(endDate!)) {
+                                    Get.snackbar('Error',
+                                        'Tanggal awal tidak boleh lebih besar dari tanggal akhir!',
+                                        snackPosition: SnackPosition.TOP,
+                                        backgroundColor: Colors.red,
+                                        colorText: Colors.white);
+                                  } else {
+                                    setState(() {
+                                      startDate = picked;
+                                    });
+                                  }
+                                } else {
+                                  setState(() {
+                                    startDate = picked;
+                                  });
+                                }
+                              }
+                            },
+                            child: Row(
+                              children: [
+                                startDate == null
+                                    ? Text('Pilih tanggal')
+                                    : Text(
+                                        '${startDate!.day}/${startDate!.month}/${startDate!.year}'),
+                                SizedBox(width: 10),
+                                const Icon(Icons.calendar_today),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          GestureDetector(
+                            onTap: () async {
+                              DateTime? picked = await showDatePicker(
+                                context: context,
+                                initialDate: DateTime.now(),
+                                firstDate: DateTime(2015, 8),
+                                lastDate: DateTime(2101),
+                              );
+                              if (picked != null) {
+                                if (startDate != null) {
+                                  if (picked.isBefore(startDate!)) {
+                                    Get.snackbar('Error',
+                                        'Tanggal akhir tidak boleh lebih kecil dari tanggal awal!',
+                                        snackPosition: SnackPosition.TOP,
+                                        backgroundColor: Colors.red,
+                                        colorText: Colors.white);
+                                  } else {
+                                    setState(() {
+                                      endDate = picked;
+                                    });
+                                  }
+                                } else {
+                                  setState(() {
+                                    endDate = picked;
+                                  });
+                                }
+                              }
+                            },
+                            child: Row(
+                              children: [
+                                endDate == null
+                                    ? Text('Pilih tanggal')
+                                    : Text(
+                                        '${endDate!.day}/${endDate!.month}/${endDate!.year}'),
+                                SizedBox(width: 10),
+                                const Icon(Icons.calendar_today),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
 
-                  CircleAvatar(
-                    radius: 30,
-                    backgroundColor: GlobalColors.mainColor,
-                    child: Text(
-                      totalPoinPekerjaan.toString(),
-                      style: const TextStyle(fontSize: 20, color: Colors.white),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(
-              height: 10,
-            ),
-            //judul list pekerjaan
-            const Padding(
-              padding: EdgeInsets.only(left: 8.0),
-              child: Column(
-                children: [
-                  Divider(),
-                  SizedBox(
-                    height: 10,
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: Container(
-                height: MediaQuery.of(context).size.height * 0.7,
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.2),
-                      spreadRadius: 5,
-                      blurRadius: 7,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(20),
-                    topRight: Radius.circular(20),
-                  ),
-                ),
-                child: SingleChildScrollView(
-                  child: FutureBuilder<List<PekerjaanModel>>(
-                    future: pekerjaan,
-                    builder: (context, snapshot) {
+                  FutureBuilder(
+                    future: getData(),
+                    builder: (BuildContext context, AsyncSnapshot snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 10),
-                          child: Center(child: CircularProgressIndicator()),
-                        );
-                      } else if (snapshot.hasError) {
-                        return Center(child: Text('Error: ${snapshot.error}'));
-                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                        return const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 200),
-                          child: Center(child: Text('No data available.')),
-                        );
-                      } else if (snapshot.hasData) {
-                        List<PekerjaanModel> pekerjaan = snapshot.data!;
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 20),
-                          child: _ListOfJob(
-                              pekerjaan: pekerjaan,
-                              totalPoinPerPekerjaan: totalPoinPerPekerjaan),
+                        return const Center(
+                          child: CircularProgressIndicator(),
                         );
                       } else {
-                        return const Center(child: Text('No data available.'));
+                        if (snapshot.hasError) {
+                          return Center(
+                            child: Text('Error: ${snapshot.error}'),
+                          );
+                        } else {
+                          totalPoint = 0;
+                          for (var task in snapshot.data) {
+                            totalPoint += int.parse(task['bobot_point']);
+                          }
+                          return Column(
+                            children: [
+                              Text(
+                                'Total Point:',
+                                style: const TextStyle(fontSize: 20),
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                totalPoint.toString(),
+                                style: const TextStyle(fontSize: 20),
+                              ),
+                            ],
+                          );
+                        }
                       }
                     },
                   ),
-                ),
+                ],
+              ),
+            ),
+            if (startDate != null || endDate != null)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      setState(() {
+                        startDate = null;
+                        endDate = null;
+                      });
+                    },
+                    child: const Text('Reset'),
+                  ),
+                ],
+              ),
+            Divider(),
+            // Daftar task
+            Expanded(
+              child: FutureBuilder(
+                future: getData(),
+                builder: (BuildContext context, AsyncSnapshot snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  } else {
+                    if (snapshot.hasError) {
+                      return Center(
+                        child: Text('Error: ${snapshot.error}'),
+                      );
+                    } else {
+                      return ListView.builder(
+                        itemCount: snapshot.data.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          return Card(
+                            child: ListTile(
+                              title:
+                                  Text(snapshot.data[index]['deskripsi_task']),
+                              subtitle: Text(
+                                  'Tanggal Selesai: ${DateFormat('dd MMMM yyyy').format(DateTime.parse(snapshot.data[index]['tgl_selesai']))}'),
+                              trailing: Text(
+                                  'Point: ${snapshot.data[index]['bobot_point']}'),
+                            ),
+                          );
+                        },
+                      );
+                    }
+                  }
+                },
               ),
             ),
           ],
         ),
       ),
-    );
-  }
-}
-
-class _ListOfJob extends StatelessWidget {
-  const _ListOfJob({
-    Key? key,
-    required this.pekerjaan,
-    required this.totalPoinPerPekerjaan,
-  }) : super(key: key);
-
-  final List<PekerjaanModel> pekerjaan;
-  final List<int> totalPoinPerPekerjaan;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: pekerjaan.map((pekerjaanItem) {
-        return GestureDetector(
-          onTap: () {
-            Get.toNamed('/detail_rekap_point/${pekerjaanItem.id_pekerjaan}',
-                arguments: pekerjaanItem.id_pekerjaan);
-          },
-          child: Column(
-            children: [
-              ListTile(
-                title: Text(
-                  pekerjaanItem.nama_pekerjaan ?? '-',
-                ),
-                trailing: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: GlobalColors.mainColor,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Text(
-                      "${totalPoinPerPekerjaan[pekerjaan.indexOf(pekerjaanItem)] == 0 ? '00' : totalPoinPerPekerjaan[pekerjaan.indexOf(pekerjaanItem)]}",
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      )),
-                ),
-              ),
-              const Divider(),
-            ],
-          ),
-        );
-      }).toList(),
     );
   }
 }

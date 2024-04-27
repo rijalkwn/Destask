@@ -21,16 +21,13 @@ class TargetPoinHarianModel {
 
   factory TargetPoinHarianModel.fromJson(Map<String, dynamic> json) {
     return TargetPoinHarianModel(
-      id_target_poin_harian: json['id_target_poin_harian']?.toString() ?? '',
-      id_usergroup: json['id_usergroup']?.toString() ?? '',
-      tahun: json['tahun']?.toString() ?? '',
-      bulan: json['bulan']?.toString() ?? '',
-      jumlah_target_poin_harian:
-          json['jumlah_target_poin_harian']?.toString() ?? '',
-      jumlah_hari_kerja: json['jumlah_hari_kerja']?.toString() ?? '',
-      jumlah_hari_libur: json['jumlah_hari_libur']?.toString() ?? '',
-      jumlah_target_poin_sebulan:
-          json['jumlah_target_poin_sebulan']?.toString() ?? '',
-    );
+        id_target_poin_harian: json['id_target_poin_harian'],
+        id_usergroup: json['id_usergroup'],
+        tahun: json['tahun'],
+        bulan: json['bulan'],
+        jumlah_target_poin_harian: json['jumlah_target_poin_harian'],
+        jumlah_hari_kerja: json['jumlah_hari_kerja'],
+        jumlah_hari_libur: json['jumlah_hari_libur'],
+        jumlah_target_poin_sebulan: json['jumlah_target_poin_sebulan']);
   }
 }

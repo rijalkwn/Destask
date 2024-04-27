@@ -33,7 +33,6 @@ class NotifikasiController {
         Iterable it = json.decode(response.body);
         List<NotifikasiModel> notifikasi = List<NotifikasiModel>.from(
             it.map((e) => NotifikasiModel.fromJson(e)));
-        print(response.body);
         return notifikasi;
       } else {
         // Handle error

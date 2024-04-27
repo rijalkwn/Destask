@@ -2,10 +2,12 @@ import 'dart:convert';
 
 import 'package:destask/model/target_poin_harian_model.dart';
 import 'package:destask/utils/constant_api.dart';
+import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:quickalert/quickalert.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-const url = '$baseURL/targetpoinharian';
+const url = '$baseURL/targetpoinharianbyuser';
 
 getToken() async {
   final prefs = await SharedPreferences.getInstance();
@@ -13,48 +15,42 @@ getToken() async {
   return token;
 }
 
-getData() async {
+getIdUser() async {
   final prefs = await SharedPreferences.getInstance();
-  var idUserGroup = prefs.getString("id_usergroup");
-  return idUserGroup;
+  var iduser = prefs.getString("id_user");
+  return iduser;
 }
 
 class TargetPoinHarianController {
-  Future getTargetPoinHarian() async {
+  Future getTargetPoinHarianbyUser() async {
     try {
       var token = await getToken();
-      var idUserGroup = await getData();
-      DateTime now = DateTime.now();
-      String tahun = now.year.toString();
-      String bulan = now.month.toString();
-      print(tahun);
-      print(bulan);
-      print(idUserGroup);
-      final response = await http.get(Uri.parse(url), headers: {
-        'Authorization ': 'Bearer $token',
-      });
+      var iduser = await getIdUser();
+      var response = await http.get(
+        Uri.parse('$url/$iduser'),
+        headers: {'Authorization ': 'Bearer $token'},
+      );
       if (response.statusCode == 200) {
         print(response.body);
         Iterable it = json.decode(response.body);
         List<TargetPoinHarianModel> targetPoinHarian =
-            List<TargetPoinHarianModel>.from(it
-                // .where((e) =>
-                //     e['id_usergroup'] == idUserGroup &&
-                //     e['tahun'] == tahun &&
-                //     e['bulan'] == bulan)
-                .map((e) => TargetPoinHarianModel.fromJson(e)));
+            List<TargetPoinHarianModel>.from(
+                it.map((e) => TargetPoinHarianModel.fromJson(e)));
         return targetPoinHarian;
+      } else if (response.statusCode == 401) {
+        SharedPreferences pref = await SharedPreferences.getInstance();
+        pref.clear();
+        Get.offAllNamed('/login');
+        QuickAlert.show(
+          context: Get.context!,
+          title: 'Token Expired, Login Ulang',
+          type: QuickAlertType.error,
+        );
       } else {
-        print("ini respon" + response.body);
         return [];
       }
     } catch (e) {
-      return <TargetPoinHarianModel>[];
+      return [];
     }
-  }
-
-  Future<List<TargetPoinHarianModel>> showAll() async {
-    List<TargetPoinHarianModel> data = await getTargetPoinHarian();
-    return data;
   }
 }

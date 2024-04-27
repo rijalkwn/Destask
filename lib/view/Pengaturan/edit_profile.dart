@@ -9,7 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:quickalert/quickalert.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-const url = '$baseURL/assets/foto_profil';
+const url = '$baseURL/assets/file_pengguna/foto_user';
 
 class EditProfile extends StatefulWidget {
   @override
@@ -62,10 +62,10 @@ class _EditProfileState extends State<EditProfile> {
     var iduser = await getIdUser();
     var data = await userController.getUserById(iduser);
     setState(() {
-      _nameController.text = data[0].nama;
-      _emailController.text = data[0].email;
-      _usernameController.text = data[0].username;
-      _usergroupController.text = data[0].id_usergroup;
+      _nameController.text = data[0].nama ?? '';
+      _emailController.text = data[0].email ?? '';
+      _usernameController.text = data[0].username ?? '';
+      _usergroupController.text = data[0].id_usergroup ?? '';
       namafoto = data[0].foto_profil != null ? data[0].foto_profil : 'user.png';
     });
     return data;
@@ -188,7 +188,7 @@ class _EditProfileState extends State<EditProfile> {
                           isLoading = true;
                         });
                         bool editProfile = await userController.editProfile(
-                            iduser,
+                            _usergroupController.text,
                             _nameController.text,
                             _emailController.text,
                             _usernameController.text);

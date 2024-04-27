@@ -1,60 +1,66 @@
 class TaskModel {
-  String? id_task;
-  String? id_pekerjaan;
-  String? id_user;
-  String? id_status_task;
-  String? id_kategori_task;
-  String? tgl_planing;
-  String? tgl_selesai;
-  String? tgl_verifikasi_diterima;
-  String? status_verifikasi;
-  String? persentase_selesai;
-  String? deskripsi_task;
+  String id_task;
+  String id_pekerjaan;
+  String id_user;
+  String id_status_task;
+  String id_kategori_task;
+  DateTime tgl_planing;
+  DateTime? tgl_selesai;
+  DateTime? tgl_verifikasi_diterima;
+  String status_verifikasi;
+  String persentase_selesai;
+  String deskripsi_task;
   String? alasan_verifikasi;
   String? bukti_selesai;
   String? tautan_task;
-  String? created_at;
+  DateTime created_at;
   DataTambahan data_tambahan;
 
   TaskModel({
-    this.id_task,
-    this.id_pekerjaan,
-    this.id_user,
-    this.id_status_task,
-    this.id_kategori_task,
-    this.tgl_planing,
+    required this.id_task,
+    required this.id_pekerjaan,
+    required this.id_user,
+    required this.id_status_task,
+    required this.id_kategori_task,
+    required this.tgl_planing,
     this.tgl_selesai,
     this.tgl_verifikasi_diterima,
-    this.status_verifikasi,
-    this.persentase_selesai,
-    this.deskripsi_task,
+    required this.status_verifikasi,
+    required this.persentase_selesai,
+    required this.deskripsi_task,
     this.alasan_verifikasi,
     this.bukti_selesai,
     this.tautan_task,
-    this.created_at,
+    required this.created_at,
     required this.data_tambahan,
   });
 
   factory TaskModel.fromJson(Map<String, dynamic> json) {
     return TaskModel(
-      id_task: json['id_task'],
-      id_pekerjaan: json['id_pekerjaan'],
-      id_user: json['id_user'],
-      id_status_task: json['id_status_task'],
-      id_kategori_task: json['id_kategori_task'],
-      tgl_planing: json['tgl_planing'] ?? '',
+      id_task: json['id_task'] ?? '',
+      id_pekerjaan: json['id_pekerjaan'] ?? '',
+      id_user: json['id_user'] ?? '',
+      id_status_task: json['id_status_task'] ?? '',
+      id_kategori_task: json['id_kategori_task'] ?? '',
+      tgl_planing: json['tgl_planing'] != null
+          ? DateTime.parse(json['tgl_planing'])
+          : DateTime.now(),
       tgl_selesai: json['tgl_selesai'] != null
-          ? DateTime.parse(json['tgl_selesai']).toString()
-          : '',
-      tgl_verifikasi_diterima: json['tgl_verifikasi_diterima'] ?? '',
+          ? DateTime.parse(json['tgl_selesai'])
+          : null,
+      tgl_verifikasi_diterima: json['tgl_verifikasi_diterima'] != null
+          ? DateTime.parse(json['tgl_verifikasi_diterima'])
+          : null,
       status_verifikasi: json['status_verifikasi'] ?? '',
-      persentase_selesai: json['persentase_selesai'],
-      deskripsi_task: json['deskripsi_task'],
+      persentase_selesai: json['persentase_selesai'] ?? '',
+      deskripsi_task: json['deskripsi_task'] ?? '',
       alasan_verifikasi: json['alasan_verifikasi'] ?? '',
       bukti_selesai: json['bukti_selesai'] ?? '',
       tautan_task: json['tautan_task'] ?? '',
-      created_at: json['created_at'] ?? '',
-      data_tambahan: DataTambahan.fromJson(json['data_tambahan']),
+      created_at: json['created_at'] != null
+          ? DateTime.parse(json['created_at'])
+          : DateTime.now(),
+      data_tambahan: DataTambahan.fromJson(json['data_tambahan'] ?? {}),
     );
   }
 
@@ -95,13 +101,10 @@ class DataTambahan {
 
   factory DataTambahan.fromJson(Map<String, dynamic> json) {
     return DataTambahan(
-      nama_user: json['nama_user'] != null ? json['nama_user'] : '',
-      nama_pekerjaan:
-          json['nama_pekerjaan'] != null ? json['nama_pekerjaan'] : '',
-      nama_status_task:
-          json['nama_status_task'] != null ? json['nama_status_task'] : '',
-      nama_kategori_task:
-          json['nama_kategori_task'] != null ? json['nama_kategori_task'] : '',
+      nama_user: json['nama_user'],
+      nama_pekerjaan: json['nama_pekerjaan'],
+      nama_status_task: json['nama_status_task'],
+      nama_kategori_task: json['nama_kategori_task'],
     );
   }
 

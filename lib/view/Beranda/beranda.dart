@@ -2,9 +2,12 @@ import 'dart:async';
 
 import 'package:badges/badges.dart';
 import 'package:destask/controller/personil_controller.dart';
+import 'package:destask/controller/rekap_point_controller.dart';
 import 'package:destask/controller/target_poin_harian_controller.dart';
 import 'package:destask/controller/task_controller.dart';
 import 'package:destask/controller/user_controller.dart';
+import 'package:quickalert/quickalert.dart';
+import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../controller/notifikasi_controller.dart';
 import '../../controller/pekerjaan_controller.dart';
@@ -26,6 +29,7 @@ class _BerandaState extends State<Beranda> {
       TargetPoinHarianController();
   PekerjaanController pekerjaanController = PekerjaanController();
   PersonilController personilController = PersonilController();
+  RekapPointController rekapPointController = RekapPointController();
   TaskController taskController = TaskController();
   UserController userController = UserController();
   NotifikasiController notifikasiController = NotifikasiController();
@@ -33,8 +37,8 @@ class _BerandaState extends State<Beranda> {
   String nama = '';
   String jumlahPekerjaanSelesai = '';
   String jumlahNotifikasi = '';
+  String taskpoint = '';
   String target = '';
-  String taskpoin = '';
   bool aktif = false;
 
   @override
@@ -48,9 +52,9 @@ class _BerandaState extends State<Beranda> {
   void loadData() async {
     try {
       await getJumlahPekerjaanSelesai();
+      await getTaskPoin();
+      await getTarget();
       await getNotifikasi();
-      await getDataTarget();
-      await getTaskPoint();
       if (aktif) {
         var data = await getDataPekerjaan();
         setState(() {
@@ -78,26 +82,37 @@ class _BerandaState extends State<Beranda> {
     return data;
   }
 
-  getDataTarget() async {
-    var data = await targetPoinHarianController.getTargetPoinHarian();
-    print(data);
-    if (data.isEmpty) {
-      return;
-    } else {
-      setState(() {
-        target = data[0].jumlah_target_poin_sebulan.toString();
-      });
+  //task poin
+  getTaskPoin() async {
+    var data = await rekapPointController.getRekapPoint();
+    int count = 0;
+    for (var i = 0; i < data.length; i++) {
+      DateTime taskDate = DateTime.parse(data[i]['tgl_selesai']);
+      if (taskDate.month == DateTime.now().month) {
+        count += int.parse(data[i]['bobot_point'].toString());
+      }
     }
+    setState(() {
+      taskpoint = count.toString();
+    });
     return data;
   }
 
-  //task poin
-  getTaskPoint() async {
-    var data = await taskController.TotalBobotPoinTaskBulanIni();
-    setState(() {
-      taskpoin = data.toString();
-    });
-    return data;
+  getTarget() async {
+    var data = await targetPoinHarianController.getTargetPoinHarianbyUser();
+    int count = 0;
+    if (data.isNotEmpty) {
+      count = int.parse(data[0]['jumlah_target_poin_sebulan'].toString());
+      setState(() {
+        target = count.toString();
+      });
+      return data;
+    } else {
+      setState(() {
+        target = '0';
+      });
+      return data;
+    }
   }
 
   getJumlahPekerjaanSelesai() async {
@@ -307,7 +322,7 @@ class _BerandaState extends State<Beranda> {
                       );
                     } else if (index == 2) {
                       badgecontent = Text(
-                        taskpoin,
+                        taskpoint,
                         style: const TextStyle(color: Colors.white),
                       );
                     } else {
@@ -417,7 +432,7 @@ class _BerandaState extends State<Beranda> {
                             style: const TextStyle(color: Colors.white),
                           ),
                           subtitle: Text(
-                            "PM: ${pekerjaanItem.data_tambahan.nama_pm}",
+                            "PM: ${pekerjaanItem.data_tambahan.pm[0].nama!}",
                             style: const TextStyle(color: Colors.white),
                           ),
                         ),

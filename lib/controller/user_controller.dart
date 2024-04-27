@@ -1,6 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:get/get.dart';
+import 'package:quickalert/quickalert.dart';
+
 import '../model/user_model.dart';
 import '../utils/constant_api.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -56,6 +59,15 @@ class UserController {
         List<UserModel> user =
             List<UserModel>.from(it.map((e) => UserModel.fromJson(e)).toList());
         return user;
+      } else if (response.statusCode == 401) {
+        SharedPreferences pref = await SharedPreferences.getInstance();
+        pref.clear();
+        Get.offAllNamed('/login');
+        QuickAlert.show(
+          context: Get.context!,
+          title: 'Token Expired, Login Ulang',
+          type: QuickAlertType.error,
+        );
       } else {
         // Handle error
         return {};
@@ -66,16 +78,18 @@ class UserController {
   }
 
   Future editProfile(
-    String iduser,
+    String idusergroup,
     String nama,
     String email,
     String username,
   ) async {
     try {
       var token = await getToken();
-      var uri = Uri.parse('$url/$iduser');
+      var user = await getIdUser();
+      var uri = Uri.parse('$url/$user');
       final data = {
-        'id_user': iduser,
+        'id_user': user,
+        'id_usergroup': idusergroup,
         'nama': nama,
         'email': email,
         'username': username,
@@ -88,9 +102,29 @@ class UserController {
           body: jsonEncode(data));
 
       if (response.statusCode == 200) {
-        print(response.body);
+        print(uri);
+        //delete shared preferences
+        final prefs = await SharedPreferences.getInstance();
+        prefs.remove('nama');
+        prefs.remove('id_usergroup');
+        prefs.remove('email');
+        prefs.remove('username');
+        prefs.setString('nama', nama);
+        prefs.setString('id_usergroup', idusergroup);
+        prefs.setString('email', email);
+        prefs.setString('username', username);
         return true;
+      } else if (response.statusCode == 401) {
+        SharedPreferences pref = await SharedPreferences.getInstance();
+        pref.clear();
+        Get.offAllNamed('/login');
+        QuickAlert.show(
+          context: Get.context!,
+          title: 'Token Expired, Login Ulang',
+          type: QuickAlertType.error,
+        );
       } else {
+        print(uri);
         print('Failed to edit profile. Status code: ${response.statusCode}');
         print(response.body);
         return false;
@@ -114,7 +148,9 @@ class UserController {
     var MultiPartFile = http.MultipartFile('foto_profil', stream, length,
         filename: basename(imageFile.path));
 
-    Map<String, String> body = {'id_user': id_user};
+    Map<String, String> body = {
+      'id_user': id_user,
+    };
 
     request.fields.addAll(body);
     request.files.add(MultiPartFile);

@@ -134,22 +134,45 @@ class _PengaturanState extends State<Pengaturan> {
                   size: 15,
                 ),
                 onTap: () async {
-                  AuthController authController = AuthController();
-                  bool cekLogout = await authController.logout();
-                  if (cekLogout) {
-                    QuickAlert.show(
-                      context: context,
-                      type: QuickAlertType.success,
-                      text: 'Logout Berhasil!',
-                    );
-                  } else {
-                    QuickAlert.show(
-                      context: context,
-                      type: QuickAlertType.error,
-                      title: 'Oops...',
-                      text: 'Logout Gagal, Silahkan Coba Lagi!',
-                    );
-                  }
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text('Konfirmasi Logout'),
+                        content: const Text('Apakah Anda yakin ingin logout?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            child: const Text('Batal'),
+                          ),
+                          TextButton(
+                            onPressed: () async {
+                              Navigator.pop(context);
+                              AuthController authController = AuthController();
+                              bool cekLogout = await authController.logout();
+                              if (cekLogout) {
+                                QuickAlert.show(
+                                  context: context,
+                                  type: QuickAlertType.success,
+                                  text: 'Logout Berhasil!',
+                                );
+                              } else {
+                                QuickAlert.show(
+                                  context: context,
+                                  type: QuickAlertType.error,
+                                  title: 'Oops...',
+                                  text: 'Logout Gagal, Silahkan Coba Lagi!',
+                                );
+                              }
+                            },
+                            child: const Text('Ya'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
                 },
               ),
             ),

@@ -1,4 +1,6 @@
+import 'package:destask/controller/hari_libur_controller.dart';
 import 'package:destask/controller/user_controller.dart';
+import 'package:destask/model/hari_libur_model.dart';
 import 'package:destask/model/user_model.dart';
 import 'package:destask/utils/global_colors.dart';
 import 'package:intl/intl.dart';
@@ -26,7 +28,9 @@ class _TaskState extends State<Task> {
   PersonilController personilController = PersonilController();
   TaskController taskController = TaskController();
   UserController userController = UserController();
+  HariLiburController hariLiburController = HariLiburController();
   bool isSearchBarVisible = false;
+  bool libur = false;
 
   String namaPekerjaan = '';
 
@@ -35,7 +39,6 @@ class _TaskState extends State<Task> {
 
   //pm
   bool isPM = false;
-  late bool pm;
 
   late Future<List<TaskModel>> task;
   late Future<List> user;
@@ -43,8 +46,17 @@ class _TaskState extends State<Task> {
   @override
   void initState() {
     super.initState();
+    print(idPekerjaan);
     _focusedDay = DateTime.now();
     _selectedDay = _focusedDay;
+    getPekerjaan();
+    //ceklibur
+    cekHariLibur().then((value) {
+      setState(() {
+        libur = value;
+      });
+    });
+    print("status libur: " + libur.toString());
     task = getDataTask();
   }
 
@@ -52,6 +64,12 @@ class _TaskState extends State<Task> {
     setState(() {
       // Memperbarui data tugas dengan memanggil getDataTask()
       task = getDataTask();
+      // Memperbarui status libur dengan memanggil cekHariLibur()
+      cekHariLibur().then((value) {
+        setState(() {
+          libur = value;
+        });
+      });
     });
   }
 
@@ -61,53 +79,88 @@ class _TaskState extends State<Task> {
     return idUser;
   }
 
-  //cek user pm apa bukan berdasarkan pekerjaan id
-  cekPM() async {
-    var idUser = await getIdUser();
-    print("id user: $idUser");
-    print("id pekerjaan: $idPekerjaan");
-    var dataPekerjaan = await pekerjaanController.getPekerjaanById(idPekerjaan);
-    String idPersonil = dataPekerjaan[0].id_personil.toString();
-    var dataPersonil = await personilController.getPersonilById(idPersonil);
-
-    // Make sure 'id_user_pm' is of type String or handle type conversion accordingly
-    String idUserPM = dataPersonil[0].id_user_pm.toString();
-
-    if (idUser == idUserPM) {
-      return true;
-    }
-    return false;
-  }
-
   //get data all user
   Future<List<UserModel>> getDataUser(String idUserTask) async {
     List<UserModel> data = await userController.getUserById(idUserTask);
     return data;
   }
 
-  //get data task
-  Future<List<TaskModel>> getDataTask() async {
-    //cek PM
-    pm = await cekPM();
-
-    //untuk pm
-    List<TaskModel> taskPM =
-        await taskController.getTasksByPekerjaanId(idPekerjaan, _selectedDay);
-    //untuk non pm
-    List<TaskModel> tasknonPM = await taskController
-        .getTasksByUserPekerjaanDate(idPekerjaan, _selectedDay);
-
+  getPekerjaan() async {
     var pekerjaan = await pekerjaanController.getPekerjaanById(idPekerjaan);
     setState(() {
       namaPekerjaan = pekerjaan[0].nama_pekerjaan.toString();
     });
-    return pm ? taskPM : tasknonPM;
+  }
+
+  cekPM() async {
+    var idUser = await getIdUser();
+    var pekerjaan = await pekerjaanController.getPekerjaanById(idPekerjaan);
+    if (idUser == pekerjaan[0].data_tambahan.pm[0].id_user) {
+      setState(() {
+        isPM = true;
+      });
+      return true;
+    } else {
+      setState(() {
+        isPM = false;
+      });
+      return false;
+    }
+  }
+
+  Future<List<TaskModel>> getDataTask() async {
+    bool cekpm = await cekPM();
+    if (cekpm) {
+      List<TaskModel> taskPM =
+          await taskController.getTasksByPekerjaanId(idPekerjaan, _selectedDay);
+      setState(() {
+        isPM = true;
+      });
+      return taskPM;
+    } else {
+      List<TaskModel> tasknonPM = await taskController
+          .getTasksByUserPekerjaanDate(idPekerjaan, _selectedDay);
+      setState(() {
+        isPM = false;
+      });
+      return tasknonPM;
+    }
+  }
+
+  //hari libur
+  Future<List<HariLiburModel>> getHariLibur() async {
+    var data = await hariLiburController.getAllHariLibur();
+    return data;
+  }
+
+  //cek jika hari libur maka add dan edit task tidak bisa diakses
+  Future<bool> cekHariLibur() async {
+    List<HariLiburModel> hariLibur = await getHariLibur();
+
+    // Cek jika hari libur adalah Sabtu atau Minggu
+    if (_selectedDay.weekday == 6 || _selectedDay.weekday == 7) {
+      return true;
+    }
+
+    // Cek jika tanggal libur sesuai dengan tanggal yang dipilih
+    for (var i = 0; i < hariLibur.length; i++) {
+      if (isSameDay(_selectedDay, hariLibur[i].tanggal_libur)) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   Future<void> _onDaySelected(DateTime selectedDay, DateTime focusedDay) async {
     setState(() {
       _selectedDay = selectedDay;
       _focusedDay = focusedDay;
+    });
+    // Pemanggilan fungsi cekHariLibur
+    bool isLibur = await cekHariLibur();
+    setState(() {
+      libur = isLibur;
     });
     task = getDataTask();
   }
@@ -123,7 +176,7 @@ class _TaskState extends State<Task> {
     List<TaskModel> tasks = []; // Ambil tugas sesuai tanggal
 
     for (TaskModel task in tasks) {
-      DateTime taskDate = DateTime.parse(task.tgl_planing!.toString());
+      DateTime taskDate = task.tgl_planing;
       events.putIfAbsent(taskDate, () => []);
     }
 
@@ -224,6 +277,9 @@ class _TaskState extends State<Task> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
+                const SizedBox(
+                  height: 10,
+                ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
@@ -234,7 +290,8 @@ class _TaskState extends State<Task> {
                           color: GlobalColors.mainColor,
                           shape: BoxShape.circle,
                         )),
-                    const Text('On Progress'),
+                    const SizedBox(width: 5),
+                    const Expanded(child: Text('On Progress')),
                     const SizedBox(
                       width: 10,
                     ),
@@ -242,10 +299,11 @@ class _TaskState extends State<Task> {
                         width: 20,
                         height: 20,
                         decoration: const BoxDecoration(
-                          color: Colors.green,
+                          color: Colors.orange,
                           shape: BoxShape.circle,
                         )),
-                    const Text('Selesai'),
+                    const SizedBox(width: 5),
+                    const Expanded(child: Text('Dateline Hari ini')),
                     const SizedBox(
                       width: 10,
                     ),
@@ -256,7 +314,49 @@ class _TaskState extends State<Task> {
                           color: Colors.red,
                           shape: BoxShape.circle,
                         )),
-                    const Text('Overdue'),
+                    const SizedBox(width: 5),
+                    const Expanded(child: Text('Overdue')),
+                  ],
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Container(
+                        width: 20,
+                        height: 20,
+                        decoration: const BoxDecoration(
+                          color: Colors.pink,
+                          shape: BoxShape.circle,
+                        )),
+                    const SizedBox(width: 5),
+                    const Expanded(child: Text('Sedang Verifikasi')),
+                    const SizedBox(
+                      width: 10,
+                    ),
+                    Container(
+                        width: 20,
+                        height: 20,
+                        decoration: const BoxDecoration(
+                          color: Colors.purple,
+                          shape: BoxShape.circle,
+                        )),
+                    const SizedBox(width: 5),
+                    const Expanded(child: Text('Ditolak')),
+                    const SizedBox(
+                      width: 10,
+                    ),
+                    Container(
+                        width: 20,
+                        height: 20,
+                        decoration: const BoxDecoration(
+                          color: Colors.green,
+                          shape: BoxShape.circle,
+                        )),
+                    const SizedBox(width: 5),
+                    const Expanded(child: Text('Sudah Verifikasi')),
                   ],
                 ),
               ],
@@ -272,14 +372,15 @@ class _TaskState extends State<Task> {
         ),
       ),
       //TOMBOL ADD TASK
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Get.toNamed('/add_task/$idPekerjaan',
-              arguments: Get.parameters['idpekerjaan']);
-        },
-        backgroundColor: Colors.blueAccent,
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
+      floatingActionButton: libur
+          ? null
+          : FloatingActionButton(
+              onPressed: () {
+                Get.toNamed('/add_task/$idPekerjaan');
+              },
+              child: const Icon(Icons.add, color: Colors.white),
+              backgroundColor: GlobalColors.mainColor,
+            ),
     );
   }
 
@@ -299,183 +400,217 @@ class _TaskState extends State<Task> {
             ),
           );
         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return const Center(
-            child: Text(
-              'Task Kosong',
-              style: TextStyle(fontSize: 16),
-            ),
-          );
-        } else {
-          List<TaskModel> allTasks = snapshot.data!;
-          final filterTask = allTasks
-              .where((task) =>
-                  task.deskripsi_task!.toLowerCase().contains(
-                        searchController.text.toLowerCase(),
-                      ) ||
-                  task.tgl_planing!.toString().contains(searchController.text))
-              .toList();
-          return allTasks.isEmpty
+          return libur
               ? const Center(
+                  child: Text(
+                    'Hari ini adalah hari libur',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                )
+              : const Center(
                   child: Text(
                     'Task Kosong untuk hari ini',
                     style: TextStyle(fontSize: 16),
                   ),
+                );
+        } else {
+          List<TaskModel> allTasks = snapshot.data!;
+          final filterTask = allTasks
+              .where((task) =>
+                  task.deskripsi_task.toLowerCase().contains(
+                        searchController.text.toLowerCase(),
+                      ) ||
+                  task.tgl_planing.toString().contains(searchController.text))
+              .toList();
+          return libur
+              ? const Center(
+                  child: Text(
+                    'Hari ini adalah hari libur',
+                    style: TextStyle(fontSize: 16),
+                  ),
                 )
-              : ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: filterTask.length,
-                  itemBuilder: (context, index) {
-                    Map<String, dynamic> taskData = allTasks[index].toJson();
-
-                    //setting color card
-                    DateTime currentDate = DateTime.now();
-                    DateTime tglPlaning =
-                        DateTime.parse(taskData['tgl_planing']);
-                    DateTime? tglSelesai;
-
-                    if (taskData['tgl_selesai'] != null) {
-                      final DateFormat dateFormat = DateFormat('yyyy-MM-dd');
-                      try {
-                        tglSelesai = dateFormat.parse(taskData['tgl_selesai']);
-                      } catch (e) {
-                        print('Error parsing tgl_selesai: $e');
-                        tglSelesai = null;
-                      }
-                    }
-
-                    Color taskColor = GlobalColors.mainColor;
-
-                    if (tglSelesai == null) {
-                      //sedang dikerjakan
-                      if (currentDate.isBefore(tglPlaning)) {
-                        taskColor = GlobalColors.mainColor;
-                      }
-                      //overdue
-                      else {
-                        taskColor = Colors.red;
-                      }
-                    } else {
-                      if (tglSelesai.isBefore(tglPlaning)) {
-                        taskColor = Colors.green;
-                      } else {
-                        taskColor = Colors.red;
-                      }
-                    }
-                    return Dismissible(
-                      key: Key(taskData['id_task'].toString()),
-                      direction: DismissDirection.endToStart,
-                      background: Container(
-                        padding: const EdgeInsets.only(right: 20),
-                        alignment: Alignment.centerRight,
-                        color: Colors.red,
-                        child: const Icon(
-                          Icons.delete,
-                          color: Colors.white,
-                        ),
+              : allTasks.isEmpty
+                  ? const Center(
+                      child: Text(
+                        'Task Kosong untuk hari ini',
+                        style: TextStyle(fontSize: 16),
                       ),
-                      confirmDismiss: (direction) async {
-                        return await showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return AlertDialog(
-                              title: const Text("Konfirmasi Hapus Task"),
-                              content: const Text(
-                                  "Apakah Anda yakin ingin menghapus task ini?"),
-                              actions: [
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.pop(context); // Close the dialog
-                                  },
-                                  child: const Text("Batal"),
-                                ),
-                                TextButton(
-                                  onPressed: () async {
-                                    Navigator.pop(context); // Close the dialog
+                    )
+                  : ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: filterTask.length,
+                      itemBuilder: (context, index) {
+                        Map<String, dynamic> taskData =
+                            allTasks[index].toJson();
 
-                                    await taskController.deleteTask(
-                                        taskData['id_task'].toString());
-                                    // Refresh task list
-                                    refresh();
-                                  },
-                                  child: const Text("Hapus"),
-                                ),
-                              ],
+                        //setting color card
+                        DateTime currentDate = DateTime.now();
+                        DateTime tglPlaning = taskData['tgl_planing'];
+                        var statusVerifikasi = taskData['status_verifikasi'];
+                        DateTime? tglSelesai;
+
+                        if (taskData['tgl_selesai'] != null) {
+                          // final DateFormat dateFormat = DateFormat('yyyy-MM-dd');
+                          try {
+                            tglSelesai = taskData['tgl_selesai'];
+                          } catch (e) {
+                            print('Error parsing tgl_selesai: $e');
+                            tglSelesai = null;
+                          }
+                        }
+
+                        Color taskColor = GlobalColors.mainColor;
+                        //belum verifikasi
+                        if (tglSelesai == null && statusVerifikasi == '0') {
+                          //planing
+                          if (currentDate.isBefore(tglPlaning)) {
+                            taskColor = GlobalColors.mainColor;
+                            //dl hari ini
+                          } else if (currentDate.year == tglPlaning.year &&
+                              currentDate.month == tglPlaning.month &&
+                              currentDate.day == tglPlaning.day) {
+                            taskColor = Colors.orange;
+                          }
+                          //overdue
+                          else if (currentDate.isAfter(tglPlaning)) {
+                            taskColor = Colors.red;
+                          }
+                        }
+                        //sedang verifikasi
+                        else if (tglSelesai == null &&
+                            statusVerifikasi == '1') {
+                          taskColor = Colors.pink;
+                        }
+                        //ditolak
+                        else if (tglSelesai == null &&
+                            statusVerifikasi == '2') {
+                          taskColor = Colors.purple;
+                        }
+                        //sudah verifikasi
+                        else if (tglSelesai != null &&
+                            statusVerifikasi == '3') {
+                          taskColor = Colors.green;
+                        }
+                        return Dismissible(
+                          key: Key(taskData['id_task'].toString()),
+                          direction: DismissDirection.endToStart,
+                          background: Container(
+                            padding: const EdgeInsets.only(right: 20),
+                            alignment: Alignment.centerRight,
+                            color: Colors.red,
+                            child: const Icon(
+                              Icons.delete,
+                              color: Colors.white,
+                            ),
+                          ),
+                          confirmDismiss: (direction) async {
+                            return await showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: const Text("Konfirmasi Hapus Task"),
+                                  content: const Text(
+                                      "Apakah Anda yakin ingin menghapus task ini?"),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.pop(
+                                            context); // Close the dialog
+                                      },
+                                      child: const Text("Batal"),
+                                    ),
+                                    TextButton(
+                                      onPressed: () async {
+                                        Navigator.pop(
+                                            context); // Close the dialog
+
+                                        await taskController.deleteTask(
+                                            taskData['id_task'].toString());
+                                        // Refresh task list
+                                        refresh();
+                                      },
+                                      child: const Text("Hapus"),
+                                    ),
+                                  ],
+                                );
+                              },
                             );
                           },
-                        );
-                      },
-                      child: Card(
-                        color: taskColor,
-                        child: Column(
-                          children: [
-                            GestureDetector(
-                              onTap: () {
-                                Get.toNamed(
-                                    '/detail_task/${taskData['id_task']}',
-                                    arguments: taskData);
-                              },
-                              child: ListTile(
-                                leading: Container(
-                                  padding: const EdgeInsets.all(15),
-                                  decoration: const BoxDecoration(
-                                    color: Colors.white,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Text(
-                                    '${taskData['persentase_selesai']}%',
-                                    style: const TextStyle(
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.bold,
+                          child: Card(
+                            color: taskColor,
+                            child: Column(
+                              children: [
+                                GestureDetector(
+                                  onTap: () {
+                                    Get.toNamed(
+                                        '/detail_task/${taskData['id_task']}',
+                                        arguments: taskData);
+                                  },
+                                  child: ListTile(
+                                    leading: Container(
+                                      padding: const EdgeInsets.all(15),
+                                      decoration: const BoxDecoration(
+                                        color: Colors.white,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: Text(
+                                        '${taskData['persentase_selesai']}%',
+                                        style: const TextStyle(
+                                          color: Colors.black,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
                                     ),
-                                  ),
-                                ),
-                                title: Text(
-                                  taskData['deskripsi_task'].length > 20
-                                      ? taskData['deskripsi_task']
-                                              .substring(0, 20) +
-                                          '...'
-                                      : taskData['deskripsi_task'],
-                                  style: const TextStyle(
-                                      color: Colors.white, fontSize: 18),
-                                ),
-                                subtitle: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Deadline : ${formatDate(taskData['tgl_planing'])}',
-                                      style:
-                                          const TextStyle(color: Colors.white),
+                                    title: Text(
+                                      taskData['deskripsi_task'].length > 20
+                                          ? taskData['deskripsi_task']
+                                                  .substring(0, 20) +
+                                              '...'
+                                          : taskData['deskripsi_task'],
+                                      style: const TextStyle(
+                                          color: Colors.white, fontSize: 18),
                                     ),
-                                    pm
-                                        ? taskData['data_tambahan'] != null
+                                    subtitle: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Deadline : ${formatDate(taskData['tgl_planing'].toString())}',
+                                          style: const TextStyle(
+                                              color: Colors.white),
+                                        ),
+                                        isPM
                                             ? Text(
                                                 'PIC : ${taskData['data_tambahan']['nama_user']}',
                                                 style: const TextStyle(
                                                     color: Colors.white),
                                               )
-                                            : const SizedBox()
+                                            : const SizedBox(),
+                                      ],
+                                    ),
+                                    //jika libur = false maka edit task bisa diakses
+                                    trailing: taskData['tgl_selesai'] == null &&
+                                                taskData['status_verifikasi'] ==
+                                                    '0' ||
+                                            taskData['status_verifikasi'] == '2'
+                                        ? IconButton(
+                                            icon: const Icon(Icons.edit),
+                                            color: Colors.white,
+                                            onPressed: () {
+                                              Get.toNamed(
+                                                  '/edit_task/${taskData['id_task']}');
+                                            },
+                                          )
                                         : const SizedBox(),
-                                  ],
-                                ),
-                                trailing: GestureDetector(
-                                  onTap: () {
-                                    Get.toNamed(
-                                        '/edit_task/${taskData['id_task']}');
-                                  },
-                                  child: const Icon(
-                                    Icons.edit,
-                                    color: Colors.white,
                                   ),
                                 ),
-                              ),
+                              ],
                             ),
-                          ],
-                        ),
-                      ),
+                          ),
+                        );
+                      },
                     );
-                  },
-                );
         }
       },
     );
@@ -483,6 +618,9 @@ class _TaskState extends State<Task> {
 
   //ubah format tanggal
   String formatDate(String date) {
+    if (date == '-') {
+      return '-';
+    }
     DateTime dateTime = DateTime.parse(date);
     return DateFormat('d MMMM yyyy', 'id').format(dateTime);
   }

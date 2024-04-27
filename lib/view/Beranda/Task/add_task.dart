@@ -1,13 +1,16 @@
 import 'dart:io';
+import 'dart:math';
+import 'package:destask/controller/bobot_kategori_task_controller.dart';
 import 'package:destask/controller/pekerjaan_controller.dart';
+import 'package:destask/model/bobot_kategori_task_model.dart';
 import 'package:destask/model/pekerjaan_model.dart';
+import 'package:dropdown_search/dropdown_search.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../controller/kategori_task_controller.dart';
 import '../../../controller/task_controller.dart';
 import '../../../model/kategori_task_model.dart';
 import 'package:quickalert/quickalert.dart';
-import '../../../controller/status_task_controller.dart';
-import '../../../model/status_task_model.dart';
 import '../../../utils/global_colors.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -23,15 +26,14 @@ class AddTask extends StatefulWidget {
 
 class _AddTaskState extends State<AddTask> {
   final String idpekerjaan = Get.parameters['idpekerjaan'] ?? '';
-  final String idUser = Get.parameters['iduser'] ?? '';
   final TextEditingController _deskripsiTaskController =
       TextEditingController();
-  final TextEditingController _tautanTaskController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  StatusTaskController statusTaskController = StatusTaskController();
   KategoriTaskController kategoriTaskController = KategoriTaskController();
   TaskController taskController = TaskController();
   PekerjaanController pekerjaanController = PekerjaanController();
+  BobotKategoriTaskController bobotKategoriTaskController =
+      BobotKategoriTaskController();
 
   //file
   PlatformFile? pickedFile;
@@ -39,39 +41,88 @@ class _AddTaskState extends State<AddTask> {
   String? fileName;
   String filePath = "";
   bool isLoading = false;
-  String idStatusTask = "";
+  // String idStatusTask = "";
+  String idUser = "";
+  String idanggotauser = "";
   String idKategoriTask = "";
   String namaPekerjaan = "";
+  bool cekPM = false;
+  bool cekBobot = false;
+  String PM = "";
 
   @override
   void initState() {
     super.initState();
     getDataPekerjaan();
-    getDataStatusTask();
+    cekuserPM();
     getDataKategoriTask();
   }
 
-  getDataPekerjaan() async {
+  Future<List<Map<String, dynamic>>> getDataPekerjaan() async {
     List<PekerjaanModel> dataPekerjaan =
         await pekerjaanController.getPekerjaanById(idpekerjaan);
+    List<Map<String, dynamic>> picList = [];
+
     if (dataPekerjaan.isNotEmpty) {
+      dataPekerjaan[0].data_tambahan.pm.forEach((pm) {
+        picList.add({
+          'nama': pm.nama,
+          'id_user': pm.id_user,
+        });
+      });
+      dataPekerjaan[0].data_tambahan.desainer.forEach((desainer) {
+        picList.add({
+          'nama': desainer.nama,
+          'id_user': desainer.id_user,
+        });
+      });
+      dataPekerjaan[0].data_tambahan.backend_web.forEach((backend_web) {
+        picList.add({
+          'nama': backend_web.nama,
+          'id_user': backend_web.id_user,
+        });
+      });
+      dataPekerjaan[0].data_tambahan.backend_mobile.forEach((backend_mobile) {
+        picList.add({
+          'nama': backend_mobile.nama,
+          'id_user': backend_mobile.id_user,
+        });
+      });
+      dataPekerjaan[0].data_tambahan.frontend_web.forEach((frontend_web) {
+        picList.add({
+          'nama': frontend_web.nama,
+          'id_user': frontend_web.id_user,
+        });
+      });
+      dataPekerjaan[0].data_tambahan.frontend_mobile.forEach((frontend_mobile) {
+        picList.add({
+          'nama': frontend_mobile.nama,
+          'id_user': frontend_mobile.id_user,
+        });
+      });
+    }
+    return picList;
+  }
+
+  cekuserPM() async {
+    List<PekerjaanModel> dataPekerjaan =
+        await pekerjaanController.getPekerjaanById(idpekerjaan);
+    setState(() {
+      namaPekerjaan = dataPekerjaan[0].nama_pekerjaan;
+      PM = dataPekerjaan[0].data_tambahan.pm[0].id_user;
+    });
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    idUser = prefs.getString('id_user') ?? '';
+    if (PM == idUser) {
       setState(() {
-        namaPekerjaan = dataPekerjaan[0].nama_pekerjaan.toString();
+        cekPM = true;
       });
     } else {
       setState(() {
-        namaPekerjaan = "Pekerjaan tidak ditemukan";
+        idanggotauser = idUser;
       });
+      print("iduser" + idUser);
     }
-    print(namaPekerjaan);
-    return dataPekerjaan;
-  }
-
-  //get status task
-  Future<List<StatusTaskModel>> getDataStatusTask() async {
-    List<StatusTaskModel> dataStatus =
-        await statusTaskController.getAllStatusTask();
-    return dataStatus;
   }
 
   //getkategori task
@@ -102,7 +153,6 @@ class _AddTaskState extends State<AddTask> {
   @override
   void dispose() {
     _deskripsiTaskController.dispose();
-    _tautanTaskController.dispose();
     super.dispose();
   }
 
@@ -163,45 +213,6 @@ class _AddTaskState extends State<AddTask> {
                   },
                 ),
                 const SizedBox(height: 16),
-                //status task
-                buildLabel('Status Task *'),
-                FutureBuilder<List<StatusTaskModel>>(
-                  future: getDataStatusTask(),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasError) {
-                      return const Text('Error loading data');
-                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return const Text('No data available');
-                    } else {
-                      List<StatusTaskModel> statusList = snapshot.data!;
-                      return DropdownButtonFormField<String>(
-                        onChanged: (value) {
-                          setState(() {
-                            idStatusTask = value!;
-                          });
-                        },
-                        items: statusList.map((status) {
-                          return DropdownMenuItem<String>(
-                            value: status.id_status_task,
-                            child: Text(status.nama_status_task.toString()),
-                          );
-                        }).toList(),
-                        decoration: const InputDecoration(
-                          contentPadding:
-                              EdgeInsets.symmetric(horizontal: 15, vertical: 3),
-                          border: OutlineInputBorder(),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Kolom Status Task harus diisi';
-                          }
-                          return null;
-                        },
-                      );
-                    }
-                  },
-                ),
-                const SizedBox(height: 16),
                 //kategori task
                 buildLabel('Kategori Task *'),
                 FutureBuilder<List<KategoriTaskModel>>(
@@ -241,11 +252,61 @@ class _AddTaskState extends State<AddTask> {
                   },
                 ),
                 const SizedBox(height: 16),
-                //tautan task
-                buildLabel('Tautan Task *'),
-                buildFormField(
-                    _tautanTaskController, "Tautan Task", TextInputType.url),
-                const SizedBox(height: 16),
+
+                //autor
+                cekPM
+                    ? Column(
+                        children: [
+                          buildLabel('Autor'),
+                          FutureBuilder(
+                            future: getDataPekerjaan(),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return Column(
+                                  children: [CircularProgressIndicator()],
+                                );
+                              } else if (snapshot.hasError) {
+                                return Text('Error: ${snapshot.error}');
+                              } else if (snapshot.data != null) {
+                                List<Map<String, dynamic>> picList =
+                                    snapshot.data as List<Map<String, dynamic>>;
+                                return DropdownSearch<String>(
+                                    popupProps: PopupProps.menu(
+                                      showSelectedItems: true,
+                                    ),
+                                    items: picList
+                                        .map((e) => e['nama'].toString())
+                                        .toList(),
+                                    dropdownDecoratorProps:
+                                        DropDownDecoratorProps(
+                                      dropdownSearchDecoration: InputDecoration(
+                                        hintText: "Pilih Autor",
+                                      ),
+                                    ),
+                                    onChanged: (value) {
+                                      setState(() {
+                                        idanggotauser = picList
+                                            .firstWhere((element) =>
+                                                element['nama'] ==
+                                                value)['id_user']
+                                            .toString();
+                                      });
+                                    },
+                                    selectedItem: idanggotauser != ''
+                                        ? picList.firstWhere((element) =>
+                                            element['id_user'] ==
+                                            idanggotauser)['nama']
+                                        : null);
+                              } else {
+                                return Text('Data not available');
+                              }
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+                      )
+                    : Container(),
                 //simpan
                 GestureDetector(
                   onTap: () async {
@@ -255,11 +316,10 @@ class _AddTaskState extends State<AddTask> {
                     if (_formKey.currentState!.validate()) {
                       bool addTask = await taskController.addTask(
                         idpekerjaan,
-                        idStatusTask,
+                        idanggotauser,
                         idKategoriTask,
                         _selectedDateStart!, //tgl planing
                         _deskripsiTaskController.text,
-                        _tautanTaskController.text,
                       );
                       if (addTask) {
                         Navigator.pushReplacementNamed(
@@ -323,6 +383,18 @@ class _AddTaskState extends State<AddTask> {
         }
         return null;
       },
+    );
+  }
+
+  TextFormField buildFormFieldBolehKosong(
+      TextEditingController controller, String label, TextInputType type) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: type,
+      decoration: const InputDecoration(
+        contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 3),
+        border: OutlineInputBorder(),
+      ),
     );
   }
 

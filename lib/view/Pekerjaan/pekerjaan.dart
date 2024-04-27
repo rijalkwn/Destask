@@ -1,3 +1,4 @@
+import 'package:destask/controller/status_pekerjaan_controller.dart';
 import 'package:destask/controller/user_controller.dart';
 import 'package:quickalert/quickalert.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -19,6 +20,8 @@ class _PekerjaanState extends State<Pekerjaan>
   late TabController _tabController;
   TextEditingController searchController = TextEditingController();
   PekerjaanController pekerjaanController = PekerjaanController();
+  StatusPekerjaanController statusPekerjaanController =
+      StatusPekerjaanController();
   UserController userController = UserController();
   late Future<List<PekerjaanModel>> pekerjaan;
   bool isSearchBarVisible = false;
@@ -26,13 +29,19 @@ class _PekerjaanState extends State<Pekerjaan>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 6, vsync: this);
+    _tabController = TabController(length: 5, vsync: this);
     pekerjaan = getDataPekerjaan();
   }
 
   // get data pekerjaan
   Future<List<PekerjaanModel>> getDataPekerjaan() async {
     var data = await pekerjaanController.getAllPekerjaanUser();
+    return data;
+  }
+
+  //status pekerjaan
+  Future getStatusPekerjaan() async {
+    var data = await statusPekerjaanController.getAllStatusPekerjaan();
     return data;
   }
 
@@ -95,16 +104,16 @@ class _PekerjaanState extends State<Pekerjaan>
             : null,
         bottom: TabBar(
           controller: _tabController,
-          labelPadding: const EdgeInsets.symmetric(horizontal: 10),
+          labelPadding: const EdgeInsets.symmetric(horizontal: 1),
           tabs: [
-            for (var i = 0; i < statusNames.length; i++)
+            for (var i = 0; i < statusId.length; i++)
               Tab(
                 icon: Icon(statusIcon[i]),
-                iconMargin: const EdgeInsets.only(bottom: 5),
+                text: statusNames[i],
               ),
           ],
-          labelStyle: const TextStyle(fontSize: 17),
-          unselectedLabelStyle: const TextStyle(fontSize: 16),
+          labelStyle: const TextStyle(fontSize: 14),
+          unselectedLabelStyle: const TextStyle(fontSize: 13),
           indicatorColor: Colors.white,
           labelColor: Colors.white,
           unselectedLabelColor: Colors.blue[100],
@@ -147,34 +156,36 @@ class StatusPekerjaan extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<PekerjaanModel>>(
-      future: pekerjaan,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
-        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return const Center(child: Text('No data available.'));
-        } else if (snapshot.hasData) {
-          List<PekerjaanModel> pekerjaan = snapshot.data!;
-          final filteredList = pekerjaan
-              .where((pekerjaan) =>
-                  pekerjaan.id_status_pekerjaan == status &&
-                  pekerjaan.nama_pekerjaan!
-                      .toLowerCase()
-                      .contains(searchQuery.toLowerCase()))
-              .toList();
+    return Container(
+      child: FutureBuilder<List<PekerjaanModel>>(
+        future: pekerjaan,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(child: Text('No data available.'));
+          } else if (snapshot.hasData) {
+            List<PekerjaanModel> pekerjaan = snapshot.data!;
+            final filteredList = pekerjaan
+                .where((pekerjaan) =>
+                    pekerjaan.id_status_pekerjaan == status &&
+                    pekerjaan.nama_pekerjaan!
+                        .toLowerCase()
+                        .contains(searchQuery.toLowerCase()))
+                .toList();
 
-          return PekerjaanList(
-            status: status,
-            pekerjaan: filteredList,
-            refresh: onDismissed,
-          );
-        } else {
-          return const Center(child: Text('No data available.'));
-        }
-      },
+            return PekerjaanList(
+              status: status,
+              pekerjaan: filteredList,
+              refresh: onDismissed,
+            );
+          } else {
+            return const Center(child: Text('No data available.'));
+          }
+        },
+      ),
     );
   }
 }
@@ -182,7 +193,7 @@ class StatusPekerjaan extends StatelessWidget {
 @immutable
 class PekerjaanList extends StatelessWidget {
   const PekerjaanList({
-    super.key,
+    Key? key,
     required this.status,
     required this.pekerjaan,
     required this.refresh,
@@ -205,21 +216,18 @@ class PekerjaanList extends StatelessWidget {
       itemBuilder: (context, index) {
         return Dismissible(
           key: Key(pekerjaan[index].id_pekerjaan.toString()),
-          direction: DismissDirection.horizontal, // Tetapkan arah ke horizontal
+          direction: DismissDirection.horizontal,
           background: Container(
-            color: Colors.green, // Warna latar belakang saat digeser
-            alignment: Alignment.centerLeft, // Geser ke kiri
+            color: Colors.green,
+            alignment: Alignment.centerLeft,
             padding: const EdgeInsets.only(left: 20.0),
-            child: const Icon(Icons.check,
-                color: Colors.white), // Icon untuk menandakan "Selesai"
+            child: const Icon(Icons.check, color: Colors.white),
           ),
           secondaryBackground: Container(
-            color: Colors
-                .green, // Warna latar belakang saat digeser ke arah sebaliknya
-            alignment: Alignment.centerRight, // Geser ke kanan
+            color: Colors.green,
+            alignment: Alignment.centerRight,
             padding: const EdgeInsets.only(right: 20.0),
-            child: const Icon(Icons.cancel,
-                color: Colors.white), // Icon untuk menandakan "Cancel"
+            child: const Icon(Icons.cancel, color: Colors.white),
           ),
           onDismissed: (direction) async {
             showDialog(
@@ -232,25 +240,24 @@ class PekerjaanList extends StatelessWidget {
                   actions: <Widget>[
                     TextButton(
                       onPressed: () {
-                        Navigator.of(context).pop(); // Tutup dialog
+                        Navigator.of(context).pop();
                       },
                       child: const Text('Tidak'),
                     ),
                     TextButton(
                       onPressed: () async {
-                        Navigator.of(context).pop(); // Tutup dialog
+                        Navigator.of(context).pop();
                         final idUser = await getId();
                         if (direction == DismissDirection.startToEnd) {
-                          //cek id status pekerjaan
                           int nextStatus;
-                          if (status == '6') {
+                          if (status == '5') {
                             nextStatus = 1;
                           } else {
                             nextStatus = int.parse(status) + 1;
                           }
-                          //cek pm
-                          if (pekerjaan[index].data_tambahan.id_user_pm ==
-                              idUser) {
+                          if (pekerjaan[index].data_tambahan.pm.isNotEmpty &&
+                              pekerjaan[index].data_tambahan.pm[0].id_user ==
+                                  idUser) {
                             PekerjaanController().updateStatusPekerjaan(
                                 pekerjaan[index].id_pekerjaan!,
                                 nextStatus.toString());
@@ -265,16 +272,15 @@ class PekerjaanList extends StatelessWidget {
                                 type: QuickAlertType.error);
                           }
                         } else if (direction == DismissDirection.endToStart) {
-                          //cek id status pekerjaan
                           int prevStatus;
                           if (status == '1') {
-                            prevStatus = 6;
+                            prevStatus = 5;
                           } else {
                             prevStatus = int.parse(status) - 1;
                           }
-                          //cek pm
-                          if (pekerjaan[index].data_tambahan.id_user_pm ==
-                              idUser) {
+                          if (pekerjaan[index].data_tambahan.pm.isNotEmpty &&
+                              pekerjaan[index].data_tambahan.pm[0].id_user ==
+                                  idUser) {
                             PekerjaanController().updateStatusPekerjaan(
                                 pekerjaan[index].id_pekerjaan!,
                                 prevStatus.toString());
@@ -289,7 +295,7 @@ class PekerjaanList extends StatelessWidget {
                                 type: QuickAlertType.error);
                           }
                         }
-                        refresh(); // Panggil fungsi refresh setelah melakukan pemindahan
+                        refresh();
                       },
                       child: const Text('Ya'),
                     ),
@@ -299,7 +305,7 @@ class PekerjaanList extends StatelessWidget {
             );
           },
           child: Card(
-            color: GlobalColors.mainColor,
+            color: color[int.parse(status) - 1],
             child: ListTile(
               leading: Container(
                 padding: const EdgeInsets.all(15),
@@ -320,10 +326,15 @@ class PekerjaanList extends StatelessWidget {
                 pekerjaan[index].nama_pekerjaan ?? '',
                 style: const TextStyle(color: Colors.white),
               ),
-              subtitle: Text(
-                "PM: ${pekerjaan[index].data_tambahan.nama_pm}",
-                style: const TextStyle(color: Colors.white),
-              ),
+              subtitle: pekerjaan[index].data_tambahan.pm.isNotEmpty
+                  ? Text(
+                      "PM: ${pekerjaan[index].data_tambahan.pm[0].nama}",
+                      style: const TextStyle(color: Colors.white),
+                    )
+                  : Text(
+                      "PM: -",
+                      style: const TextStyle(color: Colors.white),
+                    ),
               trailing: GestureDetector(
                 onTap: () {
                   Get.toNamed(
@@ -351,23 +362,28 @@ final List<String> statusId = [
   '3',
   '4',
   '5',
-  '6',
 ];
 
 final List<String> statusNames = [
+  'Presales',
   'On Progress',
-  'Selesai',
-  'Pending',
-  'Cancel',
   'Bast',
-  'Support'
+  'Support',
+  'Cancel',
+];
+
+final List<Color> color = [
+  const Color(0xFFfd7e14),
+  const Color(0xFFffc107),
+  const Color(0xFF198754),
+  const Color(0xFF0d6efd),
+  const Color(0xFFdc3545),
 ];
 
 final List<IconData> statusIcon = [
   Icons.timer,
   Icons.check_circle,
-  Icons.pending,
-  Icons.cancel,
   Icons.assignment,
   Icons.support,
+  Icons.cancel,
 ];

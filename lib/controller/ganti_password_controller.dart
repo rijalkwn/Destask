@@ -1,5 +1,8 @@
 import 'dart:convert';
 
+import 'package:get/get.dart';
+import 'package:quickalert/quickalert.dart';
+
 import '../utils/constant_api.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -40,6 +43,15 @@ class GantiPasswordController {
       print(response.body);
       if (response.statusCode == 200) {
         return true;
+      } else if (response.statusCode == 401) {
+        SharedPreferences pref = await SharedPreferences.getInstance();
+        pref.clear();
+        Get.offAllNamed('/login');
+        QuickAlert.show(
+          context: Get.context!,
+          title: 'Token Expired, Login Ulang',
+          type: QuickAlertType.error,
+        );
       } else {
         return false;
       }

@@ -47,8 +47,8 @@ class _BottomNavState extends State<BottomNav> {
     _container = [
       const Beranda(),
       const Pekerjaan(),
-      const RekapPoint(),
       if (supervisi) const Verifikasi(),
+      const RekapPoint(),
       const Pengaturan(),
     ];
 
@@ -76,15 +76,15 @@ class _BottomNavState extends State<BottomNav> {
               icon: Icon(Icons.assignment),
               label: "Pekerjaan",
               tooltip: "Pekerjaan"),
-          const BottomNavigationBarItem(
-              icon: Icon(Icons.calendar_today),
-              label: "Point",
-              tooltip: "Point"),
           if (supervisi)
             const BottomNavigationBarItem(
                 icon: Icon(Icons.verified_user),
                 label: "Verifikasi",
                 tooltip: "Verifikasi"),
+          const BottomNavigationBarItem(
+              icon: Icon(Icons.calendar_today),
+              label: "Point",
+              tooltip: "Point"),
           const BottomNavigationBarItem(
               icon: Icon(Icons.settings),
               label: "Pengaturan",
