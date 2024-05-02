@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'package:destask/view/ResetPassword/lupa_password.dart';
+
 import '../model/user_model.dart';
 import '../utils/constant_api.dart';
 import '../view/Auth/login.dart';
@@ -54,18 +56,9 @@ class AuthController {
   Future checkEmailExist(String email) async {
     try {
       final String url = "$baseURL/authcekuser";
-      var res = await http.get(Uri.parse(url));
+      var res = await http.post(Uri.parse(url), body: {"email": email});
       if (res.statusCode == 200) {
-        Iterable it = json.decode(res.body);
-        List<UserModel> users = List<UserModel>.from(it.map((e) => e));
-        bool emailExists = false;
-        for (var i = 0; i < users.length; i++) {
-          if (users[i].email == email) {
-            emailExists = true;
-            break;
-          }
-        }
-        return emailExists;
+        return true;
       } else {
         print(res.statusCode);
         return false;

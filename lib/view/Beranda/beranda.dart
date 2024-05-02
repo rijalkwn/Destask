@@ -6,6 +6,7 @@ import 'package:destask/controller/rekap_point_controller.dart';
 import 'package:destask/controller/target_poin_harian_controller.dart';
 import 'package:destask/controller/task_controller.dart';
 import 'package:destask/controller/user_controller.dart';
+import 'package:destask/model/target_poin_harian_model.dart';
 import 'package:quickalert/quickalert.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -51,10 +52,10 @@ class _BerandaState extends State<Beranda> {
 
   void loadData() async {
     try {
-      await getJumlahPekerjaanSelesai();
-      await getTaskPoin();
+      // await getJumlahPekerjaanSelesai();
+      // await getTaskPoin();
       await getTarget();
-      await getNotifikasi();
+      // await getNotifikasi();
       if (aktif) {
         var data = await getDataPekerjaan();
         setState(() {
@@ -100,11 +101,10 @@ class _BerandaState extends State<Beranda> {
 
   getTarget() async {
     var data = await targetPoinHarianController.getTargetPoinHarianbyUser();
-    int count = 0;
+    print("data" + data);
     if (data.isNotEmpty) {
-      count = int.parse(data[0]['jumlah_target_poin_sebulan'].toString());
       setState(() {
-        target = count.toString();
+        target = data['jumlah_target_poin_sebulan'].toString();
       });
       return data;
     } else {
@@ -119,7 +119,7 @@ class _BerandaState extends State<Beranda> {
     var data = await pekerjaanController.getAllPekerjaanUser();
     int count = 0;
     for (var i = 0; i < data.length; i++) {
-      if (data[i].id_status_pekerjaan.toString() == '2' &&
+      if (data[i].id_status_pekerjaan.toString() == '3' &&
           data[i].persentase_selesai.toString() == '100' &&
           data[i].waktu_selesai != null) {
         count += 1;

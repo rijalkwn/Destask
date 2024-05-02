@@ -7,7 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:quickalert/quickalert.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-const url = '$baseURL/targetpoinharianbyuser';
+const url = '$baseURL/api/targetpoinharianbyuser';
 
 getToken() async {
   final prefs = await SharedPreferences.getInstance();
@@ -31,7 +31,6 @@ class TargetPoinHarianController {
         headers: {'Authorization ': 'Bearer $token'},
       );
       if (response.statusCode == 200) {
-        print(response.body);
         Iterable it = json.decode(response.body);
         List<TargetPoinHarianModel> targetPoinHarian =
             List<TargetPoinHarianModel>.from(

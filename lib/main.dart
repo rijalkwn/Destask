@@ -1,3 +1,5 @@
+import 'package:destask/view/ResetPassword/reset_password.dart';
+import 'package:destask/view/ResetPassword/verifikasi_token.dart';
 import 'package:destask/view/verifikasi/detail_verifikasi.dart';
 import 'package:destask/view/verifikasi/verifikasi.dart';
 
@@ -16,7 +18,7 @@ import '../view/Pengaturan/pengaturan.dart';
 import '../view/Pengaturan/edit_profile.dart';
 import '../view/Auth/ganti_password.dart';
 import '../view/Auth/login.dart';
-import '../view/Auth/lupa_password.dart';
+import 'view/ResetPassword/lupa_password.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -66,6 +68,9 @@ class MyApp extends StatelessWidget {
           GetPage(name: '/pengaturan', page: () => const Pengaturan()),
           GetPage(name: '/edit_profile/:id_user', page: () => EditProfile()),
           GetPage(name: '/ganti_password', page: () => const GantiPassword()),
+          GetPage(
+              name: '/verifikasi_token', page: () => const VerifikasiToken()),
+          GetPage(name: '/reset_password', page: () => const ResetPassword()),
         ],
         localizationsDelegates: const [
           GlobalMaterialLocalizations.delegate,

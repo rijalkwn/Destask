@@ -1,3 +1,6 @@
+import 'package:destask/controller/lupa_password_controller.dart';
+import 'package:quickalert/quickalert.dart';
+
 import '../../controller/auth_controller.dart';
 import '../../utils/global_colors.dart';
 import 'package:destask/view/Auth/login.dart';
@@ -6,71 +9,21 @@ import 'package:get/get.dart';
 import 'package:mailer/mailer.dart';
 import 'package:mailer/smtp_server/gmail.dart';
 
-class LupaPassword extends StatefulWidget {
-  const LupaPassword({super.key});
+class VerifikasiToken extends StatefulWidget {
+  const VerifikasiToken({super.key});
 
   @override
-  State<LupaPassword> createState() => _LupaPasswordState();
+  State<VerifikasiToken> createState() => _VerifikasiTokenState();
 }
 
-class _LupaPasswordState extends State<LupaPassword> {
+class _VerifikasiTokenState extends State<VerifikasiToken> {
   final formkey = GlobalKey<FormState>();
-  final emailController = TextEditingController();
-  final authController = Get.put(AuthController());
+  final tokenController = TextEditingController();
+  final AuthController authController = AuthController();
+  final LupaPasswordController lupaPasswordController =
+      LupaPasswordController();
   bool isLoading = false;
   List user = [];
-
-  //Mengirim email ke untuk mendapatkan link ganti password
-  sendMail(String recipientEmail) async {
-    String email = 'newstar23135@gmail.com';
-    String password = 'hmwjllvbbdnepdpd';
-    //recipent addressnya masih dump karena belum ada data user aktual!!!!
-    final smtpServer = gmail(email, password);
-    final equivalentMessage = Message()
-      ..from = Address(email, 'DESTASK Reset Password')
-      ..recipients.add(Address(recipientEmail))
-      ..subject = 'Reset Password'
-      ..html =
-          "<p>Klik link ini untuk reset password anda : <a href=\"http://localhost:8080/lupa_password/reset_password/c4ca4238a0b923820dcc509a6f75849b\">Reset Password</a></p><p><b>Noted:</b> Jika anda tidak merasa melakukan reset password, abaikan email ini!.</p> ";
-    setState(() {
-      isLoading = true;
-    });
-    await send(equivalentMessage, smtpServer,
-        timeout: const Duration(seconds: 10));
-    setState(() {
-      isLoading = false;
-    });
-    if (isLoading == false) {
-      AlertDialog alert = AlertDialog(
-        title: const Text("Email Berhasil Dikirim"),
-        content: const Text("Silahkan cek inbox email anda"),
-        actions: [
-          TextButton(
-              onPressed: () {
-                Navigator.of(context).pushReplacement(MaterialPageRoute(
-                    builder: (BuildContext context) => const Login()));
-              },
-              child: const Text("Kembali ke halaman login"))
-        ],
-      );
-      showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return alert;
-          });
-    } else {
-      AlertDialog alert = AlertDialog(
-        title: const Text("Email gagal dikirim "),
-        content: const Text("Silahkan cek koneksi internet anda"),
-        actions: [TextButton(onPressed: () {}, child: const Text("OK"))],
-      );
-      showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return alert;
-          });
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -106,7 +59,7 @@ class _LupaPasswordState extends State<LupaPassword> {
                           ),
                           const SizedBox(height: 20),
                           const Text(
-                            "Lupa Password",
+                            "Verifikasi Token",
                             style: TextStyle(
                               color: Colors.black,
                               fontSize: 28,
@@ -115,9 +68,9 @@ class _LupaPasswordState extends State<LupaPassword> {
                           ),
                           const SizedBox(height: 20),
                           TextFormField(
-                            controller: emailController,
+                            controller: tokenController,
                             decoration: InputDecoration(
-                              labelText: 'Email',
+                              labelText: 'Token',
                               contentPadding: const EdgeInsets.symmetric(
                                   vertical: 5, horizontal: 15),
                               border: OutlineInputBorder(
@@ -129,7 +82,7 @@ class _LupaPasswordState extends State<LupaPassword> {
                             ),
                             validator: (value) {
                               if (value!.isEmpty) {
-                                return "Masukan Email!";
+                                return "Masukan Token!";
                               } else {
                                 return null;
                               }
@@ -139,29 +92,31 @@ class _LupaPasswordState extends State<LupaPassword> {
                           const SizedBox(height: 20),
                           InkWell(
                             onTap: () async {
+                              setState(() {
+                                isLoading = true;
+                              });
                               if (formkey.currentState!.validate()) {
-                                bool isExist = await authController
-                                    .checkEmailExist(emailController.text);
-                                if (isExist) {
-                                  sendMail(emailController.text);
-                                } else {
-                                  AlertDialog alert = AlertDialog(
-                                    title: const Text("Email tidak terdaftar"),
-                                    content: const Text(
-                                        "Silahkan cek kembali email anda"),
-                                    actions: [
-                                      TextButton(
-                                          onPressed: () {
-                                            Navigator.of(context).pop();
-                                          },
-                                          child: const Text("OK"))
-                                    ],
+                                bool success = await lupaPasswordController
+                                    .verifikasiToken(tokenController.text);
+                                if (success) {
+                                  Get.toNamed('/reset_password');
+                                  QuickAlert.show(
+                                    context: context,
+                                    title: "Token Valid",
+                                    type: QuickAlertType.success,
                                   );
-                                  showDialog(
-                                      context: context,
-                                      builder: (BuildContext context) {
-                                        return alert;
-                                      });
+                                  setState(() {
+                                    isLoading = false;
+                                  });
+                                } else {
+                                  QuickAlert.show(
+                                    context: context,
+                                    title: "Token Tidak Valid",
+                                    type: QuickAlertType.error,
+                                  );
+                                  setState(() {
+                                    isLoading = false;
+                                  });
                                 }
                               }
                             },

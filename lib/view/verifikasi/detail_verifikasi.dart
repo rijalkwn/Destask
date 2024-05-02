@@ -1,4 +1,5 @@
 import 'package:destask/utils/constant_api.dart';
+import 'package:destask/view/Beranda/Task/my_date_time_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:quickalert/quickalert.dart';
@@ -18,7 +19,6 @@ class _DetailVerifikasiState extends State<DetailVerifikasi> {
   var url = '$baseURL/assets/bukti_task/';
   final String idtask = Get.parameters['idtask'] ?? '';
   TaskController taskController = TaskController();
-  TextEditingController tglPlaningController = TextEditingController();
 
   //kolom task
   String idTask = '';
@@ -126,53 +126,46 @@ class _DetailVerifikasiState extends State<DetailVerifikasi> {
                                     DateTime.now().day != tglPlaning.day;
 
                             return AlertDialog(
-                              title: const Text('Menolak Verifikasi Task Ini?'),
+                              title: const Text('Tolak Task Ini?'),
                               content: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                      'Masukkan alasan penolakan verifikasi task'),
-                                  TextField(
-                                    maxLines: 2,
-                                    decoration: const InputDecoration(
-                                      hintText: 'Masukkan alasan',
-                                    ),
-                                    onChanged: (value) {
-                                      setState(() {
-                                        alasanVerifikasi = value;
-                                      });
-                                    },
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text('Alasan menolak (wajib)'),
+                                      TextField(
+                                        onChanged: (value) {
+                                          setState(() {
+                                            alasanVerifikasi = value;
+                                          });
+                                        },
+                                      ),
+                                    ],
                                   ),
-                                  const SizedBox(height: 10),
-                                  if (!isTodayAfterPlaning)
+                                  const SizedBox(height: 20),
+                                  if (isTodayAfterPlaning)
                                     Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                            'Berikan dateline baru (opsional)'),
-                                        TextField(
-                                          controller: tglPlaningController,
-                                          decoration: const InputDecoration(
-                                            hintText: 'Tanggal Planing',
-                                          ),
-                                          onTap: () async {
-                                            DateTime? date =
-                                                await showDatePicker(
-                                              context: context,
-                                              initialDate: DateTime.now(),
-                                              firstDate: DateTime(2000),
-                                              lastDate: DateTime(2100),
-                                            );
-                                            if (date != null) {
-                                              tglPlaningController.text =
-                                                  DateFormat('dd MMMM yyyy')
-                                                      .format(date);
-                                              setState(() {
-                                                tglPlaning = date;
-                                              });
+                                            'Berikan deadline baru (opsional)'),
+                                        SizedBox(height: 10),
+                                        MyDateTimePicker(
+                                          selectedDate: tglPlaning,
+                                          onChanged: (date) {
+                                            setState(() {
+                                              tglPlaning = date!;
+                                            });
+                                          },
+                                          validator: (date) {
+                                            if (date == null) {
+                                              return 'Kolom Tanggal Deadline harus diisi';
                                             }
+                                            return null;
                                           },
                                         ),
                                       ],
@@ -190,9 +183,34 @@ class _DetailVerifikasiState extends State<DetailVerifikasi> {
                                   onPressed: () async {
                                     setState(() {
                                       isLoading = true;
-                                      status = "2";
+                                      status = "2"; //status tolak
                                     });
-                                    // Tambahkan logika penanganan di sini
+                                    bool success =
+                                        await taskController.editTaskVerikasi(
+                                            idTask,
+                                            alasanVerifikasi,
+                                            tglPlaning,
+                                            status);
+
+                                    // Jika verifikasi task berhasil, Anda dapat menambahkan logika penanganan berhasil di sini
+                                    if (success) {
+                                      Get.offAndToNamed('/bottom_nav');
+                                      QuickAlert.show(
+                                          context: context,
+                                          title: "Berhasil Memverifikasi Task",
+                                          type: QuickAlertType.success);
+                                      setState(() {
+                                        isLoading = false;
+                                      });
+                                    } else {
+                                      QuickAlert.show(
+                                          context: context,
+                                          title: "Gagal Memverifikasi Task",
+                                          type: QuickAlertType.error);
+                                      setState(() {
+                                        isLoading = false;
+                                      });
+                                    }
                                     Navigator.pop(context);
                                   },
                                   child: const Text('Kirim'),
@@ -228,7 +246,7 @@ class _DetailVerifikasiState extends State<DetailVerifikasi> {
                           context: context,
                           builder: (BuildContext context) {
                             return AlertDialog(
-                              title: const Text('Yakin Verifikasi Task Ini?'),
+                              title: const Text('Yakin Terima Task Ini?'),
                               actions: [
                                 TextButton(
                                   onPressed: () {
@@ -240,13 +258,16 @@ class _DetailVerifikasiState extends State<DetailVerifikasi> {
                                   onPressed: () async {
                                     setState(() {
                                       isLoading = true;
-                                      status = "3";
+                                      status = "3"; //status terima
                                       alasanVerifikasi = '-';
                                     });
                                     //edit verifikasi task
                                     bool success =
                                         await taskController.editTaskVerikasi(
-                                            idTask, alasanVerifikasi, status);
+                                            idTask,
+                                            alasanVerifikasi,
+                                            tglPlaning,
+                                            status);
 
                                     // Jika verifikasi task berhasil, Anda dapat menambahkan logika penanganan berhasil di sini
                                     if (success) {

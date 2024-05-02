@@ -231,7 +231,6 @@ class TaskController {
   Future addTask(
     String idPekerjaan,
     String idanggotauser,
-    // String idStatusTask,
     String idKategoriTask,
     DateTime tglPlaning,
     String deskripsiTask,
@@ -300,7 +299,7 @@ class TaskController {
         "tgl_planing": formattedDate,
         "persentase_selesai": persentaseSelesai.toString(),
         "deskripsi_task": deskripsiTask.toString(),
-        "tautan_task": tautanTask.toString()
+        "tautan_task": tautanTask.toString(),
       };
       print(jsonEncode(data));
       var response = await http.put(
@@ -540,6 +539,7 @@ class TaskController {
   Future editTaskVerikasi(
     String idTask,
     String alasanVerifikasi,
+    DateTime tglPlaning,
     String statusVerifikasi,
   ) async {
     try {
@@ -548,12 +548,14 @@ class TaskController {
         'id_task': idTask,
         "alasan_verifikasi": alasanVerifikasi,
         'status_verifikasi': statusVerifikasi,
+        'tgl_selasai': DateTime.now().toIso8601String(),
         'tgl_verifikasi_diterima': DateTime.now().toIso8601String(),
       };
       final datatolak = {
         'id_task': idTask.toString(),
         "alasan_verifikasi": alasanVerifikasi.toString(),
         'status_verifikasi': statusVerifikasi.toString(),
+        'tgl_planing': tglPlaning.toIso8601String(),
       };
       var response = await http.put(
         Uri.parse('$urlverifikasi/$idTask'),
