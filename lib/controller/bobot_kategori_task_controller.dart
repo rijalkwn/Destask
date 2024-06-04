@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
 const url = '$baseURL/api/bobotkategoritask';
+const urlcek = '$baseURL/api/cekbobotkategoritask';
 
 getToken() async {
   SharedPreferences pref = await SharedPreferences.getInstance();
@@ -71,5 +72,32 @@ class BobotKategoriTaskController {
   Future<BobotKategoriTaskModel> showById(String idBobotKategoriTask) async {
     var data = await getBobotKategoriTaskById(idBobotKategoriTask);
     return data;
+  }
+
+  Future<bool> cekBobot() async {
+    try {
+      var token = await getToken();
+      var response = await http.get(
+        Uri.parse('$urlcek'),
+        headers: {'Authorization': 'Bearer $token'},
+      );
+
+      if (response.statusCode == 200) {
+        Map<String, dynamic> responseBody = json.decode(response.body);
+        List<dynamic> data = responseBody['data'];
+        int jumlahData = responseBody['jumlah_data'];
+        int jumlahUserGroup = responseBody['jumlah_usergroup'];
+
+        if (jumlahData == jumlahUserGroup) {
+          return true;
+        } else {
+          return false;
+        }
+      } else {
+        return false;
+      }
+    } catch (e) {
+      return false;
+    }
   }
 }

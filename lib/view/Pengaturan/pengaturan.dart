@@ -7,7 +7,7 @@ import 'package:get/get.dart';
 import 'package:quickalert/quickalert.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-const url = '$baseURL/assets/foto_profil';
+const url = '$baseURL/assets/file_pengguna/foto_user';
 
 class Pengaturan extends StatefulWidget {
   const Pengaturan({super.key});

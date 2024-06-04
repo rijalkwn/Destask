@@ -314,7 +314,7 @@ class PekerjaanList extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
                 child: Text(
-                  '${pekerjaan[index].persentase_selesai}%',
+                  '${pekerjaan[index].data_tambahan.persentase_task_selesai}%',
                   style: const TextStyle(
                     color: Colors.black,
                     fontWeight: FontWeight.bold,

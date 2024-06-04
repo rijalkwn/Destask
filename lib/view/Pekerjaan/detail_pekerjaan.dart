@@ -55,6 +55,9 @@ class _DetailPekerjaanState extends State<DetailPekerjaan> {
   List<String> backendMobileList = [];
   List<String> frontendWebList = [];
   List<String> frontendMobileList = [];
+  List<String> testerList = [];
+  List<String> adminList = [];
+  List<String> helpdeskList = [];
 
   getDataPekerjaan() async {
     var data = await pekerjaanController.getPekerjaanById(idpekerjaan);
@@ -97,6 +100,21 @@ class _DetailPekerjaanState extends State<DetailPekerjaan> {
       if (data[0].data_tambahan.frontend_mobile.isNotEmpty) {
         frontendMobileList = List<String>.from(
             data[0].data_tambahan.frontend_mobile.map((e) => e.nama).toList());
+      }
+      //tester
+      if (data[0].data_tambahan.tester.isNotEmpty) {
+        testerList = List<String>.from(
+            data[0].data_tambahan.tester.map((e) => e.nama).toList());
+      }
+      //admin
+      if (data[0].data_tambahan.admin.isNotEmpty) {
+        adminList = List<String>.from(
+            data[0].data_tambahan.admin.map((e) => e.nama).toList());
+      }
+      //helpdesk
+      if (data[0].data_tambahan.helpdesk.isNotEmpty) {
+        helpdeskList = List<String>.from(
+            data[0].data_tambahan.helpdesk.map((e) => e.nama).toList());
       }
     });
     return data;
@@ -200,6 +218,9 @@ class _DetailPekerjaanState extends State<DetailPekerjaan> {
                       '- Frontend Web', frontendWebList.join('\n')),
                   _buildTableRowPersonil(
                       '- Frontend Mobile', frontendMobileList.join('\n')),
+                  _buildTableRowPersonil('- Tester', testerList.join('\n')),
+                  _buildTableRowPersonil('- Admin', adminList.join('\n')),
+                  _buildTableRowPersonil('- Helpdesk', helpdeskList.join('\n')),
                 ],
               ),
             ),

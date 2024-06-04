@@ -27,8 +27,8 @@ class _DetailVerifikasiState extends State<DetailVerifikasi> {
   String idStatusTask = '';
   String idKategoriTask = '';
   DateTime tglPlaning = DateTime.now();
-  String tglSelesai = '';
-  String tglVerifikasiDiterima = '';
+  DateTime tglSelesai = DateTime.now();
+  DateTime tglVerifikasiDiterima = DateTime.now();
   String statusVerifikasi = '';
   String persentaseSelesai = '';
   String deskripsiTask = '';
@@ -145,31 +145,6 @@ class _DetailVerifikasiState extends State<DetailVerifikasi> {
                                       ),
                                     ],
                                   ),
-                                  const SizedBox(height: 20),
-                                  if (isTodayAfterPlaning)
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                            'Berikan deadline baru (opsional)'),
-                                        SizedBox(height: 10),
-                                        MyDateTimePicker(
-                                          selectedDate: tglPlaning,
-                                          onChanged: (date) {
-                                            setState(() {
-                                              tglPlaning = date!;
-                                            });
-                                          },
-                                          validator: (date) {
-                                            if (date == null) {
-                                              return 'Kolom Tanggal Deadline harus diisi';
-                                            }
-                                            return null;
-                                          },
-                                        ),
-                                      ],
-                                    ),
                                 ],
                               ),
                               actions: [
@@ -183,10 +158,10 @@ class _DetailVerifikasiState extends State<DetailVerifikasi> {
                                   onPressed: () async {
                                     setState(() {
                                       isLoading = true;
-                                      status = "2"; //status tolak
+                                      status = "4"; //status ditolak
                                     });
-                                    bool success =
-                                        await taskController.editTaskVerikasi(
+                                    bool success = await taskController
+                                        .editTaskVerikasiTolak(
                                             idTask,
                                             alasanVerifikasi,
                                             tglPlaning,
@@ -194,11 +169,11 @@ class _DetailVerifikasiState extends State<DetailVerifikasi> {
 
                                     // Jika verifikasi task berhasil, Anda dapat menambahkan logika penanganan berhasil di sini
                                     if (success) {
-                                      Get.offAndToNamed('/bottom_nav');
                                       QuickAlert.show(
                                           context: context,
                                           title: "Berhasil Memverifikasi Task",
                                           type: QuickAlertType.success);
+                                      Get.offAndToNamed('/bottom_nav');
                                       setState(() {
                                         isLoading = false;
                                       });
@@ -258,12 +233,12 @@ class _DetailVerifikasiState extends State<DetailVerifikasi> {
                                   onPressed: () async {
                                     setState(() {
                                       isLoading = true;
-                                      status = "3"; //status terima
+                                      status = "3"; //status selesai
                                       alasanVerifikasi = '-';
                                     });
                                     //edit verifikasi task
-                                    bool success =
-                                        await taskController.editTaskVerikasi(
+                                    bool success = await taskController
+                                        .editTaskVerikasiDiterima(
                                             idTask,
                                             alasanVerifikasi,
                                             tglPlaning,
@@ -271,11 +246,11 @@ class _DetailVerifikasiState extends State<DetailVerifikasi> {
 
                                     // Jika verifikasi task berhasil, Anda dapat menambahkan logika penanganan berhasil di sini
                                     if (success) {
-                                      Get.offAndToNamed('/bottom_nav');
                                       QuickAlert.show(
                                           context: context,
                                           title: "Berhasil Memverifikasi Task",
                                           type: QuickAlertType.success);
+                                      Get.offAndToNamed('/bottom_nav');
                                       setState(() {
                                         isLoading = false;
                                       });
@@ -427,10 +402,11 @@ class _DetailVerifikasiState extends State<DetailVerifikasi> {
         ),
         TableCell(
           child: Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: EdgeInsets.all(8.0),
             child: Row(
               children: [
-                //cek apakah ada bukti selesai
+                // Text('Tidak ada bukti selesai'),
+                // cek apakah ada bukti selesai
                 namafoto == ''
                     ? const Text('Tidak ada bukti selesai')
                     : GestureDetector(

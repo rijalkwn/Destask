@@ -1,7 +1,9 @@
+import 'package:destask/view/Beranda/Task/submit_task.dart';
 import 'package:destask/view/ResetPassword/reset_password.dart';
 import 'package:destask/view/ResetPassword/verifikasi_token.dart';
 import 'package:destask/view/verifikasi/detail_verifikasi.dart';
 import 'package:destask/view/verifikasi/verifikasi.dart';
+import 'package:destask/view/verifikasi/verifikasi_task.dart';
 
 import '../view/Beranda/Informasi/pekerjaan_selesai.dart';
 import '../view/Beranda/Task/detail_task.dart';
@@ -55,6 +57,7 @@ class MyApp extends StatelessWidget {
           ),
           GetPage(name: '/add_task/:idpekerjaan', page: () => const AddTask()),
           GetPage(name: '/edit_task/:idtask', page: () => const EditTask()),
+          GetPage(name: '/submit_task/:idtask', page: () => const SubmitTask()),
           GetPage(name: '/detail_task/:idtask', page: () => const DetailTask()),
           GetPage(name: '/pekerjaan', page: () => const Pekerjaan()),
           GetPage(
@@ -62,6 +65,9 @@ class MyApp extends StatelessWidget {
               page: () => const DetailPekerjaan()),
           GetPage(name: '/rekap_point', page: () => const RekapPoint()),
           GetPage(name: '/verifikasi', page: () => const Verifikasi()),
+          GetPage(
+              name: '/verifikasi_task/:idpekerjaan',
+              page: () => const VerifikasiTask()),
           GetPage(
               name: '/detail_verifikasi/:idtask',
               page: () => const DetailVerifikasi()),

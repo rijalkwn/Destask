@@ -1,7 +1,4 @@
 import 'dart:convert';
-import 'package:destask/view/ResetPassword/lupa_password.dart';
-
-import '../model/user_model.dart';
 import '../utils/constant_api.dart';
 import '../view/Auth/login.dart';
 import 'package:get/get.dart';

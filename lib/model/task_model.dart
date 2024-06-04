@@ -2,6 +2,7 @@ class TaskModel {
   String id_task;
   String id_pekerjaan;
   String id_user;
+  String creator;
   String id_status_task;
   String id_kategori_task;
   DateTime tgl_planing;
@@ -20,6 +21,7 @@ class TaskModel {
     required this.id_task,
     required this.id_pekerjaan,
     required this.id_user,
+    required this.creator,
     required this.id_status_task,
     required this.id_kategori_task,
     required this.tgl_planing,
@@ -40,6 +42,7 @@ class TaskModel {
       id_task: json['id_task'] ?? '',
       id_pekerjaan: json['id_pekerjaan'] ?? '',
       id_user: json['id_user'] ?? '',
+      creator: json['creator'] ?? '',
       id_status_task: json['id_status_task'] ?? '',
       id_kategori_task: json['id_kategori_task'] ?? '',
       tgl_planing: json['tgl_planing'] != null
@@ -69,6 +72,7 @@ class TaskModel {
       'id_task': id_task,
       'id_pekerjaan': id_pekerjaan,
       'id_user': id_user,
+      'creator': creator,
       'id_status_task': id_status_task,
       'id_kategori_task': id_kategori_task,
       'tgl_planing': tgl_planing,
@@ -88,12 +92,14 @@ class TaskModel {
 
 class DataTambahan {
   String nama_user;
+  String nama_creator;
   String nama_pekerjaan;
   String nama_status_task;
   String nama_kategori_task;
 
   DataTambahan({
     required this.nama_user,
+    required this.nama_creator,
     required this.nama_pekerjaan,
     required this.nama_status_task,
     required this.nama_kategori_task,
@@ -102,6 +108,7 @@ class DataTambahan {
   factory DataTambahan.fromJson(Map<String, dynamic> json) {
     return DataTambahan(
       nama_user: json['nama_user'],
+      nama_creator: json['nama_creator'],
       nama_pekerjaan: json['nama_pekerjaan'],
       nama_status_task: json['nama_status_task'],
       nama_kategori_task: json['nama_kategori_task'],

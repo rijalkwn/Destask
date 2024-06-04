@@ -39,29 +39,25 @@ class _BerandaState extends State<Beranda> {
   String jumlahPekerjaanSelesai = '';
   String jumlahNotifikasi = '';
   String taskpoint = '';
-  String target = '';
-  bool aktif = false;
+  String taskselesai = '';
 
   @override
   void initState() {
     super.initState();
-    aktif = true;
     loadData();
     getDataUser();
   }
 
   void loadData() async {
     try {
-      // await getJumlahPekerjaanSelesai();
-      // await getTaskPoin();
-      await getTarget();
-      // await getNotifikasi();
-      if (aktif) {
-        var data = await getDataPekerjaan();
-        setState(() {
-          pekerjaan = data;
-        });
-      }
+      await getJumlahPekerjaanSelesai();
+      await getTaskPoin();
+      await getTaskSelesai();
+      await getNotifikasi();
+      var data = await getDataPekerjaan();
+      setState(() {
+        pekerjaan = data;
+      });
     } catch (e) {
       print("Error: $e");
       // Handle error appropriately
@@ -99,20 +95,17 @@ class _BerandaState extends State<Beranda> {
     return data;
   }
 
-  getTarget() async {
-    var data = await targetPoinHarianController.getTargetPoinHarianbyUser();
-    print("data" + data);
-    if (data.isNotEmpty) {
-      setState(() {
-        target = data['jumlah_target_poin_sebulan'].toString();
-      });
-      return data;
-    } else {
-      setState(() {
-        target = '0';
-      });
-      return data;
+  getTaskSelesai() async {
+    var data = await taskController.getTaskBulanIni();
+    int count = 0;
+    for (var i = 0; i < data.length; i++) {
+      if (data[i].id_status_task.toString() == '3') {
+        count += 1;
+      }
     }
+    setState(() {
+      taskselesai = count.toString();
+    });
   }
 
   getJumlahPekerjaanSelesai() async {
@@ -150,7 +143,6 @@ class _BerandaState extends State<Beranda> {
   @override
   void dispose() {
     super.dispose();
-    aktif = false;
   }
 
   @override
@@ -317,7 +309,7 @@ class _BerandaState extends State<Beranda> {
                       );
                     } else if (index == 1) {
                       badgecontent = Text(
-                        target,
+                        taskselesai,
                         style: const TextStyle(color: Colors.white),
                       );
                     } else if (index == 2) {
@@ -419,7 +411,7 @@ class _BerandaState extends State<Beranda> {
                               shape: BoxShape.circle,
                             ),
                             child: Text(
-                              '${pekerjaanItem.persentase_selesai}%',
+                              '${pekerjaanItem.data_tambahan.persentase_task_selesai}%',
                               style: const TextStyle(
                                 color: Colors.black,
                                 fontWeight: FontWeight.bold,
@@ -479,7 +471,11 @@ List<Color> colors = [
   Colors.purple,
 ];
 
-List<String> names = ['Pekerjaan\nSelesai', 'Target\nBulan Ini', 'Point\nTask'];
+List<String> names = [
+  'Pekerjaan\nSelesai',
+  'Task Selesai\nBulan Ini',
+  'Point Task\n Bulan Ini'
+];
 
 List<Icon> nameIcon = const [
   Icon(

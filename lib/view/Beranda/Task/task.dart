@@ -4,6 +4,7 @@ import 'package:destask/model/hari_libur_model.dart';
 import 'package:destask/model/user_model.dart';
 import 'package:destask/utils/global_colors.dart';
 import 'package:intl/intl.dart';
+import 'package:quickalert/quickalert.dart';
 import '../../../controller/pekerjaan_controller.dart';
 import '../../../controller/personil_controller.dart';
 import '../../../controller/task_controller.dart';
@@ -33,6 +34,8 @@ class _TaskState extends State<Task> {
   bool libur = false;
 
   String namaPekerjaan = '';
+  String dropdownValue = 'Semua';
+  String selectedFilter = 'Semua';
 
   late DateTime _focusedDay;
   DateTime _selectedDay = DateTime.now();
@@ -56,7 +59,6 @@ class _TaskState extends State<Task> {
         libur = value;
       });
     });
-    print("status libur: " + libur.toString());
     task = getDataTask();
   }
 
@@ -138,7 +140,7 @@ class _TaskState extends State<Task> {
     List<HariLiburModel> hariLibur = await getHariLibur();
 
     // Cek jika hari libur adalah Sabtu atau Minggu
-    if (_selectedDay.weekday == 6 || _selectedDay.weekday == 7) {
+    if (_selectedDay.weekday == 5 || _selectedDay.weekday == 7) {
       return true;
     }
 
@@ -154,7 +156,7 @@ class _TaskState extends State<Task> {
 
   Future<void> _onDaySelected(DateTime selectedDay, DateTime focusedDay) async {
     setState(() {
-      _selectedDay = selectedDay;
+      // _selectedDay = selectedDay;
       _focusedDay = focusedDay;
     });
     // Pemanggilan fungsi cekHariLibur
@@ -303,7 +305,7 @@ class _TaskState extends State<Task> {
                           shape: BoxShape.circle,
                         )),
                     const SizedBox(width: 5),
-                    const Expanded(child: Text('Dateline Hari ini')),
+                    const Expanded(child: Text('Deadline Hari ini')),
                     const SizedBox(
                       width: 10,
                     ),
@@ -359,6 +361,70 @@ class _TaskState extends State<Task> {
                     const Expanded(child: Text('Sudah Verifikasi')),
                   ],
                 ),
+                //dropdown filter
+                libur
+                    ? const SizedBox()
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Text(
+                            'Filter : ' + selectedFilter,
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          PopupMenuButton<String>(
+                            icon: Icon(Icons.filter_list, color: Colors.black),
+                            color: Colors.blue,
+                            itemBuilder: (BuildContext context) =>
+                                <PopupMenuEntry<String>>[
+                              const PopupMenuItem<String>(
+                                value: 'Semua',
+                                child: Text('Semua',
+                                    style: TextStyle(color: Colors.white)),
+                              ),
+                              const PopupMenuItem<String>(
+                                value: 'On Progress',
+                                child: Text('On Progress',
+                                    style: TextStyle(color: Colors.white)),
+                              ),
+                              const PopupMenuItem<String>(
+                                value: 'Deadline Hari ini',
+                                child: Text('Deadline Hari ini',
+                                    style: TextStyle(color: Colors.white)),
+                              ),
+                              const PopupMenuItem<String>(
+                                value: 'Overdue',
+                                child: Text('Overdue',
+                                    style: TextStyle(color: Colors.white)),
+                              ),
+                              const PopupMenuItem<String>(
+                                value: 'Sedang Verifikasi',
+                                child: Text('Sedang Verifikasi',
+                                    style: TextStyle(color: Colors.white)),
+                              ),
+                              const PopupMenuItem<String>(
+                                value: 'Ditolak',
+                                child: Text('Ditolak',
+                                    style: TextStyle(color: Colors.white)),
+                              ),
+                              const PopupMenuItem<String>(
+                                value: 'Sudah Verifikasi',
+                                child: Text('Sudah Verifikasi',
+                                    style: TextStyle(color: Colors.white)),
+                              ),
+                            ],
+                            onSelected: (String value) {
+                              setState(() {
+                                dropdownValue = value;
+                                selectedFilter = value;
+                                refresh();
+                              });
+                            },
+                          ),
+                        ],
+                      ),
               ],
             ),
             const SizedBox(
@@ -415,13 +481,51 @@ class _TaskState extends State<Task> {
                 );
         } else {
           List<TaskModel> allTasks = snapshot.data!;
+          // final filterTask = allTasks
+          //     .where((task) =>
+          //         task.deskripsi_task.toLowerCase().contains(
+          //               searchController.text.toLowerCase(),
+          //             ) ||
+          //         task.tgl_planing.toString().contains(searchController.text))
+          //     .toList();
+          DateTime currentDate = DateTime.now();
+
           final filterTask = allTasks
               .where((task) =>
                   task.deskripsi_task.toLowerCase().contains(
                         searchController.text.toLowerCase(),
                       ) ||
                   task.tgl_planing.toString().contains(searchController.text))
-              .toList();
+              .where((task) {
+            switch (dropdownValue) {
+              case 'Semua':
+                return true; // Tampilkan semua tugas
+              case 'On Progress':
+                return task.tgl_verifikasi_diterima == null &&
+                    currentDate.isBefore(task.tgl_planing) &&
+                    task.id_status_task == '1';
+              case 'Deadline Hari ini':
+                return task.tgl_verifikasi_diterima == null &&
+                    currentDate.year == task.tgl_planing.year &&
+                    currentDate.month == task.tgl_planing.month &&
+                    currentDate.day == task.tgl_planing.day &&
+                    task.id_status_task == '1';
+              case 'Overdue':
+                return task.tgl_verifikasi_diterima == null &&
+                    currentDate.isAfter(task.tgl_planing) &&
+                    task.id_status_task == '1';
+              case 'Sedang Verifikasi':
+                return task.id_status_task ==
+                    '2'; //pending atau sedang verifikasi
+              case 'Ditolak':
+                return task.id_status_task == '4'; //ditolak atau cancel
+              case 'Sudah Verifikasi':
+                return task.id_status_task ==
+                    '3'; //sudah verifikasi atau selesai
+              default:
+                return true;
+            }
+          }).toList();
           return libur
               ? const Center(
                   child: Text(
@@ -447,166 +551,249 @@ class _TaskState extends State<Task> {
                         //setting color card
                         DateTime currentDate = DateTime.now();
                         DateTime tglPlaning = taskData['tgl_planing'];
-                        var statusVerifikasi = taskData['status_verifikasi'];
-                        DateTime? tglSelesai;
+                        var statusTask = taskData['id_status_task'];
+                        DateTime? tglVerifikasiDiterima;
 
-                        if (taskData['tgl_selesai'] != null) {
+                        if (taskData['tgl_verifikasi_diterima'] != null) {
                           // final DateFormat dateFormat = DateFormat('yyyy-MM-dd');
                           try {
-                            tglSelesai = taskData['tgl_selesai'];
+                            tglVerifikasiDiterima =
+                                taskData['tgl_verifikasi_diterima'];
                           } catch (e) {
-                            print('Error parsing tgl_selesai: $e');
-                            tglSelesai = null;
+                            print('Error parsing tgl_verifikasi_diterima: $e');
+                            tglVerifikasiDiterima = null;
                           }
                         }
 
                         Color taskColor = GlobalColors.mainColor;
                         //belum verifikasi
-                        if (tglSelesai == null && statusVerifikasi == '0') {
-                          //planing
-                          if (currentDate.isBefore(tglPlaning)) {
-                            taskColor = GlobalColors.mainColor;
-                            //dl hari ini
-                          } else if (currentDate.year == tglPlaning.year &&
-                              currentDate.month == tglPlaning.month &&
-                              currentDate.day == tglPlaning.day) {
-                            taskColor = Colors.orange;
-                          }
-                          //overdue
-                          else if (currentDate.isAfter(tglPlaning)) {
-                            taskColor = Colors.red;
-                          }
+                        if (tglVerifikasiDiterima == null &&
+                            statusTask == '1' //on progress
+                            &&
+                            currentDate.isBefore(tglPlaning)) {
+                          taskColor = GlobalColors.mainColor;
+                        }
+                        //deadline hari ini
+                        else if (tglVerifikasiDiterima == null &&
+                            statusTask == '1' //on progress
+                            &&
+                            currentDate.year == tglPlaning.year &&
+                            currentDate.month == tglPlaning.month &&
+                            currentDate.day == tglPlaning.day) {
+                          taskColor = Colors.orange;
+                        }
+                        //overdue
+                        else if (tglVerifikasiDiterima == null &&
+                            statusTask == '1' //on progress
+                            &&
+                            currentDate.isAfter(tglPlaning)) {
+                          taskColor = Colors.red;
                         }
                         //sedang verifikasi
-                        else if (tglSelesai == null &&
-                            statusVerifikasi == '1') {
+                        else if (statusTask == '2') {
                           taskColor = Colors.pink;
                         }
                         //ditolak
-                        else if (tglSelesai == null &&
-                            statusVerifikasi == '2') {
+                        else if (statusTask == '4') {
                           taskColor = Colors.purple;
                         }
                         //sudah verifikasi
-                        else if (tglSelesai != null &&
-                            statusVerifikasi == '3') {
+                        else if (statusTask == '3') {
                           taskColor = Colors.green;
                         }
-                        return Dismissible(
-                          key: Key(taskData['id_task'].toString()),
-                          direction: DismissDirection.endToStart,
-                          background: Container(
-                            padding: const EdgeInsets.only(right: 20),
-                            alignment: Alignment.centerRight,
-                            color: Colors.red,
-                            child: const Icon(
-                              Icons.delete,
-                              color: Colors.white,
-                            ),
-                          ),
-                          confirmDismiss: (direction) async {
-                            return await showDialog(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return AlertDialog(
-                                  title: const Text("Konfirmasi Hapus Task"),
-                                  content: const Text(
-                                      "Apakah Anda yakin ingin menghapus task ini?"),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () {
-                                        Navigator.pop(
-                                            context); // Close the dialog
-                                      },
-                                      child: const Text("Batal"),
+                        return Card(
+                          color: taskColor,
+                          child: Column(
+                            children: [
+                              GestureDetector(
+                                onTap: () {
+                                  Get.toNamed(
+                                      '/detail_task/${taskData['id_task']}',
+                                      arguments: taskData);
+                                },
+                                child: ListTile(
+                                  leading: Container(
+                                    padding: const EdgeInsets.all(15),
+                                    decoration: const BoxDecoration(
+                                      color: Colors.white,
+                                      shape: BoxShape.circle,
                                     ),
-                                    TextButton(
-                                      onPressed: () async {
-                                        Navigator.pop(
-                                            context); // Close the dialog
-
-                                        await taskController.deleteTask(
-                                            taskData['id_task'].toString());
-                                        // Refresh task list
-                                        refresh();
-                                      },
-                                      child: const Text("Hapus"),
-                                    ),
-                                  ],
-                                );
-                              },
-                            );
-                          },
-                          child: Card(
-                            color: taskColor,
-                            child: Column(
-                              children: [
-                                GestureDetector(
-                                  onTap: () {
-                                    Get.toNamed(
-                                        '/detail_task/${taskData['id_task']}',
-                                        arguments: taskData);
-                                  },
-                                  child: ListTile(
-                                    leading: Container(
-                                      padding: const EdgeInsets.all(15),
-                                      decoration: const BoxDecoration(
-                                        color: Colors.white,
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: Text(
-                                        '${taskData['persentase_selesai']}%',
-                                        style: const TextStyle(
-                                          color: Colors.black,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                    title: Text(
-                                      taskData['deskripsi_task'].length > 20
-                                          ? taskData['deskripsi_task']
-                                                  .substring(0, 20) +
-                                              '...'
-                                          : taskData['deskripsi_task'],
+                                    child: Text(
+                                      '${taskData['persentase_selesai']}%',
                                       style: const TextStyle(
-                                          color: Colors.white, fontSize: 18),
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
-                                    subtitle: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          'Deadline : ${formatDate(taskData['tgl_planing'].toString())}',
-                                          style: const TextStyle(
-                                              color: Colors.white),
-                                        ),
-                                        isPM
-                                            ? Text(
-                                                'PIC : ${taskData['data_tambahan']['nama_user']}',
-                                                style: const TextStyle(
-                                                    color: Colors.white),
-                                              )
-                                            : const SizedBox(),
-                                      ],
-                                    ),
-                                    //jika libur = false maka edit task bisa diakses
-                                    trailing: taskData['tgl_selesai'] == null &&
-                                                taskData['status_verifikasi'] ==
-                                                    '0' ||
-                                            taskData['status_verifikasi'] == '2'
-                                        ? IconButton(
-                                            icon: const Icon(Icons.edit),
+                                  ),
+                                  title: Text(
+                                    taskData['deskripsi_task'].length > 20
+                                        ? taskData['deskripsi_task']
+                                                .substring(0, 20) +
+                                            '...'
+                                        : taskData['deskripsi_task'],
+                                    style: const TextStyle(
+                                        color: Colors.white, fontSize: 18),
+                                  ),
+                                  subtitle: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Deadline : ${formatDate(taskData['tgl_planing'].toString())}',
+                                        style: const TextStyle(
+                                            color: Colors.white),
+                                      ),
+                                      isPM
+                                          ? Text(
+                                              'PIC : ${taskData['data_tambahan']['nama_user']}',
+                                              style: const TextStyle(
+                                                  color: Colors.white),
+                                            )
+                                          : const SizedBox(),
+                                    ],
+                                  ),
+                                  //jika libur = false maka edit task bisa diakses
+                                  trailing: libur
+                                      ? const SizedBox()
+                                      : GestureDetector(
+                                          onTap: () {
+                                            Get.toNamed(
+                                                '/detail_task/${taskData['id_task']}',
+                                                arguments: taskData);
+                                          },
+                                          child: const Icon(
+                                            Icons.event_note_outlined,
                                             color: Colors.white,
+                                          ),
+                                        ),
+                                ),
+                              ),
+                              //garis
+                              const Divider(
+                                color: Colors.white,
+                                thickness: 1,
+                              ),
+                              //tombol edit dan delete
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  // Delete button
+                                  taskData['tgl_verifikasi_diterima'] != null &&
+                                          taskData['id_status_task'] == '3'
+                                      ? Container() // Use Container instead of SizedBox for consistency
+                                      : Container(
+                                          margin: EdgeInsets.symmetric(
+                                              horizontal: 8.0),
+                                          child: IconButton(
+                                            icon: const Icon(Icons.delete),
+                                            color: Colors.white,
+                                            iconSize:
+                                                20, // Memperkecil ukuran ikon
+                                            onPressed: () async {
+                                              await showDialog(
+                                                context: context,
+                                                builder:
+                                                    (BuildContext context) {
+                                                  return AlertDialog(
+                                                    title: const Text(
+                                                        "Konfirmasi Hapus Task"),
+                                                    content: const Text(
+                                                        "Apakah Anda yakin ingin menghapus task ini?"),
+                                                    actions: [
+                                                      TextButton(
+                                                        onPressed: () {
+                                                          Navigator.pop(
+                                                              context);
+                                                        },
+                                                        child:
+                                                            const Text("Batal"),
+                                                      ),
+                                                      TextButton(
+                                                        onPressed: () async {
+                                                          Navigator.pop(
+                                                              context); // Close the dialog
+                                                          bool taskDeleted =
+                                                              await taskController
+                                                                  .deleteTask(taskData[
+                                                                          'id_task']
+                                                                      .toString());
+                                                          if (taskDeleted) {
+                                                            Get.offAndToNamed(
+                                                                '/task/$idPekerjaan');
+                                                            QuickAlert.show(
+                                                                context:
+                                                                    context,
+                                                                title:
+                                                                    "Hapus Task Berhasil",
+                                                                type: QuickAlertType
+                                                                    .success);
+                                                          } else {
+                                                            QuickAlert.show(
+                                                                context:
+                                                                    context,
+                                                                title:
+                                                                    "Hapus Task Gagal",
+                                                                type:
+                                                                    QuickAlertType
+                                                                        .error);
+                                                          }
+                                                        },
+                                                        child: Text("Hapus"),
+                                                      ),
+                                                    ],
+                                                  );
+                                                },
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                  // Edit button
+                                  taskData['tgl_verifikasi_diterima'] == null &&
+                                          taskData['id_status_task'] == '1'
+                                      ? taskData['creator'] ==
+                                              taskData['id_user']
+                                          ? Container(
+                                              margin: EdgeInsets.symmetric(
+                                                  horizontal: 8.0),
+                                              child: IconButton(
+                                                icon: const Icon(Icons.edit),
+                                                color: Colors.white,
+                                                iconSize:
+                                                    20, // Memperkecil ukuran ikon
+                                                onPressed: () {
+                                                  Get.toNamed(
+                                                      '/edit_task/${taskData['id_task']}');
+                                                },
+                                              ),
+                                            )
+                                          : Container()
+                                      : Container(),
+                                  // Submit button
+                                  (taskData['tgl_verifikasi_diterima'] ==
+                                                  null &&
+                                              taskData['id_status_task'] ==
+                                                  '1') ||
+                                          taskData['id_status_task'] == '4'
+                                      ? Container(
+                                          margin: EdgeInsets.symmetric(
+                                              horizontal: 8.0),
+                                          child: IconButton(
+                                            icon: const Icon(Icons.check),
+                                            color: Colors.white,
+                                            iconSize:
+                                                20, // Memperkecil ukuran ikon
                                             onPressed: () {
                                               Get.toNamed(
-                                                  '/edit_task/${taskData['id_task']}');
+                                                  '/submit_task/${taskData['id_task']}');
                                             },
-                                          )
-                                        : const SizedBox(),
-                                  ),
-                                ),
-                              ],
-                            ),
+                                          ),
+                                        )
+                                      : Container(),
+                                ],
+                              ),
+                            ],
                           ),
                         );
                       },

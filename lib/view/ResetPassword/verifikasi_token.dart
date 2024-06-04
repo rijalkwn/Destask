@@ -80,6 +80,7 @@ class _VerifikasiTokenState extends State<VerifikasiToken> {
                               filled: true,
                               fillColor: Colors.white,
                             ),
+                            keyboardType: TextInputType.number,
                             validator: (value) {
                               if (value!.isEmpty) {
                                 return "Masukan Token!";

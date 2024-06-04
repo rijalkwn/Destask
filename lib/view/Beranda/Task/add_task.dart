@@ -49,6 +49,9 @@ class _AddTaskState extends State<AddTask> {
   bool cekPM = false;
   bool cekBobot = false;
   String PM = "";
+  DateTime targetWaktuSelesai = DateTime.now();
+  DateTime tanggalMulai = DateTime.now();
+  DateTime today = DateTime.now();
 
   @override
   void initState() {
@@ -61,6 +64,10 @@ class _AddTaskState extends State<AddTask> {
   Future<List<Map<String, dynamic>>> getDataPekerjaan() async {
     List<PekerjaanModel> dataPekerjaan =
         await pekerjaanController.getPekerjaanById(idpekerjaan);
+    setState(() {
+      targetWaktuSelesai = dataPekerjaan[0].target_waktu_selesai;
+      tanggalMulai = dataPekerjaan[0].created_at;
+    });
     List<Map<String, dynamic>> picList = [];
 
     if (dataPekerjaan.isNotEmpty) {
@@ -98,6 +105,27 @@ class _AddTaskState extends State<AddTask> {
         picList.add({
           'nama': frontend_mobile.nama,
           'id_user': frontend_mobile.id_user,
+        });
+      });
+      //tester
+      dataPekerjaan[0].data_tambahan.tester.forEach((tester) {
+        picList.add({
+          'nama': tester.nama,
+          'id_user': tester.id_user,
+        });
+      });
+      //admin
+      dataPekerjaan[0].data_tambahan.admin.forEach((admin) {
+        picList.add({
+          'nama': admin.nama,
+          'id_user': admin.id_user,
+        });
+      });
+      //helpdesk
+      dataPekerjaan[0].data_tambahan.helpdesk.forEach((helpdesk) {
+        picList.add({
+          'nama': helpdesk.nama,
+          'id_user': helpdesk.id_user,
         });
       });
     }
@@ -208,7 +236,15 @@ class _AddTaskState extends State<AddTask> {
                   validator: (date) {
                     if (date == null) {
                       return 'Kolom Tanggal Deadline harus diisi';
+                    } else if (date.isBefore(tanggalMulai)) {
+                      return 'Tanggal tidak boleh sebelum tanggal mulai';
+                    } else if (date.isAfter(targetWaktuSelesai)) {
+                      return 'Tanggal melebihi target waktu selesai';
+                    } else if (date
+                        .isBefore(today.subtract(Duration(days: 1)))) {
+                      return 'Tanggal tidak boleh sebelum hari ini';
                     }
+
                     return null;
                   },
                 ),

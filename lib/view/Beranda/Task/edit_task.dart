@@ -1,5 +1,7 @@
 import 'dart:io';
+import 'package:destask/controller/pekerjaan_controller.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../controller/kategori_task_controller.dart';
 import '../../../controller/task_controller.dart';
 import '../../../model/kategori_task_model.dart';
@@ -29,12 +31,17 @@ class _EditTaskState extends State<EditTask> {
   StatusTaskController statusTaskController = StatusTaskController();
   KategoriTaskController kategoriTaskController = KategoriTaskController();
   TaskController taskController = TaskController();
+  PekerjaanController pekerjaanController = PekerjaanController();
   File? _image;
+  String idUser = "";
   String namafoto = '';
   bool isLoading = false;
   String idPekerjaan = "";
   String namaPekerjaan = "";
-  String idStatusTask = "";
+  String creator = "";
+  DateTime targetWaktuSelesai = DateTime.now();
+  DateTime tanggalMulai = DateTime.now();
+  // String idStatusTask = "";
   String idKategoriTask = "";
   bool completed = false;
   List<StatusTaskModel> statusList = [];
@@ -48,21 +55,29 @@ class _EditTaskState extends State<EditTask> {
 
   void loadData() async {
     try {
-      statusList = await statusTaskController.showAll();
+      // statusList = await statusTaskController.showAll();
       kategoriList = await kategoriTaskController.showAll();
       taskController.showById(idTask).then((value) {
         setState(() {
           idPekerjaan = value[0].id_pekerjaan.toString();
+          idUser = value[0].id_user.toString();
+          creator = value[0].creator.toString();
           _deskripsiTaskController.text = value[0].deskripsi_task.toString();
           _persentaseSelesaiController.text =
               value[0].persentase_selesai.toString();
           _selectedDateStart = DateTime.parse(value[0].tgl_planing.toString());
-          idStatusTask = value[0].id_status_task.toString();
+          // idStatusTask = value[0].id_status_task.toString();
           idKategoriTask = value[0].id_kategori_task.toString();
-          _tautanTaskController.text = value[0].tautan_task.toString();
+          // _tautanTaskController.text = value[0].tautan_task.toString();
           _persentaseSelesaiController.text =
               value[0].persentase_selesai.toString();
           namaPekerjaan = value[0].data_tambahan.nama_pekerjaan.toString();
+        });
+        pekerjaanController.getPekerjaanById(idPekerjaan).then((value) {
+          setState(() {
+            targetWaktuSelesai = value[0].target_waktu_selesai;
+            tanggalMulai = value[0].created_at;
+          });
         });
         return value;
       });
@@ -94,24 +109,6 @@ class _EditTaskState extends State<EditTask> {
     }
   }
 
-  //mengambil gambar dari gallery
-  Future getImageGallery() async {
-    var image = await ImagePicker().pickImage(source: ImageSource.gallery);
-    setState(() {
-      _image = File(image!.path);
-      namafoto = _image!.path.split('/').last;
-    });
-  }
-
-  //mengambil gambar dari camera
-  Future getImageCamera() async {
-    var image = await ImagePicker().pickImage(source: ImageSource.camera);
-    setState(() {
-      _image = File(image!.path);
-      namafoto = _image!.path.split('/').last;
-    });
-  }
-
   @override
   void dispose() {
     _deskripsiTaskController.dispose();
@@ -125,9 +122,7 @@ class _EditTaskState extends State<EditTask> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: GlobalColors.mainColor,
-        title: completed
-            ? const Text('Submit Task', style: TextStyle(color: Colors.white))
-            : const Text('Edit Task', style: TextStyle(color: Colors.white)),
+        title: const Text('Edit Task', style: TextStyle(color: Colors.white)),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: SingleChildScrollView(
@@ -164,52 +159,62 @@ class _EditTaskState extends State<EditTask> {
                     const SizedBox(height: 16),
 
                     //tanggal mulai
-                    buildLabel('Deadline *'),
-                    MyDateTimePicker(
-                      selectedDate: _selectedDateStart,
-                      onChanged: (date) {
-                        setState(() {
-                          _selectedDateStart = date;
-                        });
-                      },
-                      validator: (date) {
-                        if (date == null) {
-                          return 'Kolom Tanggal Deadline harus diisi';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
+                    creator == idUser
+                        ? Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              buildLabel('Deadline *'),
+                              MyDateTimePicker(
+                                selectedDate: _selectedDateStart,
+                                onChanged: (date) {
+                                  setState(() {
+                                    _selectedDateStart = date;
+                                  });
+                                },
+                                validator: (date) {
+                                  if (date == null) {
+                                    return 'Kolom Tanggal Deadline harus diisi';
+                                  } else if (date.isBefore(tanggalMulai)) {
+                                    return 'Tanggal tidak boleh sebelum tanggal mulai';
+                                  } else if (date.isAfter(targetWaktuSelesai)) {
+                                    return 'Tanggal melebihi target waktu selesai';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ],
+                          )
+                        : const SizedBox(),
                     //status task
-                    buildLabel('Status Task *'),
-                    idStatusTask == ""
-                        ? const Text("Memuat data")
-                        : DropdownButtonFormField<String>(
-                            value: idStatusTask,
-                            onChanged: (value) {
-                              setState(() {
-                                idStatusTask = value!;
-                              });
-                            },
-                            items: statusList.map((status) {
-                              return DropdownMenuItem<String>(
-                                value: status.id_status_task,
-                                child: Text(status.nama_status_task.toString()),
-                              );
-                            }).toList(),
-                            decoration: const InputDecoration(
-                              contentPadding: EdgeInsets.symmetric(
-                                  horizontal: 15, vertical: 3),
-                              border: OutlineInputBorder(),
-                            ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Kolom Status Task harus diisi';
-                              }
-                              return null;
-                            },
-                          ),
-                    const SizedBox(height: 16),
+                    // buildLabel('Status Task *'),
+                    // idStatusTask == ""
+                    //     ? const Text("Memuat data")
+                    //     : DropdownButtonFormField<String>(
+                    //         value: idStatusTask,
+                    //         onChanged: (value) {
+                    //           setState(() {
+                    //             idStatusTask = value!;
+                    //           });
+                    //         },
+                    //         items: statusList.map((status) {
+                    //           return DropdownMenuItem<String>(
+                    //             value: status.id_status_task,
+                    //             child: Text(status.nama_status_task.toString()),
+                    //           );
+                    //         }).toList(),
+                    //         decoration: const InputDecoration(
+                    //           contentPadding: EdgeInsets.symmetric(
+                    //               horizontal: 15, vertical: 3),
+                    //           border: OutlineInputBorder(),
+                    //         ),
+                    //         validator: (value) {
+                    //           if (value == null || value.isEmpty) {
+                    //             return 'Kolom Status Task harus diisi';
+                    //           }
+                    //           return null;
+                    //         },
+                    //       ),
+                    // const SizedBox(height: 16),
                     //kategori task
                     buildLabel('Kategori Task *'),
                     idKategoriTask == ""
@@ -249,244 +254,61 @@ class _EditTaskState extends State<EditTask> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Checkbox(
-                      value: completed,
-                      activeColor: Colors.green,
-                      onChanged: (value) {
-                        setState(() {
-                          completed = value!;
-                        });
-                      },
-                    ),
-                    const Text('Task Selesai?', style: TextStyle(fontSize: 16)),
-                  ],
-                ),
-                // Checkbox completed
-                if (completed)
-                  //tautan task
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      buildLabel('Tautan Task'),
-                      buildFormFieldBolehKosong(_tautanTaskController,
-                          "Tautan Task", TextInputType.url),
-                    ],
-                  ),
-                const SizedBox(height: 16),
-                if (completed)
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      //bukti selesai
-                      buildLabel('Bukti Selesai *'),
-                      GestureDetector(
-                        onTap: () {
-                          _showChoiceDialog(context);
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                            color: Colors.grey[200],
-                          ),
-                          padding: EdgeInsets.all(16),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.upload_file),
-                              const SizedBox(width: 16),
-                              if (_image != null)
-                                Expanded(
-                                  child: Row(
-                                    children: [
-                                      Text(
-                                        namafoto,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      const SizedBox(width: 10),
-                                      //hapus gambar
-                                      GestureDetector(
-                                        onTap: () {
-                                          setState(() {
-                                            _image = null;
-                                            namafoto = '';
-                                          });
-                                        },
-                                        child: const Icon(
-                                          Icons.close,
-                                          color: Colors.red,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                )
-                              else
-                                const Expanded(
-                                  child: Text(
-                                    'Pilih Foto Bukti Selesai *',
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      //tamplkan gambar
-                      _image != null
-                          ? Container(
-                              margin: const EdgeInsets.only(top: 10),
-                              child: Image.file(
-                                _image!,
-                                width: 100,
-                                height: 100,
-                              ),
-                            )
-                          : Container(),
-                    ],
-                  ),
-                const SizedBox(height: 35),
 
                 //button
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    !completed
-                        ? GestureDetector(
-                            onTap: () async {
-                              setState(() {
-                                isLoading = true;
-                              });
-                              if (_formKey.currentState!.validate()) {
-                                bool editTask = await taskController.editTask(
-                                  idTask.toString(),
-                                  idPekerjaan.toString(),
-                                  idStatusTask,
-                                  idKategoriTask,
-                                  _selectedDateStart!, //tgl planing
-                                  _deskripsiTaskController.text,
-                                  _tautanTaskController.text,
-                                  _persentaseSelesaiController.text.toString(),
-                                );
-                                if (editTask) {
-                                  Get.offAndToNamed('/task/$idPekerjaan');
-                                  QuickAlert.show(
-                                      context: context,
-                                      title: "Edit Task Berhasil",
-                                      type: QuickAlertType.success);
-                                } else {
-                                  QuickAlert.show(
-                                      context: context,
-                                      title: "Edit Task Gagal",
-                                      type: QuickAlertType.error);
-                                }
-                                setState(() {
-                                  isLoading = false;
-                                });
-                              } else {
-                                setState(() {
-                                  isLoading = false;
-                                });
-                              }
-                            },
-                            child: isLoading
-                                ? const CircularProgressIndicator()
-                                : Container(
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(10),
-                                      color: Colors.blue,
-                                    ),
-                                    padding: const EdgeInsets.all(16.0),
-                                    child: const Text(
-                                      'Edit Task',
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                          )
-                        : GestureDetector(
-                            onTap: () async {
-                              try {
-                                setState(() {
-                                  isLoading = true;
-                                });
-                                if (_formKey.currentState!.validate() &&
-                                    _image != null &&
-                                    _persentaseSelesaiController.text ==
-                                        '100') {
-                                  bool editTask = await taskController.editTask(
-                                    idTask.toString(),
-                                    idPekerjaan.toString(),
-                                    idStatusTask,
-                                    idKategoriTask,
-                                    _selectedDateStart!, //tgl planing
-                                    _deskripsiTaskController.text,
-                                    _tautanTaskController.text,
-                                    _persentaseSelesaiController.text
-                                        .toString(),
-                                  );
-                                  bool success =
-                                      await taskController.uploadImage(
-                                    _image!,
-                                    idTask.toString(),
-                                  );
-                                  if (success == true && editTask == true) {
-                                    Get.offAndToNamed('/task/$idPekerjaan');
-                                    QuickAlert.show(
-                                        context: context,
-                                        title: "Submit Task Berhasil",
-                                        type: QuickAlertType.success);
-                                  } else {
-                                    QuickAlert.show(
-                                        context: context,
-                                        title: "Submit Task Gagal",
-                                        type: QuickAlertType.error);
-                                  }
-                                  setState(() {
-                                    isLoading = false;
-                                  });
-                                } else {
-                                  setState(() {
-                                    isLoading = true;
-                                  });
-                                  //warning
-                                  QuickAlert.show(
-                                    context: context,
-                                    title:
-                                        "Pastikan persentase selesai = 100% dan pilih gambar bukti selesai",
-                                    type: QuickAlertType.error,
-                                  );
-                                  setState(() {
-                                    isLoading = false;
-                                  });
-                                }
-                              } catch (e) {
-                                print('Error submit task: $e');
-                              }
-                            },
-                            child: isLoading
-                                ? const CircularProgressIndicator()
-                                : Container(
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(10),
-                                      color: Colors.green,
-                                    ),
-                                    padding: const EdgeInsets.all(16.0),
-                                    child: const Text(
-                                      'Submit Task',
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
+                GestureDetector(
+                  onTap: () async {
+                    setState(() {
+                      isLoading = true;
+                    });
+                    if (_formKey.currentState!.validate()) {
+                      bool editTask = await taskController.editTask(
+                        idTask.toString(),
+                        idPekerjaan.toString(),
+                        idKategoriTask,
+                        _selectedDateStart!, //tgl planing
+                        _deskripsiTaskController.text,
+                        _persentaseSelesaiController.text.toString(),
+                      );
+                      if (editTask) {
+                        Get.offAndToNamed('/task/$idPekerjaan');
+                        QuickAlert.show(
+                            context: context,
+                            title: "Edit Task Berhasil",
+                            type: QuickAlertType.success);
+                      } else {
+                        QuickAlert.show(
+                            context: context,
+                            title: "Edit Task Gagal",
+                            type: QuickAlertType.error);
+                      }
+                      setState(() {
+                        isLoading = false;
+                      });
+                    } else {
+                      setState(() {
+                        isLoading = false;
+                      });
+                    }
+                  },
+                  child: isLoading
+                      ? const CircularProgressIndicator()
+                      : Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                            color: Colors.blue,
                           ),
-                  ],
+                          padding: const EdgeInsets.all(16.0),
+                          child: const Text(
+                            'Edit Task',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
                 )
               ],
             ),
@@ -560,61 +382,6 @@ class _EditTaskState extends State<EditTask> {
         contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 3),
         border: OutlineInputBorder(),
       ),
-    );
-  }
-
-  Future<void> _showChoiceDialog(BuildContext context) {
-    return showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return SimpleDialog(
-          backgroundColor: Colors.white,
-          contentPadding: const EdgeInsets.all(15),
-          shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(10))),
-          children: [
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Text('Pilih Gambar',
-                  style: TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18)),
-              trailing: IconButton(
-                onPressed: () => Get.back(),
-                icon: const Icon(Icons.close_outlined),
-                padding: EdgeInsets.zero,
-              ),
-            ),
-            FilledButton.icon(
-              onPressed: () {
-                getImageGallery();
-                Get.back();
-              },
-              icon: const Icon(Icons.collections_outlined),
-              label: const Text('Galeri',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              style: FilledButton.styleFrom(
-                  backgroundColor: Colors.amber,
-                  shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(10)))),
-            ),
-            FilledButton.icon(
-              onPressed: () {
-                getImageCamera();
-                Get.back();
-              },
-              icon: const Icon(Icons.camera_alt_outlined),
-              label: const Text('Kamera',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              style: FilledButton.styleFrom(
-                  backgroundColor: Colors.amber,
-                  shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(10)))),
-            )
-          ],
-        );
-      },
     );
   }
 }

@@ -22,12 +22,12 @@ class _DetailTaskState extends State<DetailTask> {
   String idTask = '';
   String idPekerjaan = '';
   String idUser = '';
+  String creator = '';
   String idStatusTask = '';
   String idKategoriTask = '';
   DateTime tglPlaning = DateTime.now();
   String tglSelesai = '';
   String tglVerifikasiDiterima = '';
-  String idstatusVerifikasi = '';
   String persentaseSelesai = '';
   String deskripsiTask = '';
   String alasanVerifikasi = '';
@@ -36,6 +36,7 @@ class _DetailTaskState extends State<DetailTask> {
   String statusVerifikasi = '';
 
   //bantuan
+  String namaCreator = '';
   String namaUserTask = '';
   String namaPekerjaan = '';
   String namaStatusTask = '';
@@ -47,6 +48,7 @@ class _DetailTaskState extends State<DetailTask> {
       idTask = data[0].id_task ?? '-';
       idPekerjaan = data[0].id_pekerjaan ?? '-';
       idUser = data[0].id_user ?? '-';
+      creator = data[0].creator ?? '-';
       idStatusTask = data[0].id_status_task ?? '-';
       idKategoriTask = data[0].id_kategori_task ?? '-';
       tglPlaning = DateTime.parse(data[0].tgl_planing.toString());
@@ -56,28 +58,16 @@ class _DetailTaskState extends State<DetailTask> {
       tglVerifikasiDiterima = data[0].tgl_verifikasi_diterima == null
           ? '-'
           : data[0].tgl_verifikasi_diterima.toString();
-      idstatusVerifikasi = data[0].status_verifikasi ?? '-';
       persentaseSelesai = data[0].persentase_selesai ?? '-';
       deskripsiTask = data[0].deskripsi_task ?? '-';
       alasanVerifikasi = data[0].alasan_verifikasi ?? '-';
       buktiSelesai = data[0].bukti_selesai ?? '-';
       tautanTask = data[0].tautan_task ?? '-';
       namaUserTask = data[0].data_tambahan.nama_user;
+      namaCreator = data[0].data_tambahan.nama_creator;
       namaPekerjaan = data[0].data_tambahan.nama_pekerjaan;
       namaStatusTask = data[0].data_tambahan.nama_status_task;
       namaKategoriTask = data[0].data_tambahan.nama_kategori_task;
-      if (idstatusVerifikasi == '0') {
-        statusVerifikasi = 'Belum Diverifikasi';
-      } else if (idstatusVerifikasi == '1') {
-        statusVerifikasi = 'Sedang Diverifikasi';
-      } else if (idstatusVerifikasi == '2') {
-        statusVerifikasi = 'Verifikasi Ditolak';
-      } else if (idstatusVerifikasi == '3') {
-        statusVerifikasi = 'Verifikasi Diterima';
-      } else {
-        statusVerifikasi = '-';
-      }
-      ;
     });
     return data;
   }
@@ -114,11 +104,11 @@ class _DetailTaskState extends State<DetailTask> {
                   _buildTableRow('ID Task', idTask),
                   _buildTableRow('Pekerjaan', namaPekerjaan),
                   _buildTableRow('User', namaUserTask),
+                  _buildTableRow('Creator', namaCreator),
                   _buildTableRow('Deskripsi Task', deskripsiTask),
                   _buildTableRow('Status Task', namaStatusTask),
                   _buildTableRow('Kategori Task', namaKategoriTask),
                   _buildTableRow('Deadline', formatDate(tglPlaning.toString())),
-                  _buildTableRow('Status Verifikasi', statusVerifikasi),
                   _buildTableRow('Persentase Selesai', '$persentaseSelesai%'),
                   _buildTableRowLink('Tautan Task', tautanTask),
                   _buildTableRow('Alasan Verifikasi',

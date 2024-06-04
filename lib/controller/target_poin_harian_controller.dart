@@ -8,6 +8,7 @@ import 'package:quickalert/quickalert.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const url = '$baseURL/api/targetpoinharianbyuser';
+const urlcek = '$baseURL/api/cektargetpoinharian';
 
 getToken() async {
   final prefs = await SharedPreferences.getInstance();
@@ -22,20 +23,18 @@ getIdUser() async {
 }
 
 class TargetPoinHarianController {
-  Future getTargetPoinHarianbyUser() async {
+  Future<List<TargetPoinHarianModel>> getTarget() async {
     try {
       var token = await getToken();
       var iduser = await getIdUser();
       var response = await http.get(
         Uri.parse('$url/$iduser'),
-        headers: {'Authorization ': 'Bearer $token'},
+        headers: {'Authorization': 'Bearer $token'},
       );
       if (response.statusCode == 200) {
-        Iterable it = json.decode(response.body);
-        List<TargetPoinHarianModel> targetPoinHarian =
-            List<TargetPoinHarianModel>.from(
-                it.map((e) => TargetPoinHarianModel.fromJson(e)));
-        return targetPoinHarian;
+        print(response.body);
+        var data = json.decode(response.body);
+        return data;
       } else if (response.statusCode == 401) {
         SharedPreferences pref = await SharedPreferences.getInstance();
         pref.clear();
@@ -45,11 +44,40 @@ class TargetPoinHarianController {
           title: 'Token Expired, Login Ulang',
           type: QuickAlertType.error,
         );
+        return [];
       } else {
+        print(response.body);
         return [];
       }
     } catch (e) {
       return [];
+    }
+  }
+
+  Future<bool> cekTarget() async {
+    try {
+      var token = await getToken();
+      var response = await http.get(
+        Uri.parse('$urlcek'),
+        headers: {'Authorization': 'Bearer $token'},
+      );
+
+      if (response.statusCode == 200) {
+        Map<String, dynamic> responseBody = json.decode(response.body);
+        List<dynamic> data = responseBody['data'];
+        int jumlahData = responseBody['jumlah_data'];
+        int jumlahUserGroup = responseBody['jumlah_usergroup'];
+
+        if (jumlahData == jumlahUserGroup) {
+          return true;
+        } else {
+          return false;
+        }
+      } else {
+        return false;
+      }
+    } catch (e) {
+      return false;
     }
   }
 }

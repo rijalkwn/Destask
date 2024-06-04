@@ -100,57 +100,68 @@ class _EditProfileState extends State<EditProfile> {
                 _image != null
                     ? Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: FilledButton.icon(
-                          onPressed: () async {
-                            try {
-                              setState(() {
-                                isLoading = true;
-                              });
-                              bool uploadImage =
-                                  await userController.uploadImage(_image!);
-                              if (uploadImage) {
-                                setState(() {
-                                  _image = null;
-                                });
-                                QuickAlert.show(
-                                  context: context,
-                                  type: QuickAlertType.success,
-                                  text: 'Foto berhasil diupdate!',
-                                );
-                              } else {
-                                QuickAlert.show(
-                                  context: context,
-                                  type: QuickAlertType.error,
-                                  title: 'Oops...',
-                                  text: 'Foto gagal diupdate!',
-                                );
-                              }
-                              setState(() {
-                                isLoading = false;
-                              });
-                            } catch (e) {
-                              print(e);
-                              QuickAlert.show(
-                                context: context,
-                                type: QuickAlertType.error,
-                                title: 'Oops...',
-                                text:
-                                    'Foto gagal diupdate, silahkan coba lagi!',
-                              );
-                              setState(() {
-                                isLoading = false;
-                              });
-                            }
-                          },
-                          icon: const Icon(Icons.upload_outlined),
-                          label: const Text('Update Foto',
-                              style: TextStyle(fontWeight: FontWeight.bold)),
-                          style: FilledButton.styleFrom(
-                              backgroundColor: Colors.amber,
-                              shape: const RoundedRectangleBorder(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(10)))),
-                        ),
+                        child: isLoading
+                            ? Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10),
+                                  color: Colors.grey,
+                                ),
+                                padding: const EdgeInsets.all(16.0),
+                                child: const Center(
+                                  child: CircularProgressIndicator(),
+                                ))
+                            : FilledButton.icon(
+                                onPressed: () async {
+                                  try {
+                                    setState(() {
+                                      isLoading = true;
+                                    });
+                                    bool uploadImage = await userController
+                                        .uploadImage(_image!);
+                                    if (uploadImage) {
+                                      setState(() {
+                                        _image = null;
+                                      });
+                                      QuickAlert.show(
+                                        context: context,
+                                        type: QuickAlertType.success,
+                                        text: 'Foto berhasil diupdate!',
+                                      );
+                                    } else {
+                                      QuickAlert.show(
+                                        context: context,
+                                        type: QuickAlertType.error,
+                                        title: 'Oops...',
+                                        text: 'Foto gagal diupdate!',
+                                      );
+                                    }
+                                    setState(() {
+                                      isLoading = false;
+                                    });
+                                  } catch (e) {
+                                    print(e);
+                                    QuickAlert.show(
+                                      context: context,
+                                      type: QuickAlertType.error,
+                                      title: 'Oops...',
+                                      text:
+                                          'Foto gagal diupdate, silahkan coba lagi!',
+                                    );
+                                    setState(() {
+                                      isLoading = false;
+                                    });
+                                  }
+                                },
+                                icon: const Icon(Icons.upload_outlined),
+                                label: const Text('Update Foto',
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold)),
+                                style: FilledButton.styleFrom(
+                                    backgroundColor: Colors.amber,
+                                    shape: const RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(10)))),
+                              ),
                       )
                     : const SizedBox(),
                 // Nama

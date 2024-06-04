@@ -24,14 +24,26 @@ Future getToken() async {
   return token;
 }
 
-Future getIdUser() async {
+Future getUserLevel() async {
   final prefs = await SharedPreferences.getInstance();
-  var idUser = prefs.getString("id_user");
-  return idUser;
+  var userlevel = prefs.getString("user_level");
+  return userlevel;
 }
+
+// Future getIdUser() async {
+//   final prefs = await SharedPreferences.getInstance();
+//   var idUser = prefs.getString("id_user");
+//   return idUser;
+// }
 
 class TaskController {
   //fungsi mendapatkan semua task
+  Future getIdUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    var idUser = prefs.getString("id_user");
+    return idUser;
+  }
+
   Future getAllTask() async {
     var token = await getToken();
     var response = await http
@@ -99,13 +111,11 @@ class TaskController {
   //boolean cek apakah task ada di tanggal yang dipilih
   bool isTaskOnSelectedDate(Map<String, dynamic> task, DateTime selectedDate) {
     DateTime createdTask = DateTime.parse(task['created_at']);
-    DateTime? taskSelesai = task['tgl_selesai'] != null
-        ? DateTime.parse(task['tgl_selesai'])
-        : null;
+    DateTime? targetWaktuSelesai =
+        DateTime.parse(task['data_tambahan']['target_waktu_selesai']);
     return selectedDate
             .isAfter(createdTask.subtract(const Duration(days: 1))) &&
-        (taskSelesai == null ||
-            selectedDate.isBefore(taskSelesai.add(const Duration(days: 1))));
+        selectedDate.isBefore(targetWaktuSelesai.add(const Duration(days: 1)));
   }
 
   //fungsi mendapatkan task berdasarkan id pekerjaan dan tanggal
@@ -244,12 +254,13 @@ class TaskController {
         body: {
           'id_pekerjaan': idPekerjaan,
           'id_user': idanggotauser,
-          'id_status_task': "1", //default pending
+          'creator': idUser,
+          'id_status_task': "1", //default on progress
           'id_kategori_task': idKategoriTask,
           'tgl_planing':
               tglPlaning.toIso8601String(), // Convert DateTime to string
           'deskripsi_task': deskripsiTask,
-          'status_verifikasi': '0', //default belum diverifikasi
+          'persentase_selesai': '0',
         },
       );
 
@@ -278,11 +289,9 @@ class TaskController {
   Future editTask(
     String idTask,
     String idPekerjaan,
-    String idStatusTask,
     String idKategoriTask,
     DateTime tglPlaning,
     String deskripsiTask,
-    String tautanTask,
     String persentaseSelesai,
   ) async {
     try {
@@ -294,12 +303,10 @@ class TaskController {
         "id_task": idTask.toString(),
         "id_pekerjaan": idPekerjaan.toString(),
         "id_user": idUser.toString(),
-        "id_status_task": idStatusTask.toString(),
         "id_kategori_task": idKategoriTask.toString(),
         "tgl_planing": formattedDate,
         "persentase_selesai": persentaseSelesai.toString(),
         "deskripsi_task": deskripsiTask.toString(),
-        "tautan_task": tautanTask.toString(),
       };
       print(jsonEncode(data));
       var response = await http.put(
@@ -337,15 +344,65 @@ class TaskController {
     }
   }
 
-  //update foto profil
-  Future<bool> uploadImage(
-    File imageFile,
+  //submit
+  // Future submit(
+  //   String idTask,
+  //   String tautanTask,
+  //   File buktiSelesai,
+  // ) async {
+  //   try {
+  //     var token = await getToken();
+  //     var userlevel = await getUserLevel();
+  //     var fileStream = http.ByteStream(buktiSelesai.openRead());
+  //     var length = await buktiSelesai.length();
+  //     var uri = Uri.parse('$url/submit');
+  //     var request = http.MultipartRequest('POST', uri);
+  //     request.headers['Authorization'] = 'Bearer $token';
+
+  //     var multipartFile = http.MultipartFile(
+  //       'bukti_selesai',
+  //       fileStream,
+  //       length,
+  //       filename: basename(buktiSelesai.path),
+  //     );
+
+  //     Map<String, String> data = {
+  //       'id_task': idTask,
+  //       'id_status_task': '2', //pending
+  //       'tautan_task': tautanTask,
+  //       'tgl_selesai': DateTime.now().toIso8601String(),
+  //       'persentase_selesai': '100',
+  //       'user_level': userlevel,
+  //     };
+
+  //     request.fields.addAll(data);
+  //     request.files.add(multipartFile);
+
+  //     var response = await request.send();
+
+  //     if (response.statusCode == 200) {
+  //       print(userlevel);
+  //       return true;
+  //     } else {
+  //       print(userlevel);
+  //       return false;
+  //     }
+  //   } catch (e) {
+  //     return false;
+  //   }
+  // }
+
+  Future uploadImage(
     String idTask,
+    String tautanTask,
+    File imageFile,
   ) async {
+    var userlevel = await getUserLevel();
     var stream = http.ByteStream(imageFile.openRead());
     var length = await imageFile.length();
     var uri = Uri.parse('$url/submit');
     var token = await getToken();
+
     var request = http.MultipartRequest("POST", uri);
     request.headers['Authorization'] = 'Bearer $token';
 
@@ -354,7 +411,11 @@ class TaskController {
 
     Map<String, String> body = {
       'id_task': idTask,
-      'status_verifikasi': '1',
+      'id_status_task': '2', //pending
+      'tautan_task': tautanTask,
+      'tgl_selesai': DateTime.now().toIso8601String(),
+      'persentase_selesai': '100',
+      'user_level': userlevel,
     };
 
     request.fields.addAll(body);
@@ -509,16 +570,18 @@ class TaskController {
     }
   }
 
-  Future getTaskVerifikasi() async {
+  Future getTaskVerifikasi(idPekerjaan) async {
     var token = await getToken();
     var iduser = await getIdUser();
-    var response = await http.get(Uri.parse('$url/verifikasi/$iduser'),
+    var response = await http.get(Uri.parse('$url/verifikasitask/$iduser'),
         headers: {'Authorization': 'Bearer $token'});
     if (response.statusCode == 200) {
-      print(response.body);
+      // print(response.body);
       Iterable it = json.decode(response.body);
-      List<TaskModel> task =
-          List<TaskModel>.from(it.map((e) => TaskModel.fromJson(e)).toList());
+      List<TaskModel> task = List<TaskModel>.from(it
+          .where((element) => element['id_pekerjaan'] == idPekerjaan)
+          .map((e) => TaskModel.fromJson(e))
+          .toList());
       return task;
     } else if (response.statusCode == 401) {
       SharedPreferences pref = await SharedPreferences.getInstance();
@@ -536,26 +599,20 @@ class TaskController {
     }
   }
 
-  Future editTaskVerikasi(
+  Future editTaskVerikasiTolak(
     String idTask,
     String alasanVerifikasi,
     DateTime tglPlaning,
-    String statusVerifikasi,
+    String statusTask,
   ) async {
     try {
       var token = await getToken();
-      final dataok = {
+      final datatolak = {
         'id_task': idTask,
         "alasan_verifikasi": alasanVerifikasi,
-        'status_verifikasi': statusVerifikasi,
-        'tgl_selasai': DateTime.now().toIso8601String(),
-        'tgl_verifikasi_diterima': DateTime.now().toIso8601String(),
-      };
-      final datatolak = {
-        'id_task': idTask.toString(),
-        "alasan_verifikasi": alasanVerifikasi.toString(),
-        'status_verifikasi': statusVerifikasi.toString(),
+        'id_status_task': statusTask,
         'tgl_planing': tglPlaning.toIso8601String(),
+        'tgl_selesai': null,
       };
       var response = await http.put(
         Uri.parse('$urlverifikasi/$idTask'),
@@ -563,12 +620,58 @@ class TaskController {
           'Content-Type': 'application/json', // Add Content-Type header
           'Authorization': 'Bearer $token',
         },
-        body: jsonEncode(statusVerifikasi == "3" ? dataok : datatolak),
+        body: jsonEncode(datatolak),
       );
 
       if (response.statusCode == 200) {
         print(response.statusCode);
-        print(response.body);
+        return true;
+      } else if (response.statusCode == 401) {
+        SharedPreferences pref = await SharedPreferences.getInstance();
+        pref.clear();
+        Get.offAllNamed('/login');
+        QuickAlert.show(
+          context: Get.context!,
+          title: 'Token Expired, Login Ulang',
+          type: QuickAlertType.error,
+        );
+      } else {
+        print('$url/$idTask');
+        print('Error editing task: ${response.body}');
+        return false;
+      }
+    } catch (e) {
+      print('Exception editing task: $e');
+      return false;
+    }
+  }
+
+  Future editTaskVerikasiDiterima(
+    String idTask,
+    String alasanVerifikasi,
+    DateTime tglPlaning,
+    String statusTask,
+  ) async {
+    try {
+      var token = await getToken();
+      final data = {
+        'id_task': idTask,
+        "alasan_verifikasi": alasanVerifikasi,
+        'id_status_task': statusTask,
+        'tgl_selesai': DateTime.now().toIso8601String(),
+        'tgl_verifikasi_diterima': DateTime.now().toIso8601String(),
+      };
+      var response = await http.put(
+        Uri.parse('$urlverifikasi/$idTask'),
+        headers: {
+          'Content-Type': 'application/json', // Add Content-Type header
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode(data),
+      );
+
+      if (response.statusCode == 200) {
+        print(response.statusCode);
         return true;
       } else if (response.statusCode == 401) {
         SharedPreferences pref = await SharedPreferences.getInstance();
