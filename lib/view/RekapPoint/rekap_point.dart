@@ -1,12 +1,5 @@
-import 'package:destask/controller/bobot_kategori_task_controller.dart';
-import 'package:destask/controller/kategori_task_controller.dart';
 import 'package:destask/controller/rekap_point_controller.dart';
-import 'package:destask/controller/task_controller.dart';
-import 'package:destask/model/bobot_kategori_task_model.dart';
-import 'package:destask/model/kategori_task_model.dart';
-import 'package:destask/model/task_model.dart';
 import 'package:destask/utils/global_colors.dart';
-import 'package:destask/view/Beranda/Task/task.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';

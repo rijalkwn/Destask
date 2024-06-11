@@ -216,13 +216,16 @@ class DataTambahan {
 class PmModel {
   final String id_user;
   final String nama;
+  final String role_personil;
 
-  PmModel({required this.id_user, required this.nama});
+  PmModel(
+      {required this.id_user, required this.nama, required this.role_personil});
 
   factory PmModel.fromJson(Map<String, dynamic> json) {
     return PmModel(
       id_user: json['id_user'],
       nama: json['nama'],
+      role_personil: json['role_personil'],
     );
   }
 
@@ -230,6 +233,7 @@ class PmModel {
     return {
       'id_user': id_user,
       'nama': nama,
+      'role_personil': role_personil,
     };
   }
 }
@@ -237,13 +241,16 @@ class PmModel {
 class DesainerModel {
   final String id_user;
   final String nama;
+  final String role_personil;
 
-  DesainerModel({required this.id_user, required this.nama});
+  DesainerModel(
+      {required this.id_user, required this.nama, required this.role_personil});
 
   factory DesainerModel.fromJson(Map<String, dynamic> json) {
     return DesainerModel(
       id_user: json['id_user'],
       nama: json['nama'],
+      role_personil: json['role_personil'],
     );
   }
 
@@ -251,6 +258,7 @@ class DesainerModel {
     return {
       'id_user': id_user,
       'nama': nama,
+      'role_personil': role_personil,
     };
   }
 }
@@ -258,13 +266,15 @@ class DesainerModel {
 class BackendWebModel {
   final String id_user;
   final String nama;
-
-  BackendWebModel({required this.id_user, required this.nama});
+  final String role_personil;
+  BackendWebModel(
+      {required this.id_user, required this.nama, required this.role_personil});
 
   factory BackendWebModel.fromJson(Map<String, dynamic> json) {
     return BackendWebModel(
       id_user: json['id_user'],
       nama: json['nama'],
+      role_personil: json['role_personil'],
     );
   }
 
@@ -279,13 +289,16 @@ class BackendWebModel {
 class BackendMobileModel {
   final String id_user;
   final String nama;
+  final String role_personil;
 
-  BackendMobileModel({required this.id_user, required this.nama});
+  BackendMobileModel(
+      {required this.id_user, required this.nama, required this.role_personil});
 
   factory BackendMobileModel.fromJson(Map<String, dynamic> json) {
     return BackendMobileModel(
       id_user: json['id_user'],
       nama: json['nama'],
+      role_personil: json['role_personil'],
     );
   }
 
@@ -293,6 +306,7 @@ class BackendMobileModel {
     return {
       'id_user': id_user,
       'nama': nama,
+      'role_personil': role_personil,
     };
   }
 }
@@ -300,13 +314,16 @@ class BackendMobileModel {
 class FrontendWebModel {
   final String id_user;
   final String nama;
+  final String role_personil;
 
-  FrontendWebModel({required this.id_user, required this.nama});
+  FrontendWebModel(
+      {required this.id_user, required this.nama, required this.role_personil});
 
   factory FrontendWebModel.fromJson(Map<String, dynamic> json) {
     return FrontendWebModel(
       id_user: json['id_user'],
       nama: json['nama'],
+      role_personil: json['role_personil'],
     );
   }
 
@@ -314,6 +331,7 @@ class FrontendWebModel {
     return {
       'id_user': id_user,
       'nama': nama,
+      'role_personil': role_personil,
     };
   }
 }
@@ -321,13 +339,16 @@ class FrontendWebModel {
 class FrontendMobileModel {
   final String id_user;
   final String nama;
+  final String role_personil;
 
-  FrontendMobileModel({required this.id_user, required this.nama});
+  FrontendMobileModel(
+      {required this.id_user, required this.nama, required this.role_personil});
 
   factory FrontendMobileModel.fromJson(Map<String, dynamic> json) {
     return FrontendMobileModel(
       id_user: json['id_user'],
       nama: json['nama'],
+      role_personil: json['role_personil'],
     );
   }
 
@@ -335,6 +356,7 @@ class FrontendMobileModel {
     return {
       'id_user': id_user,
       'nama': nama,
+      'role_personil': role_personil,
     };
   }
 }
@@ -343,13 +365,16 @@ class FrontendMobileModel {
 class TesterModel {
   final String id_user;
   final String nama;
+  final String role_personil;
 
-  TesterModel({required this.id_user, required this.nama});
+  TesterModel(
+      {required this.id_user, required this.nama, required this.role_personil});
 
   factory TesterModel.fromJson(Map<String, dynamic> json) {
     return TesterModel(
       id_user: json['id_user'],
       nama: json['nama'],
+      role_personil: json['role_personil'],
     );
   }
 
@@ -357,6 +382,7 @@ class TesterModel {
     return {
       'id_user': id_user,
       'nama': nama,
+      'role_personil': role_personil,
     };
   }
 }
@@ -365,13 +391,16 @@ class TesterModel {
 class AdminModel {
   final String id_user;
   final String nama;
+  final String role_personil;
 
-  AdminModel({required this.id_user, required this.nama});
+  AdminModel(
+      {required this.id_user, required this.nama, required this.role_personil});
 
   factory AdminModel.fromJson(Map<String, dynamic> json) {
     return AdminModel(
       id_user: json['id_user'],
       nama: json['nama'],
+      role_personil: json['role_personil'],
     );
   }
 
@@ -379,6 +408,7 @@ class AdminModel {
     return {
       'id_user': id_user,
       'nama': nama,
+      'role_personil': role_personil,
     };
   }
 }
@@ -387,13 +417,16 @@ class AdminModel {
 class HelpdeskModel {
   final String id_user;
   final String nama;
+  final String role_personil;
 
-  HelpdeskModel({required this.id_user, required this.nama});
+  HelpdeskModel(
+      {required this.id_user, required this.nama, required this.role_personil});
 
   factory HelpdeskModel.fromJson(Map<String, dynamic> json) {
     return HelpdeskModel(
       id_user: json['id_user'],
       nama: json['nama'],
+      role_personil: json['role_personil'],
     );
   }
 
@@ -401,6 +434,7 @@ class HelpdeskModel {
     return {
       'id_user': id_user,
       'nama': nama,
+      'role_personil': role_personil,
     };
   }
 }

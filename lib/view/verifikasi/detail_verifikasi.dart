@@ -121,10 +121,7 @@ class _DetailVerifikasiState extends State<DetailVerifikasi> {
                         showDialog(
                           context: context,
                           builder: (BuildContext context) {
-                            bool isTodayAfterPlaning =
-                                DateTime.now().isAfter(tglPlaning) &&
-                                    DateTime.now().day != tglPlaning.day;
-
+                            String alasanVerifikasiLocal = '';
                             return AlertDialog(
                               title: const Text('Tolak Task Ini?'),
                               content: Column(
@@ -138,9 +135,7 @@ class _DetailVerifikasiState extends State<DetailVerifikasi> {
                                       Text('Alasan menolak (wajib)'),
                                       TextField(
                                         onChanged: (value) {
-                                          setState(() {
-                                            alasanVerifikasi = value;
-                                          });
+                                          alasanVerifikasiLocal = value;
                                         },
                                       ),
                                     ],
@@ -156,6 +151,15 @@ class _DetailVerifikasiState extends State<DetailVerifikasi> {
                                 ),
                                 TextButton(
                                   onPressed: () async {
+                                    if (alasanVerifikasiLocal.isEmpty) {
+                                      QuickAlert.show(
+                                        context: context,
+                                        title: "Alasan tidak boleh kosong",
+                                        type: QuickAlertType.warning,
+                                      );
+                                      return;
+                                    }
+                                    Navigator.pop(context);
                                     setState(() {
                                       isLoading = true;
                                       status = "4"; //status ditolak
@@ -163,32 +167,38 @@ class _DetailVerifikasiState extends State<DetailVerifikasi> {
                                     bool success = await taskController
                                         .editTaskVerikasiTolak(
                                             idTask,
-                                            alasanVerifikasi,
+                                            alasanVerifikasiLocal,
                                             tglPlaning,
                                             status);
 
                                     // Jika verifikasi task berhasil, Anda dapat menambahkan logika penanganan berhasil di sini
                                     if (success) {
-                                      QuickAlert.show(
-                                          context: context,
-                                          title: "Berhasil Memverifikasi Task",
-                                          type: QuickAlertType.success);
                                       Get.offAndToNamed('/bottom_nav');
-                                      setState(() {
-                                        isLoading = false;
-                                      });
+                                      Get.snackbar(
+                                        'Berhasil Menolak',
+                                        '',
+                                        backgroundColor: Colors.green,
+                                        snackStyle: SnackStyle.FLOATING,
+                                        messageText: Text(
+                                          'Berhasil Menolak Task',
+                                          style: TextStyle(color: Colors.white),
+                                        ),
+                                      );
                                     } else {
+                                      Navigator.pop(context);
                                       QuickAlert.show(
-                                          context: context,
-                                          title: "Gagal Memverifikasi Task",
-                                          type: QuickAlertType.error);
-                                      setState(() {
-                                        isLoading = false;
-                                      });
+                                        context: context,
+                                        title: "Gagal Menolak Task",
+                                        type: QuickAlertType.error,
+                                      );
                                     }
-                                    Navigator.pop(context);
+                                    setState(() {
+                                      isLoading = false;
+                                    });
                                   },
-                                  child: const Text('Kirim'),
+                                  child: isLoading
+                                      ? const CircularProgressIndicator()
+                                      : const Text('Tolak'),
                                 ),
                               ],
                             );
@@ -216,6 +226,9 @@ class _DetailVerifikasiState extends State<DetailVerifikasi> {
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
+                        setState(() {
+                          alasanVerifikasi = '-';
+                        });
                         //menampilkan dialog yakin menerima verifikasi
                         showDialog(
                           context: context,
@@ -231,12 +244,15 @@ class _DetailVerifikasiState extends State<DetailVerifikasi> {
                                 ),
                                 TextButton(
                                   onPressed: () async {
+                                    Navigator.pop(
+                                        context); // Close the dialog immediately
+
                                     setState(() {
                                       isLoading = true;
                                       status = "3"; //status selesai
-                                      alasanVerifikasi = '-';
                                     });
-                                    //edit verifikasi task
+
+                                    // Perform the asynchronous operation
                                     bool success = await taskController
                                         .editTaskVerikasiDiterima(
                                             idTask,
@@ -244,26 +260,30 @@ class _DetailVerifikasiState extends State<DetailVerifikasi> {
                                             tglPlaning,
                                             status);
 
-                                    // Jika verifikasi task berhasil, Anda dapat menambahkan logika penanganan berhasil di sini
+                                    // Handle the result of the asynchronous operation
                                     if (success) {
-                                      QuickAlert.show(
-                                          context: context,
-                                          title: "Berhasil Memverifikasi Task",
-                                          type: QuickAlertType.success);
                                       Get.offAndToNamed('/bottom_nav');
-                                      setState(() {
-                                        isLoading = false;
-                                      });
+                                      Get.snackbar(
+                                        'Berhasil',
+                                        '',
+                                        backgroundColor: Colors.green,
+                                        snackStyle: SnackStyle.FLOATING,
+                                        messageText: Text(
+                                          'Berhasil Memverifikasi',
+                                          style: TextStyle(color: Colors.white),
+                                        ),
+                                      );
                                     } else {
                                       QuickAlert.show(
-                                          context: context,
-                                          title: "Gagal Memverifikasi Task",
-                                          type: QuickAlertType.error);
-                                      setState(() {
-                                        isLoading = false;
-                                      });
+                                        context: context,
+                                        title: "Gagal Memverifikasi Task",
+                                        type: QuickAlertType.error,
+                                      );
                                     }
-                                    Navigator.pop(context);
+
+                                    setState(() {
+                                      isLoading = false;
+                                    });
                                   },
                                   child: const Text('Terima'),
                                 ),
@@ -289,7 +309,7 @@ class _DetailVerifikasiState extends State<DetailVerifikasi> {
                     ),
                   ),
                 ],
-              ),
+              )
             ],
           ),
         ),

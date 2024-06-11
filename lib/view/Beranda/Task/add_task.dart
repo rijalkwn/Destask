@@ -59,77 +59,22 @@ class _AddTaskState extends State<AddTask> {
     getDataPekerjaan();
     cekuserPM();
     getDataKategoriTask();
+    listPersonil();
   }
 
-  Future<List<Map<String, dynamic>>> getDataPekerjaan() async {
+  Future getDataPekerjaan() async {
     List<PekerjaanModel> dataPekerjaan =
         await pekerjaanController.getPekerjaanById(idpekerjaan);
     setState(() {
       targetWaktuSelesai = dataPekerjaan[0].target_waktu_selesai;
       tanggalMulai = dataPekerjaan[0].created_at;
     });
-    List<Map<String, dynamic>> picList = [];
+  }
 
-    if (dataPekerjaan.isNotEmpty) {
-      dataPekerjaan[0].data_tambahan.pm.forEach((pm) {
-        picList.add({
-          'nama': pm.nama,
-          'id_user': pm.id_user,
-        });
-      });
-      dataPekerjaan[0].data_tambahan.desainer.forEach((desainer) {
-        picList.add({
-          'nama': desainer.nama,
-          'id_user': desainer.id_user,
-        });
-      });
-      dataPekerjaan[0].data_tambahan.backend_web.forEach((backend_web) {
-        picList.add({
-          'nama': backend_web.nama,
-          'id_user': backend_web.id_user,
-        });
-      });
-      dataPekerjaan[0].data_tambahan.backend_mobile.forEach((backend_mobile) {
-        picList.add({
-          'nama': backend_mobile.nama,
-          'id_user': backend_mobile.id_user,
-        });
-      });
-      dataPekerjaan[0].data_tambahan.frontend_web.forEach((frontend_web) {
-        picList.add({
-          'nama': frontend_web.nama,
-          'id_user': frontend_web.id_user,
-        });
-      });
-      dataPekerjaan[0].data_tambahan.frontend_mobile.forEach((frontend_mobile) {
-        picList.add({
-          'nama': frontend_mobile.nama,
-          'id_user': frontend_mobile.id_user,
-        });
-      });
-      //tester
-      dataPekerjaan[0].data_tambahan.tester.forEach((tester) {
-        picList.add({
-          'nama': tester.nama,
-          'id_user': tester.id_user,
-        });
-      });
-      //admin
-      dataPekerjaan[0].data_tambahan.admin.forEach((admin) {
-        picList.add({
-          'nama': admin.nama,
-          'id_user': admin.id_user,
-        });
-      });
-      //helpdesk
-      dataPekerjaan[0].data_tambahan.helpdesk.forEach((helpdesk) {
-        picList.add({
-          'nama': helpdesk.nama,
-          'id_user': helpdesk.id_user,
-        });
-      });
-    }
-    return picList;
+  Future listPersonil() async {
+    List listpersonil =
+        await pekerjaanController.listPersonilPekerjaan(idpekerjaan);
+    return listpersonil;
   }
 
   cekuserPM() async {
@@ -236,7 +181,8 @@ class _AddTaskState extends State<AddTask> {
                   validator: (date) {
                     if (date == null) {
                       return 'Kolom Tanggal Deadline harus diisi';
-                    } else if (date.isBefore(tanggalMulai)) {
+                    } else if (date
+                        .isBefore(tanggalMulai.subtract(Duration(days: 1)))) {
                       return 'Tanggal tidak boleh sebelum tanggal mulai';
                     } else if (date.isAfter(targetWaktuSelesai)) {
                       return 'Tanggal melebihi target waktu selesai';
@@ -292,48 +238,52 @@ class _AddTaskState extends State<AddTask> {
                 //autor
                 cekPM
                     ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          buildLabel('Autor'),
+                          buildLabel('Pilih Autor *'),
                           FutureBuilder(
-                            future: getDataPekerjaan(),
+                            future:
+                                listPersonil(), // Replace 'idpekerjaan' with your actual job ID
                             builder: (context, snapshot) {
                               if (snapshot.connectionState ==
                                   ConnectionState.waiting) {
                                 return Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [CircularProgressIndicator()],
                                 );
                               } else if (snapshot.hasError) {
                                 return Text('Error: ${snapshot.error}');
-                              } else if (snapshot.data != null) {
+                              } else if (snapshot.hasData) {
                                 List<Map<String, dynamic>> picList =
                                     snapshot.data as List<Map<String, dynamic>>;
                                 return DropdownSearch<String>(
-                                    popupProps: PopupProps.menu(
-                                      showSelectedItems: true,
+                                  popupProps: PopupProps.menu(
+                                    showSelectedItems: true,
+                                  ),
+                                  items: picList
+                                      .map((e) =>
+                                          '${e['nama']} - ${e['role_personil']}')
+                                      .toList(),
+                                  dropdownDecoratorProps:
+                                      DropDownDecoratorProps(
+                                    dropdownSearchDecoration: InputDecoration(
+                                      hintText: "Pilih Autor",
                                     ),
-                                    items: picList
-                                        .map((e) => e['nama'].toString())
-                                        .toList(),
-                                    dropdownDecoratorProps:
-                                        DropDownDecoratorProps(
-                                      dropdownSearchDecoration: InputDecoration(
-                                        hintText: "Pilih Autor",
-                                      ),
-                                    ),
-                                    onChanged: (value) {
-                                      setState(() {
-                                        idanggotauser = picList
-                                            .firstWhere((element) =>
-                                                element['nama'] ==
-                                                value)['id_user']
-                                            .toString();
-                                      });
-                                    },
-                                    selectedItem: idanggotauser != ''
-                                        ? picList.firstWhere((element) =>
-                                            element['id_user'] ==
-                                            idanggotauser)['nama']
-                                        : null);
+                                  ),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      idanggotauser = picList
+                                          .firstWhere((element) =>
+                                              '${element['nama']} - ${element['role_personil']}' ==
+                                              value)['id_user']
+                                          .toString();
+                                    });
+                                  },
+                                  selectedItem: idanggotauser != ''
+                                      ? '${picList.firstWhere((element) => element['id_user'].toString() == idanggotauser)['nama']} - ${picList.firstWhere((element) => element['id_user'].toString() == idanggotauser)['role_personil']}'
+                                      : null,
+                                );
                               } else {
                                 return Text('Data not available');
                               }

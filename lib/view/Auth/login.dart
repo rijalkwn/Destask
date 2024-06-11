@@ -33,16 +33,19 @@ class _LoginState extends State<Login> {
   // cek login with token
   startLaunching() async {
     final prefs = await SharedPreferences.getInstance();
-    //cek expired token
+    // Check expired token
     var token = prefs.getString("token");
     if (token != null) {
       var jwt = token.split(".");
       var payload = json.decode(ascii
-          .decode(base64.decode(base64.normalize(jwt[1])))); //decode payload
+          .decode(base64.decode(base64.normalize(jwt[1])))); // Decode payload
       var exp = payload['exp'];
       var now = DateTime.now().millisecondsSinceEpoch / 1000;
       if (exp > now) {
-        Get.offAllNamed('/bottom_nav');
+        // Use post frame callback for navigation
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          Get.offAllNamed('/bottom_nav');
+        });
       } else {
         prefs.clear();
       }

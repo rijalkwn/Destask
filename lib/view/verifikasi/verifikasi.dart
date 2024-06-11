@@ -17,7 +17,7 @@ class _VerifikasiState extends State<Verifikasi> {
 
   Future<List<PekerjaanModel>> getPekerjaan() async {
     List<PekerjaanModel> pekerjaan =
-        await pekerjaanController.getOnProgressUser();
+        await pekerjaanController.getPekerjaanVerifikasi();
     return pekerjaan;
   }
 

@@ -61,7 +61,7 @@ class _DetailTaskState extends State<DetailTask> {
       persentaseSelesai = data[0].persentase_selesai ?? '-';
       deskripsiTask = data[0].deskripsi_task ?? '-';
       alasanVerifikasi = data[0].alasan_verifikasi ?? '-';
-      buktiSelesai = data[0].bukti_selesai ?? '-';
+      buktiSelesai = data[0].bukti_selesai ?? '';
       tautanTask = data[0].tautan_task ?? '-';
       namaUserTask = data[0].data_tambahan.nama_user;
       namaCreator = data[0].data_tambahan.nama_creator;

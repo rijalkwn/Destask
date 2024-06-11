@@ -11,6 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 // API link
 const url = '$baseURL/api/pekerjaan';
 const urluser = '$baseURL/api/pekerjaanbyuser';
+const urlpersonil = '$baseURL/api/pekerjaanpersonil';
 
 Future getToken() async {
   final prefs = await SharedPreferences.getInstance();
@@ -161,19 +162,19 @@ class PekerjaanController {
     }
   }
 
-  Future getPekerjaanVerifikasi() async {
+  Future<List<PekerjaanModel>> getPekerjaanVerifikasi() async {
     try {
       var token = await getToken();
       var idUser = await getIdUser();
       var response = await http.get(
         Uri.parse('$url/verifikasi/$idUser'),
-        headers: {'Authorization ': 'Bearer $token'},
+        headers: {'Authorization': 'Bearer $token'},
       );
       print(response.statusCode);
       if (response.statusCode == 200) {
-        Iterable list = json.decode(response.body);
+        Iterable it = json.decode(response.body);
         List<PekerjaanModel> pekerjaan = List<PekerjaanModel>.from(
-            list.map((e) => PekerjaanModel.fromJson(e)).toList());
+            it.map((e) => PekerjaanModel.fromJson(e)));
         return pekerjaan;
       } else if (response.statusCode == 401) {
         SharedPreferences pref = await SharedPreferences.getInstance();
@@ -184,11 +185,42 @@ class PekerjaanController {
           title: 'Token Expired, Login Ulang',
           type: QuickAlertType.error,
         );
+        return [];
       } else {
-        return {}; // Mengembalikan map kosong jika tidak ada data
+        return []; // Mengembalikan list kosong jika tidak ada data
       }
     } catch (e) {
-      return {}; // Mengembalikan map kosong jika terjadi exception
+      print(e); // Print error to the console
+      return []; // Mengembalikan list kosong jika terjadi exception
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> listPersonilPekerjaan(
+      String idpekerjaan) async {
+    try {
+      var token = await getToken();
+      var response = await http.get(
+        Uri.parse('$urlpersonil/$idpekerjaan'),
+        headers: {'Authorization': 'Bearer $token'},
+      );
+      if (response.statusCode == 200) {
+        Iterable list = json.decode(response.body);
+        return List<Map<String, dynamic>>.from(list);
+      } else if (response.statusCode == 401) {
+        SharedPreferences pref = await SharedPreferences.getInstance();
+        pref.clear();
+        Get.offAllNamed('/login');
+        QuickAlert.show(
+          context: Get.context!,
+          title: 'Token Expired, Login Ulang',
+          type: QuickAlertType.error,
+        );
+        return [];
+      } else {
+        return [];
+      }
+    } catch (e) {
+      return [];
     }
   }
 }

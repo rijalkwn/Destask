@@ -1,3 +1,5 @@
+// import 'dart:js_util';
+
 import 'package:destask/controller/hari_libur_controller.dart';
 import 'package:destask/controller/user_controller.dart';
 import 'package:destask/model/hari_libur_model.dart';
@@ -35,7 +37,7 @@ class _TaskState extends State<Task> {
 
   String namaPekerjaan = '';
   String dropdownValue = 'Semua';
-  String selectedFilter = 'Semua';
+  String iduser = '';
 
   late DateTime _focusedDay;
   DateTime _selectedDay = DateTime.now();
@@ -50,6 +52,7 @@ class _TaskState extends State<Task> {
   void initState() {
     super.initState();
     print(idPekerjaan);
+    getIdUser();
     _focusedDay = DateTime.now();
     _selectedDay = _focusedDay;
     getPekerjaan();
@@ -78,6 +81,9 @@ class _TaskState extends State<Task> {
   getIdUser() async {
     final prefs = await SharedPreferences.getInstance();
     var idUser = prefs.getString("id_user");
+    setState(() {
+      iduser = idUser.toString();
+    });
     return idUser;
   }
 
@@ -110,6 +116,16 @@ class _TaskState extends State<Task> {
     }
   }
 
+  List<String> dropdownItems = [
+    'Semua',
+    'On Progress',
+    'Deadline Hari ini',
+    'Overdue',
+    'Sedang Verifikasi',
+    'Ditolak',
+    'Sudah Verifikasi'
+  ];
+
   Future<List<TaskModel>> getDataTask() async {
     bool cekpm = await cekPM();
     if (cekpm) {
@@ -140,7 +156,7 @@ class _TaskState extends State<Task> {
     List<HariLiburModel> hariLibur = await getHariLibur();
 
     // Cek jika hari libur adalah Sabtu atau Minggu
-    if (_selectedDay.weekday == 5 || _selectedDay.weekday == 7) {
+    if (_selectedDay.weekday == 6 || _selectedDay.weekday == 7) {
       return true;
     }
 
@@ -368,60 +384,35 @@ class _TaskState extends State<Task> {
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
                           Text(
-                            'Filter : ' + selectedFilter,
+                            'Filter : ',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          PopupMenuButton<String>(
-                            icon: Icon(Icons.filter_list, color: Colors.black),
-                            color: Colors.blue,
-                            itemBuilder: (BuildContext context) =>
-                                <PopupMenuEntry<String>>[
-                              const PopupMenuItem<String>(
-                                value: 'Semua',
-                                child: Text('Semua',
-                                    style: TextStyle(color: Colors.white)),
-                              ),
-                              const PopupMenuItem<String>(
-                                value: 'On Progress',
-                                child: Text('On Progress',
-                                    style: TextStyle(color: Colors.white)),
-                              ),
-                              const PopupMenuItem<String>(
-                                value: 'Deadline Hari ini',
-                                child: Text('Deadline Hari ini',
-                                    style: TextStyle(color: Colors.white)),
-                              ),
-                              const PopupMenuItem<String>(
-                                value: 'Overdue',
-                                child: Text('Overdue',
-                                    style: TextStyle(color: Colors.white)),
-                              ),
-                              const PopupMenuItem<String>(
-                                value: 'Sedang Verifikasi',
-                                child: Text('Sedang Verifikasi',
-                                    style: TextStyle(color: Colors.white)),
-                              ),
-                              const PopupMenuItem<String>(
-                                value: 'Ditolak',
-                                child: Text('Ditolak',
-                                    style: TextStyle(color: Colors.white)),
-                              ),
-                              const PopupMenuItem<String>(
-                                value: 'Sudah Verifikasi',
-                                child: Text('Sudah Verifikasi',
-                                    style: TextStyle(color: Colors.white)),
-                              ),
-                            ],
-                            onSelected: (String value) {
+                          DropdownButton<String>(
+                            value: dropdownValue,
+                            icon: const Icon(Icons.filter_list),
+                            elevation: 16,
+                            style: const TextStyle(color: Colors.black),
+                            // underline: Container(
+                            //   height: 1,
+                            //   color: Colors.black,
+                            // ),
+                            onChanged: (String? newValue) {
                               setState(() {
-                                dropdownValue = value;
-                                selectedFilter = value;
-                                refresh();
+                                dropdownValue = newValue!;
+                                task =
+                                    getDataTask(); // Refresh the task list based on the new filter
                               });
                             },
+                            items: dropdownItems
+                                .map<DropdownMenuItem<String>>((String value) {
+                              return DropdownMenuItem<String>(
+                                value: value,
+                                child: Text(value),
+                              );
+                            }).toList(),
                           ),
                         ],
                       ),
@@ -481,14 +472,9 @@ class _TaskState extends State<Task> {
                 );
         } else {
           List<TaskModel> allTasks = snapshot.data!;
-          // final filterTask = allTasks
-          //     .where((task) =>
-          //         task.deskripsi_task.toLowerCase().contains(
-          //               searchController.text.toLowerCase(),
-          //             ) ||
-          //         task.tgl_planing.toString().contains(searchController.text))
-          //     .toList();
           DateTime currentDate = DateTime.now();
+          DateTime today =
+              DateTime(currentDate.year, currentDate.month, currentDate.day);
 
           final filterTask = allTasks
               .where((task) =>
@@ -501,18 +487,17 @@ class _TaskState extends State<Task> {
               case 'Semua':
                 return true; // Tampilkan semua tugas
               case 'On Progress':
-                return task.tgl_verifikasi_diterima == null &&
-                    currentDate.isBefore(task.tgl_planing) &&
-                    task.id_status_task == '1';
+                return task.id_status_task == '1' &&
+                    task.tgl_verifikasi_diterima == null;
               case 'Deadline Hari ini':
                 return task.tgl_verifikasi_diterima == null &&
-                    currentDate.year == task.tgl_planing.year &&
-                    currentDate.month == task.tgl_planing.month &&
-                    currentDate.day == task.tgl_planing.day &&
-                    task.id_status_task == '1';
+                    task.id_status_task == '1' &&
+                    today.year == task.tgl_planing.year &&
+                    today.month == task.tgl_planing.month &&
+                    today.day == task.tgl_planing.day;
               case 'Overdue':
                 return task.tgl_verifikasi_diterima == null &&
-                    currentDate.isAfter(task.tgl_planing) &&
+                    today.isAfter(task.tgl_planing) &&
                     task.id_status_task == '1';
               case 'Sedang Verifikasi':
                 return task.id_status_task ==
@@ -546,7 +531,7 @@ class _TaskState extends State<Task> {
                       itemCount: filterTask.length,
                       itemBuilder: (context, index) {
                         Map<String, dynamic> taskData =
-                            allTasks[index].toJson();
+                            filterTask[index].toJson();
 
                         //setting color card
                         DateTime currentDate = DateTime.now();
@@ -683,92 +668,80 @@ class _TaskState extends State<Task> {
                                   taskData['tgl_verifikasi_diterima'] != null &&
                                           taskData['id_status_task'] == '3'
                                       ? Container() // Use Container instead of SizedBox for consistency
-                                      : Container(
-                                          margin: EdgeInsets.symmetric(
-                                              horizontal: 8.0),
-                                          child: IconButton(
-                                            icon: const Icon(Icons.delete),
-                                            color: Colors.white,
-                                            iconSize:
-                                                20, // Memperkecil ukuran ikon
-                                            onPressed: () async {
-                                              await showDialog(
-                                                context: context,
-                                                builder:
-                                                    (BuildContext context) {
-                                                  return AlertDialog(
-                                                    title: const Text(
-                                                        "Konfirmasi Hapus Task"),
-                                                    content: const Text(
-                                                        "Apakah Anda yakin ingin menghapus task ini?"),
-                                                    actions: [
-                                                      TextButton(
-                                                        onPressed: () {
-                                                          Navigator.pop(
-                                                              context);
-                                                        },
-                                                        child:
-                                                            const Text("Batal"),
-                                                      ),
-                                                      TextButton(
-                                                        onPressed: () async {
-                                                          Navigator.pop(
-                                                              context); // Close the dialog
-                                                          bool taskDeleted =
-                                                              await taskController
-                                                                  .deleteTask(taskData[
-                                                                          'id_task']
-                                                                      .toString());
-                                                          if (taskDeleted) {
-                                                            Get.offAndToNamed(
-                                                                '/task/$idPekerjaan');
-                                                            QuickAlert.show(
-                                                                context:
-                                                                    context,
-                                                                title:
-                                                                    "Hapus Task Berhasil",
-                                                                type: QuickAlertType
-                                                                    .success);
-                                                          } else {
-                                                            QuickAlert.show(
-                                                                context:
-                                                                    context,
-                                                                title:
-                                                                    "Hapus Task Gagal",
-                                                                type:
-                                                                    QuickAlertType
-                                                                        .error);
-                                                          }
-                                                        },
-                                                        child: Text("Hapus"),
-                                                      ),
-                                                    ],
-                                                  );
-                                                },
-                                              );
-                                            },
-                                          ),
-                                        ),
-                                  // Edit button
-                                  taskData['tgl_verifikasi_diterima'] == null &&
-                                          taskData['id_status_task'] == '1'
-                                      ? taskData['creator'] ==
-                                              taskData['id_user']
+                                      : taskData['creator'] ==
+                                                  taskData['id_user'] ||
+                                              taskData['creator'] == iduser
                                           ? Container(
                                               margin: EdgeInsets.symmetric(
                                                   horizontal: 8.0),
                                               child: IconButton(
-                                                icon: const Icon(Icons.edit),
+                                                icon: const Icon(Icons.delete),
                                                 color: Colors.white,
                                                 iconSize:
                                                     20, // Memperkecil ukuran ikon
-                                                onPressed: () {
-                                                  Get.toNamed(
-                                                      '/edit_task/${taskData['id_task']}');
+                                                onPressed: () async {
+                                                  await showDialog(
+                                                    context: context,
+                                                    builder:
+                                                        (BuildContext context) {
+                                                      return AlertDialog(
+                                                        title: const Text(
+                                                            "Konfirmasi Hapus Task"),
+                                                        content: const Text(
+                                                            "Apakah Anda yakin ingin menghapus task ini?"),
+                                                        actions: [
+                                                          TextButton(
+                                                            onPressed: () {
+                                                              Navigator.pop(
+                                                                  context);
+                                                            },
+                                                            child: const Text(
+                                                                "Batal"),
+                                                          ),
+                                                          TextButton(
+                                                            onPressed:
+                                                                () async {
+                                                              Navigator.pop(
+                                                                  context); // Close the dialog
+                                                              bool taskDeleted =
+                                                                  await taskController
+                                                                      .deleteTask(
+                                                                          taskData['id_task']
+                                                                              .toString());
+                                                              if (taskDeleted) {
+                                                                Get.offAndToNamed(
+                                                                    '/task/$idPekerjaan');
+                                                                refresh();
+                                                              } else {}
+                                                            },
+                                                            child:
+                                                                Text("Hapus"),
+                                                          ),
+                                                        ],
+                                                      );
+                                                    },
+                                                  );
                                                 },
                                               ),
                                             )
-                                          : Container()
+                                          : Container(),
+                                  // Edit button
+                                  taskData['tgl_verifikasi_diterima'] == null &&
+                                          taskData['id_status_task'] == '1'
+                                      ? Container(
+                                          margin: EdgeInsets.symmetric(
+                                              horizontal: 8.0),
+                                          child: IconButton(
+                                            icon: const Icon(Icons.edit),
+                                            color: Colors.white,
+                                            iconSize:
+                                                20, // Memperkecil ukuran ikon
+                                            onPressed: () {
+                                              Get.toNamed(
+                                                  '/edit_task/${taskData['id_task']}');
+                                            },
+                                          ),
+                                        )
                                       : Container(),
                                   // Submit button
                                   (taskData['tgl_verifikasi_diterima'] ==
@@ -776,20 +749,22 @@ class _TaskState extends State<Task> {
                                               taskData['id_status_task'] ==
                                                   '1') ||
                                           taskData['id_status_task'] == '4'
-                                      ? Container(
-                                          margin: EdgeInsets.symmetric(
-                                              horizontal: 8.0),
-                                          child: IconButton(
-                                            icon: const Icon(Icons.check),
-                                            color: Colors.white,
-                                            iconSize:
-                                                20, // Memperkecil ukuran ikon
-                                            onPressed: () {
-                                              Get.toNamed(
-                                                  '/submit_task/${taskData['id_task']}');
-                                            },
-                                          ),
-                                        )
+                                      ? taskData['id_user'] == iduser
+                                          ? Container(
+                                              margin: EdgeInsets.symmetric(
+                                                  horizontal: 8.0),
+                                              child: IconButton(
+                                                icon: const Icon(Icons.check),
+                                                color: Colors.white,
+                                                iconSize:
+                                                    20, // Memperkecil ukuran ikon
+                                                onPressed: () {
+                                                  Get.toNamed(
+                                                      '/submit_task/${taskData['id_task']}');
+                                                },
+                                              ),
+                                            )
+                                          : Container()
                                       : Container(),
                                 ],
                               ),

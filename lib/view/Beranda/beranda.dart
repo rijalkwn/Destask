@@ -458,7 +458,10 @@ class _BerandaState extends State<Beranda> {
                 ),
               );
             }).toList(),
-          )
+          ),
+          SizedBox(
+            height: 100,
+          ),
         ],
       ),
     );

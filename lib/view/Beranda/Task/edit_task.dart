@@ -34,6 +34,7 @@ class _EditTaskState extends State<EditTask> {
   PekerjaanController pekerjaanController = PekerjaanController();
   File? _image;
   String idUser = "";
+  String idpm = "";
   String namafoto = '';
   bool isLoading = false;
   String idPekerjaan = "";
@@ -77,6 +78,7 @@ class _EditTaskState extends State<EditTask> {
           setState(() {
             targetWaktuSelesai = value[0].target_waktu_selesai;
             tanggalMulai = value[0].created_at;
+            idpm = value[0].data_tambahan.pm[0].id_user;
           });
         });
         return value;
@@ -159,7 +161,7 @@ class _EditTaskState extends State<EditTask> {
                     const SizedBox(height: 16),
 
                     //tanggal mulai
-                    creator == idUser
+                    creator == idUser || creator == idpm
                         ? Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
