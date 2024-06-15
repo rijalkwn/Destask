@@ -13,5 +13,6 @@
 //RealDestask
 // const baseURL = 'http://192.168.233.66/Destask/public';//wifi hp
 // const baseURL = 'http://10.104.80.194/Destask/public';//undipconnect
-const baseURL = 'http://192.168.1.10/Destask/public';//kost baru
+const baseURL = 'http://192.168.1.103/Destask/public'; //kost baru
 // const baseURL = 'http://10.137.247.220/Destask/public';//kost baru
+// const baseURL = 'http://10.137.205.219/Destask/public';//kost baru

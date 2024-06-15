@@ -1,4 +1,6 @@
 import 'package:destask/view/Beranda/Task/submit_task.dart';
+import 'package:destask/view/Kinerja/detail_kinerja.dart';
+import 'package:destask/view/Kinerja/kinerja.dart';
 import 'package:destask/view/ResetPassword/reset_password.dart';
 import 'package:destask/view/ResetPassword/verifikasi_token.dart';
 import 'package:destask/view/verifikasi/detail_verifikasi.dart';
@@ -64,6 +66,10 @@ class MyApp extends StatelessWidget {
               name: '/detail_pekerjaan/:idpekerjaan',
               page: () => const DetailPekerjaan()),
           GetPage(name: '/rekap_point', page: () => const RekapPoint()),
+          GetPage(name: '/kinerja', page: () => const Kinerja()),
+          GetPage(
+              name: '/detail_kinerja/:idkinerja',
+              page: () => const DetailKinerja()),
           GetPage(name: '/verifikasi', page: () => const Verifikasi()),
           GetPage(
               name: '/verifikasi_task/:idpekerjaan',

@@ -1,3 +1,4 @@
+import 'package:destask/view/Kinerja/kinerja.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -48,7 +49,7 @@ class _BottomNavState extends State<BottomNav> {
       const Beranda(),
       const Pekerjaan(),
       if (supervisi) const Verifikasi(),
-      const RekapPoint(),
+      const Kinerja(),
       const Pengaturan(),
     ];
 
@@ -83,8 +84,8 @@ class _BottomNavState extends State<BottomNav> {
                 tooltip: "Verifikasi"),
           const BottomNavigationBarItem(
               icon: Icon(Icons.calendar_today),
-              label: "Point",
-              tooltip: "Point"),
+              label: "Kinerja",
+              tooltip: "Kinerja"),
           const BottomNavigationBarItem(
               icon: Icon(Icons.settings),
               label: "Pengaturan",
