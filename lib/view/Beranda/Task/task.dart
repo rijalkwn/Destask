@@ -158,7 +158,7 @@ class _TaskState extends State<Task> {
     List<HariLiburModel> hariLibur = await getHariLibur();
 
     // Cek jika hari libur adalah Sabtu atau Minggu
-    if (_selectedDay.weekday == 6 || _selectedDay.weekday == 1) {
+    if (_selectedDay.weekday == 6 || _selectedDay.weekday == 7) {
       return true;
     }
 
