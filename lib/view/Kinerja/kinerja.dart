@@ -159,6 +159,15 @@ class _KinerjaState extends State<Kinerja> {
                         return true;
                     }
                   }).toList();
+                  // Check if filtered list is empty
+                  if (filterKinerja.isEmpty) {
+                    return const Center(
+                      child: Text(
+                        'Data Tidak Ditemukan',
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    );
+                  }
                   return allKinerja.isEmpty
                       ? const Center(
                           child: Text(

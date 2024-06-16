@@ -1,20 +1,22 @@
-import '../../../controller/pekerjaan_controller.dart';
+import 'package:destask/controller/task_controller.dart';
+import 'package:destask/model/task_model.dart';
+import 'package:destask/view/Beranda/Task/task.dart';
 import '../../../model/pekerjaan_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../utils/global_colors.dart';
 
-class PekerjaanSelesai extends StatefulWidget {
-  const PekerjaanSelesai({super.key});
+class TaskSelesai extends StatefulWidget {
+  const TaskSelesai({super.key});
 
   @override
-  State<PekerjaanSelesai> createState() => _PekerjaanSelesaiState();
+  State<TaskSelesai> createState() => _TaskSelesaiState();
 }
 
-class _PekerjaanSelesaiState extends State<PekerjaanSelesai> {
+class _TaskSelesaiState extends State<TaskSelesai> {
   TextEditingController searchController = TextEditingController();
-  PekerjaanController pekerjaanController = PekerjaanController();
+  TaskController taskController = TaskController();
   bool isSearchBarVisible = false;
   String searchQuery = "";
 
@@ -53,8 +55,7 @@ class _PekerjaanSelesaiState extends State<PekerjaanSelesai> {
                   ),
                 ),
               )
-            : const Text('Pekerjaan Selesai',
-                style: TextStyle(color: Colors.white)),
+            : const Text('Task Selesai', style: TextStyle(color: Colors.white)),
         actions: !isSearchBarVisible
             ? [
                 IconButton(
@@ -70,7 +71,7 @@ class _PekerjaanSelesaiState extends State<PekerjaanSelesai> {
             : null,
       ),
       body: FutureBuilder(
-        future: pekerjaanController.getAllPekerjaanUser(),
+        future: taskController.getTaskBulanIni(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -79,18 +80,18 @@ class _PekerjaanSelesaiState extends State<PekerjaanSelesai> {
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return const Center(child: Text('No data available.'));
           } else if (snapshot.hasData) {
-            List<PekerjaanModel> pekerjaan = snapshot.data!;
-            final filteredList = pekerjaan
-                .where((pekerjaan) =>
-                    pekerjaan.id_status_pekerjaan == "3" &&
-                    pekerjaan.waktu_selesai != null &&
-                    pekerjaan.nama_pekerjaan!
+            List<TaskModel> task = snapshot.data!;
+            final filteredList = task
+                .where((task) =>
+                    task.id_status_task == "3" &&
+                    task.tgl_verifikasi_diterima != null &&
+                    task.deskripsi_task!
                         .toLowerCase()
                         .contains(searchQuery.toLowerCase()))
                 .toList();
 
-            return PekerjaanList(
-              pekerjaan: filteredList,
+            return TaskList(
+              task: filteredList,
             );
           } else {
             return const Center(child: Text('No data available.'));
@@ -101,15 +102,15 @@ class _PekerjaanSelesaiState extends State<PekerjaanSelesai> {
   }
 }
 
-class PekerjaanList extends StatelessWidget {
-  final List<dynamic> pekerjaan;
+class TaskList extends StatelessWidget {
+  final List<dynamic> task;
 
-  const PekerjaanList({super.key, required this.pekerjaan});
+  const TaskList({super.key, required this.task});
 
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      itemCount: pekerjaan.length,
+      itemCount: task.length,
       itemBuilder: (context, index) {
         return Padding(
           padding: const EdgeInsets.only(top: 3, left: 5, right: 5),
@@ -123,7 +124,7 @@ class PekerjaanList extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
                 child: Text(
-                  '${pekerjaan[index].data_tambahan.persentase_task_selesai}%',
+                  '${task[index].persentase_selesai}%',
                   style: const TextStyle(
                     color: Colors.black,
                     fontWeight: FontWeight.bold,
@@ -132,26 +133,22 @@ class PekerjaanList extends StatelessWidget {
                 ),
               ),
               title: Text(
-                pekerjaan[index].nama_pekerjaan ?? '',
+                task[index].deskripsi_task ?? '',
                 style: const TextStyle(color: Colors.white),
               ),
               subtitle: Text(
-                "PM : ${pekerjaan[index].data_tambahan.pm[0].nama}",
+                "PIC : ${task[index].data_tambahan.nama_user}",
                 style: const TextStyle(color: Colors.white),
               ),
               trailing: GestureDetector(
                 onTap: () {
-                  Get.toNamed(
-                      '/detail_pekerjaan/${pekerjaan[index].id_pekerjaan}');
+                  Get.toNamed('/detail_task/${task[index].id_task}');
                 },
                 child: const Icon(
                   Icons.density_small,
                   color: Colors.white,
                 ),
               ),
-              onTap: () {
-                Get.toNamed('/task/${pekerjaan[index].id_pekerjaan}');
-              },
             ),
           ),
         );

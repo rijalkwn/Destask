@@ -114,12 +114,15 @@ class _DetailTaskState extends State<DetailTask> {
                   _buildTableRow('Alasan Verifikasi',
                       alasanVerifikasi == '' ? '-' : alasanVerifikasi),
                   _buildTableRow(
-                      'Tanggal Selesai', tglSelesai == '' ? '-' : tglSelesai),
+                      'Tanggal Selesai',
+                      tglSelesai == ''
+                          ? '-'
+                          : formatDate(tglSelesai.toString())),
                   _buildTableRow(
                       'Tanggal Verifikasi Diterima',
                       tglVerifikasiDiterima == ''
                           ? '-'
-                          : tglVerifikasiDiterima),
+                          : formatDateTime(tglVerifikasiDiterima.toString())),
                   _buildBuktiSelesai('Bukti Selesai', buktiSelesai),
                 ],
               ),
@@ -280,5 +283,13 @@ class _DetailTaskState extends State<DetailTask> {
     }
     DateTime dateTime = DateTime.parse(date);
     return DateFormat('d MMMM yyyy', 'id').format(dateTime);
+  }
+
+  String formatDateTime(String date) {
+    if (date == '-') {
+      return '-';
+    }
+    DateTime dateTime = DateTime.parse(date);
+    return DateFormat('d MMMM yyyy HH:mm', 'id').format(dateTime);
   }
 }

@@ -36,6 +36,7 @@ class _TaskState extends State<Task> {
   bool libur = false;
 
   String namaPekerjaan = '';
+  String idStatusPekerjaan = '';
   String dropdownValue = 'Semua';
   String iduser = '';
 
@@ -97,6 +98,7 @@ class _TaskState extends State<Task> {
     var pekerjaan = await pekerjaanController.getPekerjaanById(idPekerjaan);
     setState(() {
       namaPekerjaan = pekerjaan[0].nama_pekerjaan.toString();
+      idStatusPekerjaan = pekerjaan[0].id_status_pekerjaan.toString();
     });
   }
 
@@ -156,7 +158,7 @@ class _TaskState extends State<Task> {
     List<HariLiburModel> hariLibur = await getHariLibur();
 
     // Cek jika hari libur adalah Sabtu atau Minggu
-    if (_selectedDay.weekday == 6 || _selectedDay.weekday == 7) {
+    if (_selectedDay.weekday == 6 || _selectedDay.weekday == 1) {
       return true;
     }
 
@@ -423,21 +425,25 @@ class _TaskState extends State<Task> {
             ),
             //LIST TASK
             Expanded(
-              child: SingleChildScrollView(child: buildTask()),
+              child: SingleChildScrollView(
+                child: buildTask(),
+                padding: EdgeInsets.only(bottom: 60),
+              ),
             ),
           ],
         ),
       ),
       //TOMBOL ADD TASK
-      floatingActionButton: libur
-          ? null
-          : FloatingActionButton(
-              onPressed: () {
-                Get.toNamed('/add_task/$idPekerjaan');
-              },
-              child: const Icon(Icons.add, color: Colors.white),
-              backgroundColor: GlobalColors.mainColor,
-            ),
+      floatingActionButton:
+          libur || idStatusPekerjaan == '3' || idStatusPekerjaan == '5'
+              ? null
+              : FloatingActionButton(
+                  onPressed: () {
+                    Get.toNamed('/add_task/$idPekerjaan');
+                  },
+                  child: const Icon(Icons.add, color: Colors.white),
+                  backgroundColor: GlobalColors.mainColor,
+                ),
     );
   }
 
@@ -638,136 +644,142 @@ class _TaskState extends State<Task> {
                                           : const SizedBox(),
                                     ],
                                   ),
-                                  //jika libur = false maka edit task bisa diakses
-                                  trailing: libur
-                                      ? const SizedBox()
-                                      : GestureDetector(
-                                          onTap: () {
-                                            Get.toNamed(
-                                                '/detail_task/${taskData['id_task']}',
-                                                arguments: taskData);
-                                          },
-                                          child: const Icon(
-                                            Icons.event_note_outlined,
-                                            color: Colors.white,
-                                          ),
-                                        ),
+                                  trailing: GestureDetector(
+                                    onTap: () {
+                                      Get.toNamed(
+                                          '/detail_task/${taskData['id_task']}',
+                                          arguments: taskData);
+                                    },
+                                    child: const Icon(
+                                      Icons.event_note_outlined,
+                                      color: Colors.white,
+                                    ),
+                                  ),
                                 ),
                               ),
                               //garis
-                              const Divider(
-                                color: Colors.white,
-                                thickness: 1,
-                              ),
+                              taskData['tgl_verifikasi_diterima'] != null &&
+                                      taskData['id_status_task'] == '3'
+                                  ? const SizedBox()
+                                  : const Divider(
+                                      color: Colors.white,
+                                      thickness: 1,
+                                    ),
                               //tombol edit dan delete
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  // Delete button
-                                  taskData['tgl_verifikasi_diterima'] != null &&
-                                          taskData['id_status_task'] == '3'
-                                      ? Container() // Use Container instead of SizedBox for consistency
-                                      : taskData['creator'] ==
-                                                  taskData['id_user'] ||
-                                              taskData['creator'] == iduser
-                                          ? Container(
-                                              margin: EdgeInsets.symmetric(
-                                                  horizontal: 8.0),
-                                              child: IconButton(
-                                                icon: const Icon(Icons.delete),
-                                                color: Colors.white,
-                                                iconSize:
-                                                    20, // Memperkecil ukuran ikon
-                                                onPressed: () async {
-                                                  await showDialog(
-                                                    context: context,
-                                                    builder:
-                                                        (BuildContext context) {
-                                                      return AlertDialog(
-                                                        title: const Text(
-                                                            "Konfirmasi Hapus Task"),
-                                                        content: const Text(
-                                                            "Apakah Anda yakin ingin menghapus task ini?"),
-                                                        actions: [
-                                                          TextButton(
-                                                            onPressed: () {
-                                                              Navigator.pop(
-                                                                  context);
-                                                            },
-                                                            child: const Text(
-                                                                "Batal"),
-                                                          ),
-                                                          TextButton(
-                                                            onPressed:
-                                                                () async {
-                                                              Navigator.pop(
-                                                                  context); // Close the dialog
-                                                              bool taskDeleted =
-                                                                  await taskController
-                                                                      .deleteTask(
-                                                                          taskData['id_task']
-                                                                              .toString());
-                                                              if (taskDeleted) {
-                                                                Get.offAndToNamed(
-                                                                    '/task/$idPekerjaan');
-                                                                refresh();
-                                                              } else {}
-                                                            },
-                                                            child:
-                                                                Text("Hapus"),
-                                                          ),
-                                                        ],
-                                                      );
-                                                    },
-                                                  );
-                                                },
-                                              ),
-                                            )
-                                          : Container(),
-                                  // Edit button
-                                  taskData['tgl_verifikasi_diterima'] == null &&
-                                          taskData['id_status_task'] == '1'
-                                      ? Container(
-                                          margin: EdgeInsets.symmetric(
-                                              horizontal: 8.0),
-                                          child: IconButton(
-                                            icon: const Icon(Icons.edit),
-                                            color: Colors.white,
-                                            iconSize:
-                                                20, // Memperkecil ukuran ikon
-                                            onPressed: () {
-                                              Get.toNamed(
-                                                  '/edit_task/${taskData['id_task']}');
-                                            },
-                                          ),
-                                        )
-                                      : Container(),
-                                  // Submit button
-                                  (taskData['tgl_verifikasi_diterima'] ==
-                                                  null &&
-                                              taskData['id_status_task'] ==
-                                                  '1') ||
-                                          taskData['id_status_task'] == '4'
-                                      ? taskData['id_user'] == iduser
-                                          ? Container(
-                                              margin: EdgeInsets.symmetric(
-                                                  horizontal: 8.0),
-                                              child: IconButton(
-                                                icon: const Icon(Icons.check),
-                                                color: Colors.white,
-                                                iconSize:
-                                                    20, // Memperkecil ukuran ikon
-                                                onPressed: () {
-                                                  Get.toNamed(
-                                                      '/submit_task/${taskData['id_task']}');
-                                                },
-                                              ),
-                                            )
-                                          : Container()
-                                      : Container(),
-                                ],
-                              ),
+                              taskData['tgl_verifikasi_diterima'] != null &&
+                                      taskData['id_status_task'] == '3'
+                                  ? Container()
+                                  : Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
+                                      children: [
+                                        // Delete button
+                                        taskData['creator'] ==
+                                                    taskData['id_user'] ||
+                                                taskData['creator'] == iduser
+                                            ? Container(
+                                                margin: EdgeInsets.symmetric(
+                                                    horizontal: 8.0),
+                                                child: IconButton(
+                                                  icon:
+                                                      const Icon(Icons.delete),
+                                                  color: Colors.white,
+                                                  iconSize:
+                                                      20, // Memperkecil ukuran ikon
+                                                  onPressed: () async {
+                                                    await showDialog(
+                                                      context: context,
+                                                      builder: (BuildContext
+                                                          context) {
+                                                        return AlertDialog(
+                                                          title: const Text(
+                                                              "Konfirmasi Hapus Task"),
+                                                          content: const Text(
+                                                              "Apakah Anda yakin ingin menghapus task ini?"),
+                                                          actions: [
+                                                            TextButton(
+                                                              onPressed: () {
+                                                                Navigator.pop(
+                                                                    context);
+                                                              },
+                                                              child: const Text(
+                                                                  "Batal"),
+                                                            ),
+                                                            TextButton(
+                                                              onPressed:
+                                                                  () async {
+                                                                Navigator.pop(
+                                                                    context); // Close the dialog
+                                                                bool
+                                                                    taskDeleted =
+                                                                    await taskController
+                                                                        .deleteTask(
+                                                                            taskData['id_task'].toString());
+                                                                if (taskDeleted) {
+                                                                  Get.offAndToNamed(
+                                                                      '/task/$idPekerjaan');
+                                                                  refresh();
+                                                                } else {}
+                                                              },
+                                                              child:
+                                                                  Text("Hapus"),
+                                                            ),
+                                                          ],
+                                                        );
+                                                      },
+                                                    );
+                                                  },
+                                                ),
+                                              )
+                                            : SizedBox(),
+                                        // Edit button
+                                        taskData['creator'] ==
+                                                    taskData['id_user'] ||
+                                                taskData['id_user'] == iduser
+                                            ? Container(
+                                                margin: EdgeInsets.symmetric(
+                                                    horizontal: 8.0),
+                                                child: IconButton(
+                                                  icon: const Icon(Icons.edit),
+                                                  color: Colors.white,
+                                                  iconSize:
+                                                      20, // Memperkecil ukuran ikon
+                                                  onPressed: () {
+                                                    Get.toNamed(
+                                                        '/edit_task/${taskData['id_task']}');
+                                                  },
+                                                ),
+                                              )
+                                            : Container(),
+                                        // Submit button
+                                        (taskData['tgl_verifikasi_diterima'] ==
+                                                        null &&
+                                                    taskData[
+                                                            'id_status_task'] ==
+                                                        '1') ||
+                                                taskData['id_status_task'] ==
+                                                    '4'
+                                            ? taskData['id_user'] == iduser
+                                                ? Container(
+                                                    margin:
+                                                        EdgeInsets.symmetric(
+                                                            horizontal: 8.0),
+                                                    child: IconButton(
+                                                      icon: const Icon(
+                                                          Icons.check),
+                                                      color: Colors.white,
+                                                      iconSize:
+                                                          20, // Memperkecil ukuran ikon
+                                                      onPressed: () {
+                                                        Get.toNamed(
+                                                            '/submit_task/${taskData['id_task']}');
+                                                      },
+                                                    ),
+                                                  )
+                                                : Container()
+                                            : Container(),
+                                      ],
+                                    ),
                             ],
                           ),
                         );

@@ -1,3 +1,4 @@
+import 'package:destask/view/Beranda/Informasi/task_selesai.dart';
 import 'package:destask/view/Beranda/Task/submit_task.dart';
 import 'package:destask/view/Kinerja/detail_kinerja.dart';
 import 'package:destask/view/Kinerja/kinerja.dart';
@@ -13,7 +14,7 @@ import '../view/Beranda/Task/add_task.dart';
 import '../view/Beranda/Task/edit_task.dart';
 import '../view/Beranda/Task/task.dart';
 import '../view/Beranda/beranda.dart';
-import '../view/RekapPoint/rekap_point.dart';
+import 'view/Beranda/Informasi/rekap_point.dart';
 import '../view/Menu/bottom_nav.dart';
 import '../view/Notifikasi/notifikasi.dart';
 import '../view/Pekerjaan/detail_pekerjaan.dart';
@@ -51,7 +52,7 @@ class MyApp extends StatelessWidget {
           GetPage(name: '/beranda', page: () => const Beranda()),
           GetPage(
               name: '/pekerjaan_selesai', page: () => const PekerjaanSelesai()),
-          GetPage(name: '/task_selesai', page: () => const PekerjaanSelesai()),
+          GetPage(name: '/task_selesai', page: () => const TaskSelesai()),
           GetPage(name: '/notifikasi', page: () => const Notifikasi()),
           GetPage(
             name: '/task/:idpekerjaan',

@@ -49,15 +49,13 @@ class _RekapPointState extends State<RekapPoint> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Center(
-          child: Text(
-            'Rekap Point',
-            style: TextStyle(color: Colors.white),
-          ),
+        title: Text(
+          'Rekap Point',
+          style: TextStyle(color: Colors.white),
         ),
         backgroundColor: GlobalColors.mainColor,
         iconTheme: const IconThemeData(color: Colors.white),
-        automaticallyImplyLeading: false,
+        // automaticallyImplyLeading: false,
       ),
       body: Column(
         children: [

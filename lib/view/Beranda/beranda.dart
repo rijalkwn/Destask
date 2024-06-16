@@ -53,7 +53,7 @@ class _BerandaState extends State<Beranda> {
       await getJumlahPekerjaanSelesai();
       await getTaskPoin();
       await getTaskSelesai();
-      await getNotifikasi();
+      // await getNotifikasi();
       var data = await getDataPekerjaan();
       setState(() {
         pekerjaan = data;
@@ -113,7 +113,6 @@ class _BerandaState extends State<Beranda> {
     int count = 0;
     for (var i = 0; i < data.length; i++) {
       if (data[i].id_status_pekerjaan.toString() == '3' &&
-          data[i].persentase_selesai.toString() == '100' &&
           data[i].waktu_selesai != null) {
         count += 1;
       }
@@ -126,19 +125,19 @@ class _BerandaState extends State<Beranda> {
   }
 
   //get notifikasi
-  getNotifikasi() async {
-    var data = await notifikasiController.getNotifikasi();
-    int count = 0; // Initialize a counter variable
-    for (var i = 0; i < data.length; i++) {
-      if (data[i].status_terbaca.toString() == '0') {
-        count += 1;
-      }
-    }
-    setState(() {
-      jumlahNotifikasi = count.toString();
-    });
-    return data;
-  }
+  // getNotifikasi() async {
+  //   var data = await notifikasiController.getNotifikasi();
+  //   int count = 0; // Initialize a counter variable
+  //   for (var i = 0; i < data.length; i++) {
+  //     if (data[i].status_terbaca.toString() == '0') {
+  //       count += 1;
+  //     }
+  //   }
+  //   setState(() {
+  //     jumlahNotifikasi = count.toString();
+  //   });
+  //   return data;
+  // }
 
   @override
   void dispose() {
@@ -176,38 +175,38 @@ class _BerandaState extends State<Beranda> {
             ],
           ),
         ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(top: 10, right: 15),
-            child: GestureDetector(
-              onTap: () {
-                Get.toNamed('/notifikasi');
-              },
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.blue[300],
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                padding: const EdgeInsets.all(8.0),
-                child: badges.Badge(
-                  badgeContent: Text(
-                    jumlahNotifikasi.toString(),
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                  badgeStyle: const BadgeStyle(
-                      badgeColor: Colors.red, // Red circle color
-                      elevation: 4, // No shadow
-                      padding: EdgeInsets.only(
-                          top: 5, bottom: 5, left: 5, right: 5)),
-                  child: const Icon(
-                    Icons.notifications,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
+        // actions: [
+        //   Padding(
+        //     padding: const EdgeInsets.only(top: 10, right: 15),
+        //     child: GestureDetector(
+        //       onTap: () {
+        //         Get.toNamed('/notifikasi');
+        //       },
+        //       child: Container(
+        //         decoration: BoxDecoration(
+        //           color: Colors.blue[300],
+        //           borderRadius: BorderRadius.circular(10),
+        //         ),
+        //         padding: const EdgeInsets.all(8.0),
+        //         child: badges.Badge(
+        //           badgeContent: Text(
+        //             jumlahNotifikasi.toString(),
+        //             style: const TextStyle(color: Colors.white),
+        //           ),
+        //           badgeStyle: const BadgeStyle(
+        //               badgeColor: Colors.red, // Red circle color
+        //               elevation: 4, // No shadow
+        //               padding: EdgeInsets.only(
+        //                   top: 5, bottom: 5, left: 5, right: 5)),
+        //           child: const Icon(
+        //             Icons.notifications,
+        //             color: Colors.white,
+        //           ),
+        //         ),
+        //       ),
+        //     ),
+        //   ),
+        // ],
       ),
       body: Stack(
         children: [
@@ -338,7 +337,10 @@ class _BerandaState extends State<Beranda> {
                               if (index == 0) {
                                 Get.toNamed('/pekerjaan_selesai');
                               } else if (index == 1) {
-                              } else if (index == 2) {}
+                                Get.toNamed('/task_selesai');
+                              } else if (index == 2) {
+                                Get.toNamed('/rekap_point');
+                              }
                             },
                             child: Container(
                               padding: const EdgeInsets.all(10),
@@ -391,73 +393,77 @@ class _BerandaState extends State<Beranda> {
           const SizedBox(
             height: 10,
           ),
-          Column(
-            children: pekerjaan.map((pekerjaanItem) {
-              return Card(
-                color: GlobalColors.mainColor,
-                child: Column(
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        Get.toNamed('/task/${pekerjaanItem.id_pekerjaan}');
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 8),
-                        child: ListTile(
-                          leading: Container(
-                            padding: const EdgeInsets.all(15),
-                            decoration: const BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Text(
-                              '${pekerjaanItem.data_tambahan.persentase_task_selesai}%',
-                              style: const TextStyle(
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
+          Padding(
+            padding: const EdgeInsets.only(left: 10, right: 10),
+            child: Column(
+              children: pekerjaan.map((pekerjaanItem) {
+                return Card(
+                  color: GlobalColors.mainColor,
+                  child: Column(
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          Get.toNamed('/task/${pekerjaanItem.id_pekerjaan}');
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: ListTile(
+                            leading: Container(
+                              padding: const EdgeInsets.all(15),
+                              decoration: const BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Text(
+                                '${pekerjaanItem.data_tambahan.persentase_task_selesai}%',
+                                style: const TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
                               ),
                             ),
-                          ),
-                          title: Text(
-                            pekerjaanItem.nama_pekerjaan!,
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                          subtitle: Text(
-                            "PM: ${pekerjaanItem.data_tambahan.pm[0].nama!}",
-                            style: const TextStyle(color: Colors.white),
+                            title: Text(
+                              pekerjaanItem.nama_pekerjaan!,
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                            subtitle: Text(
+                              "PM: ${pekerjaanItem.data_tambahan.pm[0].nama!}",
+                              style: const TextStyle(color: Colors.white),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    const Divider(),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Container(
-                            padding: const EdgeInsets.only(top: 3, bottom: 13),
-                            child: GestureDetector(
-                              onTap: () {
-                                Get.toNamed(
-                                    '/detail_pekerjaan/${pekerjaanItem.id_pekerjaan}');
-                              },
-                              child: const Center(
-                                child: Text(
-                                  'Detail',
-                                  style: TextStyle(
-                                    color: Colors.white,
+                      const Divider(),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Container(
+                              padding:
+                                  const EdgeInsets.only(top: 3, bottom: 13),
+                              child: GestureDetector(
+                                onTap: () {
+                                  Get.toNamed(
+                                      '/detail_pekerjaan/${pekerjaanItem.id_pekerjaan}');
+                                },
+                                child: const Center(
+                                  child: Text(
+                                    'Detail',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              );
-            }).toList(),
+                        ],
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
           ),
           SizedBox(
             height: 100,

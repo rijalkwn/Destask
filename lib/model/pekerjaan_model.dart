@@ -12,7 +12,6 @@ class PekerjaanModel {
   String nominal_harga;
   String deskripsi_pekerjaan;
   DateTime target_waktu_selesai;
-  String persentase_selesai;
   DateTime? waktu_selesai;
   DateTime created_at;
   DataTambahan data_tambahan;
@@ -31,7 +30,6 @@ class PekerjaanModel {
     required this.nominal_harga,
     required this.deskripsi_pekerjaan,
     required this.target_waktu_selesai,
-    required this.persentase_selesai,
     this.waktu_selesai,
     required this.created_at,
     required this.data_tambahan,
@@ -52,7 +50,6 @@ class PekerjaanModel {
         nominal_harga: json['nominal_harga'] ?? '',
         deskripsi_pekerjaan: json['deskripsi_pekerjaan'] ?? '',
         target_waktu_selesai: DateTime.parse(json['target_waktu_selesai']),
-        persentase_selesai: json['persentase_selesai'] ?? '',
         waktu_selesai: json['waktu_selesai'] != null
             ? DateTime.parse(json['waktu_selesai'])
             : null,
@@ -75,7 +72,6 @@ class PekerjaanModel {
       'nominal_harga': nominal_harga,
       'deskripsi_pekerjaan': deskripsi_pekerjaan,
       'target_waktu_selesai': target_waktu_selesai,
-      'persentase_selesai': persentase_selesai,
       'waktu_selesai': waktu_selesai,
       'created_at': created_at,
       'data_tambahan': data_tambahan.toJson(),

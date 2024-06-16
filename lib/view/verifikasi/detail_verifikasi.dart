@@ -173,16 +173,12 @@ class _DetailVerifikasiState extends State<DetailVerifikasi> {
 
                                     // Jika verifikasi task berhasil, Anda dapat menambahkan logika penanganan berhasil di sini
                                     if (success) {
-                                      Get.offAndToNamed('/bottom_nav');
-                                      Get.snackbar(
-                                        'Berhasil Menolak',
-                                        '',
-                                        backgroundColor: Colors.green,
-                                        snackStyle: SnackStyle.FLOATING,
-                                        messageText: Text(
-                                          'Berhasil Menolak Task',
-                                          style: TextStyle(color: Colors.white),
-                                        ),
+                                      Get.offAndToNamed(
+                                          '/verifikasi_task/$idPekerjaan');
+                                      QuickAlert.show(
+                                        context: context,
+                                        title: "Berhasil Menolak Task",
+                                        type: QuickAlertType.success,
                                       );
                                     } else {
                                       Navigator.pop(context);
@@ -262,16 +258,12 @@ class _DetailVerifikasiState extends State<DetailVerifikasi> {
 
                                     // Handle the result of the asynchronous operation
                                     if (success) {
-                                      Get.offAndToNamed('/bottom_nav');
-                                      Get.snackbar(
-                                        'Berhasil',
-                                        '',
-                                        backgroundColor: Colors.green,
-                                        snackStyle: SnackStyle.FLOATING,
-                                        messageText: Text(
-                                          'Berhasil Memverifikasi',
-                                          style: TextStyle(color: Colors.white),
-                                        ),
+                                      Get.offAndToNamed(
+                                          '/verifikasi_task/$idPekerjaan');
+                                      QuickAlert.show(
+                                        context: context,
+                                        title: "Berhasil Memverifikasi Task",
+                                        type: QuickAlertType.success,
                                       );
                                     } else {
                                       QuickAlert.show(
@@ -450,7 +442,6 @@ class _DetailVerifikasiState extends State<DetailVerifikasi> {
                         child: Image.network(
                           '$url/$namafoto',
                           width: 100,
-                          height: 100,
                         ),
                       ),
               ],
