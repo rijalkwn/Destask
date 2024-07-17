@@ -82,7 +82,7 @@ class PekerjaanModel {
 class DataTambahan {
   final String nama_status_pekerjaan;
   final String nama_kategori_pekerjaan;
-  final List<PmModel> pm;
+  final List<ProjectManagerModel> project_manager;
   final List<DesainerModel> desainer;
   final List<BackendWebModel> backend_web;
   final List<BackendMobileModel> backend_mobile;
@@ -96,7 +96,7 @@ class DataTambahan {
   DataTambahan({
     required this.nama_status_pekerjaan,
     required this.nama_kategori_pekerjaan,
-    required this.pm,
+    required this.project_manager,
     required this.desainer,
     required this.backend_web,
     required this.backend_mobile,
@@ -109,10 +109,10 @@ class DataTambahan {
   });
 
   factory DataTambahan.fromJson(Map<String, dynamic> json) {
-    List<PmModel> pmList = [];
-    if (json['pm'] != null) {
-      json['pm'].forEach((pm) {
-        pmList.add(PmModel.fromJson(pm));
+    List<ProjectManagerModel> projectManagerList = [];
+    if (json['project_manager'] != null) {
+      json['project_manager'].forEach((project_manager) {
+        projectManagerList.add(ProjectManagerModel.fromJson(project_manager));
       });
     }
 
@@ -178,7 +178,7 @@ class DataTambahan {
     return DataTambahan(
         nama_status_pekerjaan: json['nama_status_pekerjaan'],
         nama_kategori_pekerjaan: json['nama_kategori_pekerjaan'],
-        pm: pmList,
+        project_manager: projectManagerList,
         desainer: desainerList,
         backend_web: backendWebList,
         backend_mobile: backendMobileList,
@@ -195,7 +195,7 @@ class DataTambahan {
     return {
       'nama_status_pekerjaan': nama_status_pekerjaan,
       'nama_kategori_pekerjaan': nama_kategori_pekerjaan,
-      'pm': pm,
+      'project_manager': project_manager,
       'desainer': desainer,
       'backend_web': backend_web,
       'backend_mobile': backend_mobile,
@@ -209,16 +209,16 @@ class DataTambahan {
   }
 }
 
-class PmModel {
+class ProjectManagerModel {
   final String id_user;
   final String nama;
   final String role_personil;
 
-  PmModel(
+  ProjectManagerModel(
       {required this.id_user, required this.nama, required this.role_personil});
 
-  factory PmModel.fromJson(Map<String, dynamic> json) {
-    return PmModel(
+  factory ProjectManagerModel.fromJson(Map<String, dynamic> json) {
+    return ProjectManagerModel(
       id_user: json['id_user'],
       nama: json['nama'],
       role_personil: json['role_personil'],

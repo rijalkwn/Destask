@@ -1,6 +1,7 @@
 import 'dart:io';
+import 'package:destask/controller/hari_libur_controller.dart';
 import 'package:destask/controller/pekerjaan_controller.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../controller/kategori_task_controller.dart';
 import '../../../controller/task_controller.dart';
@@ -32,16 +33,21 @@ class _EditTaskState extends State<EditTask> {
   KategoriTaskController kategoriTaskController = KategoriTaskController();
   TaskController taskController = TaskController();
   PekerjaanController pekerjaanController = PekerjaanController();
-  File? _image;
+  HariLiburController hariLiburController = HariLiburController();
   String idUser = "";
   String idpm = "";
   String namafoto = '';
   bool isLoading = false;
   String idPekerjaan = "";
   String namaPekerjaan = "";
+  String namaKategori = "";
   String creator = "";
+  String id_user_login = '';
   DateTime targetWaktuSelesai = DateTime.now();
   DateTime tanggalMulai = DateTime.now();
+  DateTime today = DateTime.now();
+  List<DateTime> listTanggalLibur = [];
+
   // String idStatusTask = "";
   String idKategoriTask = "";
   bool completed = false;
@@ -51,13 +57,46 @@ class _EditTaskState extends State<EditTask> {
   @override
   void initState() {
     super.initState();
+
     loadData();
+  }
+
+  getIdUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    var idUser = prefs.getString("id_user");
+    setState(() {
+      id_user_login = idUser.toString();
+    });
+    print('login: $id_user_login');
+
+    return idUser;
+  }
+
+  //hari libur
+  Future<List<DateTime>> listHariLibur() async {
+    var data = await hariLiburController.getAllHariLibur();
+
+    // Ensure that tanggal_libur is explicitly cast to DateTime
+    List<DateTime> tanggalLibur = data.map<DateTime>((hariLibur) {
+      // Example: Assuming tanggal_libur is already DateTime, ensure the correct access
+      return DateTime.parse(hariLibur.tanggal_libur.toString());
+    }).toList();
+
+    setState(() {
+      listTanggalLibur.addAll(tanggalLibur);
+    });
+    return listTanggalLibur;
+  }
+
+  bool _isWeekend(DateTime date) {
+    return date.weekday == DateTime.saturday || date.weekday == DateTime.sunday;
   }
 
   void loadData() async {
     try {
-      // statusList = await statusTaskController.showAll();
       kategoriList = await kategoriTaskController.showAll();
+      listHariLibur();
+      getIdUser();
       taskController.showById(idTask).then((value) {
         setState(() {
           idPekerjaan = value[0].id_pekerjaan.toString();
@@ -73,13 +112,16 @@ class _EditTaskState extends State<EditTask> {
           _persentaseSelesaiController.text =
               value[0].persentase_selesai.toString();
           namaPekerjaan = value[0].data_tambahan.nama_pekerjaan.toString();
+          namaKategori = value[0].data_tambahan.nama_kategori_task.toString();
         });
+        print('cre: $creator');
         pekerjaanController.getPekerjaanById(idPekerjaan).then((value) {
           setState(() {
             targetWaktuSelesai = value[0].target_waktu_selesai;
             tanggalMulai = value[0].created_at;
-            idpm = value[0].data_tambahan.pm[0].id_user;
+            idpm = value[0].data_tambahan.project_manager[0].id_user;
           });
+          print('idpm: $idpm');
         });
         return value;
       });
@@ -140,32 +182,18 @@ class _EditTaskState extends State<EditTask> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     buildLabel('Pekejaan *'),
-                    Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey),
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 15, vertical: 15),
-                      child: Text(
-                        namaPekerjaan,
-                        style: const TextStyle(
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
+                    formDisabled(namaPekerjaan),
                     const SizedBox(height: 16),
-                    buildLabel('Deskripsi Task *'),
-                    buildFormField(_deskripsiTaskController, 'Deskripsi Task',
-                        TextInputType.multiline),
-                    const SizedBox(height: 16),
-
-                    //tanggal mulai
-                    creator == idUser || creator == idpm
+                    //pm atau creator
+                    idpm == id_user_login || id_user_login == creator
                         ? Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              buildLabel('Deadline *'),
+                              buildLabel('Deskripsi Task *'),
+                              buildFormField(_deskripsiTaskController,
+                                  'Deskripsi Task', TextInputType.multiline),
+                              const SizedBox(height: 16),
+                              buildLabel('Target Waktu Selesai *'),
                               MyDateTimePicker(
                                 selectedDate: _selectedDateStart,
                                 onChanged: (date) {
@@ -175,84 +203,103 @@ class _EditTaskState extends State<EditTask> {
                                 },
                                 validator: (date) {
                                   if (date == null) {
-                                    return 'Kolom Tanggal Deadline harus diisi';
-                                  } else if (date.isBefore(tanggalMulai)) {
-                                    return 'Tanggal tidak boleh sebelum tanggal mulai';
+                                    return 'Kolom Tanggal Target Waktu Selesai harus diisi';
                                   } else if (date.isAfter(targetWaktuSelesai)) {
-                                    return 'Tanggal melebihi target waktu selesai';
+                                    return 'Tanggal melebihi target waktu selesai pekerjaan';
+                                  } else if (date.isBefore(
+                                      today.subtract(Duration(days: 1)))) {
+                                    return 'Tanggal tidak boleh sebelum hari ini';
+                                  } else if (_isWeekend(date)) {
+                                    return 'Tanggal tidak boleh jatuh pada hari Sabtu atau Minggu';
+                                  } else if (listTanggalLibur.contains(date)) {
+                                    return 'Tanggal yang dipilih adalah hari libur';
                                   }
+
                                   return null;
                                 },
                               ),
+                              const SizedBox(height: 16),
+                              //kategori task
+                              buildLabel('Kategori Task *'),
+                              idKategoriTask == ""
+                                  ? const Text("Memuat data")
+                                  : DropdownButtonFormField<String>(
+                                      value: idKategoriTask,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          idKategoriTask = value!;
+                                        });
+                                      },
+                                      items: kategoriList.map((kategori) {
+                                        return DropdownMenuItem<String>(
+                                          value: kategori.id_kategori_task,
+                                          child: Text(kategori
+                                              .nama_kategori_task
+                                              .toString()),
+                                        );
+                                      }).toList(),
+                                      decoration: const InputDecoration(
+                                        contentPadding: EdgeInsets.symmetric(
+                                            horizontal: 15, vertical: 3),
+                                        border: OutlineInputBorder(),
+                                      ),
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return 'Kolom Kategori Task harus diisi';
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                              //persentase selesai
+                              buildLabel('Persentase Selesai *'),
+                              buildFormFieldPersentase(
+                                  _persentaseSelesaiController,
+                                  'Persentase Selesai',
+                                  TextInputType.number),
                             ],
                           )
-                        : const SizedBox(),
-                    //status task
-                    // buildLabel('Status Task *'),
-                    // idStatusTask == ""
-                    //     ? const Text("Memuat data")
-                    //     : DropdownButtonFormField<String>(
-                    //         value: idStatusTask,
-                    //         onChanged: (value) {
-                    //           setState(() {
-                    //             idStatusTask = value!;
-                    //           });
-                    //         },
-                    //         items: statusList.map((status) {
-                    //           return DropdownMenuItem<String>(
-                    //             value: status.id_status_task,
-                    //             child: Text(status.nama_status_task.toString()),
-                    //           );
-                    //         }).toList(),
-                    //         decoration: const InputDecoration(
-                    //           contentPadding: EdgeInsets.symmetric(
-                    //               horizontal: 15, vertical: 3),
-                    //           border: OutlineInputBorder(),
-                    //         ),
-                    //         validator: (value) {
-                    //           if (value == null || value.isEmpty) {
-                    //             return 'Kolom Status Task harus diisi';
-                    //           }
-                    //           return null;
-                    //         },
-                    //       ),
-                    // const SizedBox(height: 16),
-                    //kategori task
-                    buildLabel('Kategori Task *'),
-                    idKategoriTask == ""
-                        ? const Text("Memuat data")
-                        : DropdownButtonFormField<String>(
-                            value: idKategoriTask,
-                            onChanged: (value) {
-                              setState(() {
-                                idKategoriTask = value!;
-                              });
-                            },
-                            items: kategoriList.map((kategori) {
-                              return DropdownMenuItem<String>(
-                                value: kategori.id_kategori_task,
-                                child: Text(
-                                    kategori.nama_kategori_task.toString()),
-                              );
-                            }).toList(),
-                            decoration: const InputDecoration(
-                              contentPadding: EdgeInsets.symmetric(
-                                  horizontal: 15, vertical: 3),
-                              border: OutlineInputBorder(),
-                            ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Kolom Kategori Task harus diisi';
-                              }
-                              return null;
-                            },
+                        : Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              buildLabel('Deskripsi Task *'),
+                              formDisabled(_deskripsiTaskController.text),
+                              const SizedBox(height: 16),
+                              buildLabel('Target Waktu Selesai *'),
+                              //tampilan target waktu selesai yang tidak bisa diubah
+                              Container(
+                                decoration: BoxDecoration(
+                                  border: Border.all(color: Colors.grey),
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 15, vertical: 15),
+                                child: Row(
+                                  children: [
+                                    //icon tanggal
+                                    Icon(Icons.calendar_today,
+                                        color: Colors.grey, size: 20),
+                                    const SizedBox(width: 10),
+                                    Text(
+                                      formatDate(targetWaktuSelesai),
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              buildLabel('Kategori Task *'),
+                              formDisabled(namaKategori),
+                              const SizedBox(height: 16),
+                              buildLabel('Persentase Selesai *'),
+                              buildFormFieldPersentase(
+                                  _persentaseSelesaiController,
+                                  'Persentase Selesai',
+                                  TextInputType.number),
+                            ],
                           ),
-                    const SizedBox(height: 16),
-                    //persentase selesai
-                    buildLabel('Persentase Selesai *'),
-                    buildFormFieldPersentase(_persentaseSelesaiController,
-                        'Persentase Selesai', TextInputType.number),
-                    const SizedBox(height: 5),
                   ],
                 ),
                 const SizedBox(height: 16),
@@ -302,7 +349,7 @@ class _EditTaskState extends State<EditTask> {
                           ),
                           padding: const EdgeInsets.all(16.0),
                           child: const Text(
-                            'Edit Task',
+                            'Simpan',
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               color: Colors.white,
@@ -315,6 +362,23 @@ class _EditTaskState extends State<EditTask> {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Container formDisabled(String nama) {
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey),
+        borderRadius: BorderRadius.circular(5),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+      child: Text(
+        nama,
+        style: const TextStyle(
+          fontSize: 16,
+          color: Colors.grey,
         ),
       ),
     );
@@ -375,15 +439,8 @@ class _EditTaskState extends State<EditTask> {
     );
   }
 
-  TextFormField buildFormFieldBolehKosong(
-      TextEditingController controller, String label, TextInputType type) {
-    return TextFormField(
-      controller: controller,
-      keyboardType: type,
-      decoration: const InputDecoration(
-        contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 3),
-        border: OutlineInputBorder(),
-      ),
-    );
+  //format date
+  String formatDate(DateTime date) {
+    return DateFormat('dd MMMM yyyy').format(date);
   }
 }

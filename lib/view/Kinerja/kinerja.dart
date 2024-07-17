@@ -18,15 +18,10 @@ class _KinerjaState extends State<Kinerja> {
   late Future<List<KinerjaModel>> kinerja;
   String dropdownValue = 'Semua';
 
-  Future<List<KinerjaModel>> getDataKinerja() async {
-    var data = await kinerjaController.getKinerjaUser();
-    return data;
-  }
-
   @override
   void initState() {
     super.initState();
-    kinerja = getDataKinerja();
+    kinerja = kinerjaController.showKinerjaUser();
   }
 
   @override
@@ -66,8 +61,8 @@ class _KinerjaState extends State<Kinerja> {
                   onChanged: (String? newValue) {
                     setState(() {
                       dropdownValue = newValue!;
-                      kinerja =
-                          getDataKinerja(); // Refresh the task list based on the new filter
+                      kinerja = kinerjaController
+                          .showKinerjaUser(); // Refresh the task list based on the new filter
                     });
                   },
                   items: <String>[
@@ -107,27 +102,6 @@ class _KinerjaState extends State<Kinerja> {
                     child: Text('Error: ${snapshot.error}'),
                   );
                 } else {
-                  // return ListView.builder(
-                  //   itemCount: snapshot.data!.length,
-                  //   itemBuilder: (context, index) {
-                  //     KinerjaModel kinerjaData = snapshot.data![index];
-                  //     return Card(
-                  //       child: GestureDetector(
-                  //         onTap: () {
-                  //           Get.toNamed('/detail_kinerja',
-                  //               arguments: kinerjaData.toJson());
-                  //         },
-                  //         child: ListTile(
-                  //           title: Text(kinerjaData.bulan),
-                  //           subtitle: Text(kinerjaData.tahun),
-                  //           trailing: Text(
-                  //             kinerjaData.score_kpi.toString(),
-                  //           ),
-                  //         ),
-                  //       ),
-                  //     );
-                  //   },
-                  // );
                   List<KinerjaModel> allKinerja = snapshot.data!;
                   final filterKinerja = allKinerja
                       .where((kinerja) => kinerja.bulan.toLowerCase().contains(
@@ -183,7 +157,7 @@ class _KinerjaState extends State<Kinerja> {
                             KinerjaModel kinerjaData = filterKinerja[index];
                             // Parse the month number and convert it to a month name
                             int monthNumber = int.parse(kinerjaData.bulan);
-                            String monthName = DateFormat.MMMM()
+                            String monthName = DateFormat.MMMM('id_ID')
                                 .format(DateTime(0, monthNumber));
 
                             return Card(
@@ -205,7 +179,8 @@ class _KinerjaState extends State<Kinerja> {
                                         style: TextStyle(color: Colors.white)),
                                     trailing: Text(
                                       kinerjaData.score_kpi.toString(),
-                                      style: TextStyle(color: Colors.white),
+                                      style: TextStyle(
+                                          color: Colors.white, fontSize: 16),
                                     ),
                                   ),
                                 ));

@@ -59,6 +59,12 @@ class KinerjaController {
     }
   }
 
+  //fungsi menampilkan semua kategori task
+  Future<List<KinerjaModel>> showKinerjaUser() async {
+    List<KinerjaModel> data = await getKinerjaUser();
+    return data;
+  }
+
   Future getKinerjaById(String idkinerja) async {
     try {
       var token = await getToken();
@@ -90,5 +96,10 @@ class KinerjaController {
       print(e);
       return [];
     }
+  }
+
+  Future<List<KinerjaModel>> showKinerjaById(idkinerja) async {
+    List<KinerjaModel> data = await getKinerjaById(idkinerja);
+    return data;
   }
 }

@@ -42,31 +42,4 @@ class KategoriTaskController {
     List<KategoriTaskModel> data = await getAllKategoriTask();
     return data;
   }
-
-  //fungsi mendapatkan kategori task berdasarkan id
-  Future getKategoriTaskById(String idKategoriTask) async {
-    try {
-      var token = await getToken();
-      var response = await http.get(
-        Uri.parse('$url/$idKategoriTask'),
-        headers: {'Authorization': 'Bearer $token'},
-      );
-      if (response.statusCode == 200) {
-        Iterable it = json.decode(response.body);
-        List<KategoriTaskModel> kategori = List<KategoriTaskModel>.from(
-            it.map((e) => KategoriTaskModel.fromJson(e)));
-        return kategori;
-      } else {
-        return {}; // Mengembalikan map kosong jika tidak ada data
-      }
-    } catch (e) {
-      return {}; // Mengembalikan map kosong jika terjadi exception
-    }
-  }
-
-  //fungsi menampilkan kategori task berdasarkan id
-  Future<KategoriTaskModel> showById(String idKategoriTask) async {
-    KategoriTaskModel data = await getKategoriTaskById(idKategoriTask);
-    return data;
-  }
 }

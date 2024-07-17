@@ -1,7 +1,4 @@
-import '../../controller/kategori_pekerjaan_controller.dart';
 import '../../controller/pekerjaan_controller.dart';
-import '../../controller/personil_controller.dart';
-import '../../controller/status_pekerjaan_controller.dart';
 import '../../controller/user_controller.dart';
 import '../../utils/global_colors.dart';
 import 'package:flutter/material.dart';
@@ -18,38 +15,33 @@ class DetailPekerjaan extends StatefulWidget {
 class _DetailPekerjaanState extends State<DetailPekerjaan> {
   final String idpekerjaan = Get.parameters['idpekerjaan'] ?? '';
   PekerjaanController pekerjaanController = PekerjaanController();
-  StatusPekerjaanController statusPekerjaanController =
-      StatusPekerjaanController();
-  KategoriPekerjaanController kategoriPekerjaanController =
-      KategoriPekerjaanController();
-  PersonilController personilController = PersonilController();
   UserController userController = UserController();
 
-  //kolom pekerjaan
+  // Kolom pekerjaan
   String idStatusPekerjaan = '';
   String idKategoriPekerjaan = '';
   String idPersonil = '';
-  String namaPekerjaan = '';
-  String pelanggan = '';
-  String jenisPelanggan = '';
-  String namaPIC = '';
-  String emailPIC = '';
-  String noWaPIC = '';
-  String jenisLayanan = '';
-  String nominalHarga = '';
-  String deskripsiPekerjaan = '';
-  String targetWaktuSelesai = '';
-  String persentaseSelesai = '';
-  String waktuSelesai = '';
+  String namaPekerjaan = '-';
+  String pelanggan = '-';
+  String jenisPelanggan = '-';
+  String namaPIC = '-';
+  String emailPIC = '-';
+  String noWaPIC = '-';
+  String jenisLayanan = '-';
+  String nominalHarga = '-';
+  String deskripsiPekerjaan = '-';
+  DateTime? targetWaktuSelesai;
+  String persentaseSelesai = '-';
+  DateTime? waktuSelesai;
 
-  //status
-  String namaStatus = '';
+  // Status
+  String namaStatus = '-';
 
-  //kategori
-  String namaKategori = '';
+  // Kategori
+  String namaKategori = '-';
 
-  //personil
-  String namaPM = '';
+  // Personil
+  String namaPM = '-';
   List<String> desainerList = [];
   List<String> backendWebList = [];
   List<String> backendMobileList = [];
@@ -71,51 +63,31 @@ class _DetailPekerjaanState extends State<DetailPekerjaan> {
       jenisLayanan = data[0].jenis_layanan ?? '-';
       nominalHarga = data[0].nominal_harga ?? '-';
       deskripsiPekerjaan = data[0].deskripsi_pekerjaan ?? '-';
-      targetWaktuSelesai = data[0].target_waktu_selesai.toString();
-      persentaseSelesai = data[0].persentase_selesai ?? '-';
-      waktuSelesai = data[0].waktu_selesai != null
-          ? data[0].waktu_selesai.toString()
-          : '-';
+      targetWaktuSelesai = data[0].target_waktu_selesai;
+      persentaseSelesai =
+          data[0].data_tambahan.persentase_task_selesai?.toString() ?? '-';
+      waktuSelesai = data[0].waktu_selesai;
       namaKategori = data[0].data_tambahan.nama_kategori_pekerjaan ?? '-';
       namaStatus = data[0].data_tambahan.nama_status_pekerjaan ?? '-';
-      if (data[0].data_tambahan.pm.isNotEmpty) {
-        namaPM = data[0].data_tambahan.pm[0].nama;
+      if (data[0].data_tambahan.project_manager.isNotEmpty) {
+        namaPM = data[0].data_tambahan.project_manager[0].nama ?? '-';
       }
-      if (data[0].data_tambahan.desainer.isNotEmpty) {
-        desainerList = List<String>.from(
-            data[0].data_tambahan.desainer.map((e) => e.nama).toList());
-      }
-      if (data[0].data_tambahan.backend_web.isNotEmpty) {
-        backendWebList = List<String>.from(
-            data[0].data_tambahan.backend_web.map((e) => e.nama).toList());
-      }
-      if (data[0].data_tambahan.backend_mobile.isNotEmpty) {
-        backendMobileList = List<String>.from(
-            data[0].data_tambahan.backend_mobile.map((e) => e.nama).toList());
-      }
-      if (data[0].data_tambahan.frontend_web.isNotEmpty) {
-        frontendWebList = List<String>.from(
-            data[0].data_tambahan.frontend_web.map((e) => e.nama).toList());
-      }
-      if (data[0].data_tambahan.frontend_mobile.isNotEmpty) {
-        frontendMobileList = List<String>.from(
-            data[0].data_tambahan.frontend_mobile.map((e) => e.nama).toList());
-      }
-      //tester
-      if (data[0].data_tambahan.tester.isNotEmpty) {
-        testerList = List<String>.from(
-            data[0].data_tambahan.tester.map((e) => e.nama).toList());
-      }
-      //admin
-      if (data[0].data_tambahan.admin.isNotEmpty) {
-        adminList = List<String>.from(
-            data[0].data_tambahan.admin.map((e) => e.nama).toList());
-      }
-      //helpdesk
-      if (data[0].data_tambahan.helpdesk.isNotEmpty) {
-        helpdeskList = List<String>.from(
-            data[0].data_tambahan.helpdesk.map((e) => e.nama).toList());
-      }
+      desainerList = List<String>.from(
+          data[0].data_tambahan.desainer.map((e) => e.nama).toList());
+      backendWebList = List<String>.from(
+          data[0].data_tambahan.backend_web.map((e) => e.nama).toList());
+      backendMobileList = List<String>.from(
+          data[0].data_tambahan.backend_mobile.map((e) => e.nama).toList());
+      frontendWebList = List<String>.from(
+          data[0].data_tambahan.frontend_web.map((e) => e.nama).toList());
+      frontendMobileList = List<String>.from(
+          data[0].data_tambahan.frontend_mobile.map((e) => e.nama).toList());
+      testerList = List<String>.from(
+          data[0].data_tambahan.tester.map((e) => e.nama).toList());
+      adminList = List<String>.from(
+          data[0].data_tambahan.admin.map((e) => e.nama).toList());
+      helpdeskList = List<String>.from(
+          data[0].data_tambahan.helpdesk.map((e) => e.nama).toList());
     });
     return data;
   }
@@ -132,180 +104,189 @@ class _DetailPekerjaanState extends State<DetailPekerjaan> {
       appBar: AppBar(
         backgroundColor: GlobalColors.mainColor,
         iconTheme: const IconThemeData(color: Colors.white),
-        title: Text(
-          "Detail $namaPekerjaan",
-          style: const TextStyle(fontSize: 20, color: Colors.white),
+        title: const Text(
+          "Detail Pekerjaan",
+          style: TextStyle(fontSize: 20, color: Colors.white),
         ),
       ),
       body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ListTile(
-                    title: Text(
-                      namaPekerjaan,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    subtitle: Text(
-                      namaStatus,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.normal,
-                      ),
-                    ),
-                    trailing: Container(
-                      padding: const EdgeInsets.all(15),
-                      decoration: const BoxDecoration(
-                        color: Colors.blue,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Text(
-                        '$persentaseSelesai%',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
+        child: Container(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8.0),
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: ListTile(
+                  title: Text(
+                    namaPekerjaan,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const Divider(),
-                ],
+                  subtitle: Text(
+                    pelanggan,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.normal,
+                    ),
+                  ),
+                  leading: CircleAvatar(
+                      radius: 30,
+                      backgroundColor: GlobalColors.mainColor,
+                      child: Text(
+                        persentaseSelesai + '%',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.white,
+                        ),
+                      )),
+                ),
               ),
-            ),
-            Container(
-              padding: const EdgeInsets.all(16.0),
-              child: Table(
-                columnWidths: const {
-                  0: FlexColumnWidth(7),
-                  1: FlexColumnWidth(0.5),
-                  2: FlexColumnWidth(10),
-                },
-                children: [
-                  _buildTableRow('ID Pekerjaan', idpekerjaan),
-                  _buildTableRow('Pelanggan', pelanggan),
-                  _buildTableRow('Jenis Pelanggan', jenisPelanggan),
-                  _buildTableRow('Nama PIC', namaPIC),
-                  _buildTableRow('Email PIC', emailPIC),
-                  _buildTableRow('No. WA PIC', noWaPIC),
-                  _buildTableRow('Kategori Pekerjaan', namaKategori),
-                  _buildTableRow('Jenis Layanan', jenisLayanan),
-                  _buildTableRow('Nominal Harga', _formatRupiah(nominalHarga)),
-                  _buildTableRow('Deskripsi Pekerjaan', deskripsiPekerjaan),
-                  _buildTableRow(
-                      'Target Waktu Selesai',
-                      targetWaktuSelesai == ''
-                          ? '-'
-                          : formatDate(targetWaktuSelesai)),
-                  _buildTableRow('Waktu Selesai',
-                      waktuSelesai == '' ? '-' : formatDate(waktuSelesai)),
-                  //personil
-                  _buildTableRow('Personil', ''),
-                  _buildTableRowPersonil('- Project Manager', namaPM),
-                  _buildTableRowPersonil('- Desainer', desainerList.join('\n')),
-                  _buildTableRowPersonil(
-                      '- Backend Web', backendWebList.join('\n')),
-                  _buildTableRowPersonil(
-                      '- Backend Mobile', backendMobileList.join('\n')),
-                  _buildTableRowPersonil(
-                      '- Frontend Web', frontendWebList.join('\n')),
-                  _buildTableRowPersonil(
-                      '- Frontend Mobile', frontendMobileList.join('\n')),
-                  _buildTableRowPersonil('- Tester', testerList.join('\n')),
-                  _buildTableRowPersonil('- Admin', adminList.join('\n')),
-                  _buildTableRowPersonil('- Helpdesk', helpdeskList.join('\n')),
-                ],
+              Container(
+                margin: const EdgeInsets.only(top: 8),
+                padding: const EdgeInsets.all(8.0),
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    detail('Deskripsi pekerjaan', deskripsiPekerjaan),
+                    detail('Status pekerjaan', namaStatus),
+                    detail('Kategori pekerjaan', namaKategori),
+                    detail('Pelanggan', pelanggan),
+                    detail('Jenis pelanggan', jenisPelanggan),
+                    detail('PIC', namaPIC),
+                    detail('Email PIC', emailPIC),
+                    detail('No WA PIC', noWaPIC),
+                    detail('Jenis layanan', jenisLayanan),
+                    detail('Nominal harga', _formatRupiah(nominalHarga)),
+                    detail(
+                        'Target waktu selesai', formatDate(targetWaktuSelesai)),
+                    detail('Waktu selesai', formatDate(waktuSelesai)),
+                    personilDetail(),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  TableRow _buildTableRow(String label, dynamic value) {
-    return TableRow(
-      children: [
-        TableCell(
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 8.0),
-            child: Text(
-              label,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+  Container detail(String judul, String isi) {
+    return Container(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            judul,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
             ),
           ),
-        ),
-        TableCell(
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 8.0),
-            child: const Text(":"),
+          const SizedBox(height: 8),
+          Text(
+            isi,
+            style: const TextStyle(fontSize: 14),
+            textAlign: TextAlign.justify,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget personilDetail() {
+    return Container(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Personil',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Table(
+            columnWidths: const {
+              0: FlexColumnWidth(7),
+              1: FlexColumnWidth(0.5),
+              2: FlexColumnWidth(10),
+            },
+            children: [
+              _buildTableRowPersonil('- Project Manager', namaPM),
+              _buildTableRowPersonil('- Desainer', desainerList.join('\n')),
+              _buildTableRowPersonil(
+                  '- Backend Web', backendWebList.join('\n')),
+              _buildTableRowPersonil(
+                  '- Backend Mobile', backendMobileList.join('\n')),
+              _buildTableRowPersonil(
+                  '- Frontend Web', frontendWebList.join('\n')),
+              _buildTableRowPersonil(
+                  '- Frontend Mobile', frontendMobileList.join('\n')),
+              _buildTableRowPersonil('- Tester', testerList.join('\n')),
+              _buildTableRowPersonil('- Admin', adminList.join('\n')),
+              _buildTableRowPersonil('- Helpdesk', helpdeskList.join('\n')),
+            ],
+          )
+        ],
+      ),
+    );
+  }
+
+  TableRow _buildTableRowPersonil(String role, String names) {
+    return TableRow(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(vertical: 4.0),
+          child: Text(
+            role,
+            style: const TextStyle(fontSize: 14),
           ),
         ),
-        TableCell(
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 8.0),
-            child: Text(value == null ? '-' : value.toString()),
+        const Text(':'),
+        Container(
+          padding: const EdgeInsets.symmetric(vertical: 4.0),
+          child: Text(
+            names,
+            style: const TextStyle(fontSize: 14),
           ),
         ),
       ],
     );
   }
 
-  //khusus personil
-  TableRow _buildTableRowPersonil(String label, dynamic value) {
-    return TableRow(
-      children: [
-        TableCell(
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 3),
-            child: Text(
-              label,
-              style: const TextStyle(fontWeight: FontWeight.normal),
-            ),
-          ),
-        ),
-        TableCell(
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 8.0),
-            child: const Text(":"),
-          ),
-        ),
-        TableCell(
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 8.0),
-            child: Text(value.toString()),
-          ),
-        ),
-      ],
-    );
-  }
-
-  String _formatRupiah(String amount) {
+  String formatDate(DateTime? date) {
+    if (date == null) return '-';
     try {
-      int nominal = int.parse(amount);
-      return NumberFormat.currency(
-        locale: 'id_ID',
-        symbol: 'Rp',
-      ).format(nominal);
+      return DateFormat('dd MMM yyyy', 'id_ID').format(date);
     } catch (e) {
-      print('Error parsing amount: $e');
-      return amount;
-    }
-  }
-
-  //ubah format tanggal
-  String formatDate(String date) {
-    if (date == '-') {
       return '-';
     }
-    DateTime dateTime = DateTime.parse(date);
-    return DateFormat('d MMMM yyyy', 'id').format(dateTime);
+  }
+
+  String _formatRupiah(String nominal) {
+    if (nominal.isEmpty || nominal == '-') return '-';
+    try {
+      final value = int.parse(nominal);
+      final formattedValue = NumberFormat.currency(
+              locale: 'id_ID', symbol: 'Rp. ', decimalDigits: 0)
+          .format(value);
+      return formattedValue;
+    } catch (e) {
+      return '-';
+    }
   }
 }

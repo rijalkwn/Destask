@@ -3,6 +3,7 @@ class KinerjaModel {
   final String id_user;
   final String tahun;
   final String bulan;
+  final String jumlah_hari_kerja;
   final String jumlah_kehadiran;
   final String jumlah_izin;
   final String jumlah_sakit_tnp_ket_dokter;
@@ -43,6 +44,7 @@ class KinerjaModel {
     required this.id_user,
     required this.tahun,
     required this.bulan,
+    required this.jumlah_hari_kerja,
     required this.jumlah_kehadiran,
     required this.jumlah_izin,
     required this.jumlah_sakit_tnp_ket_dokter,
@@ -85,6 +87,7 @@ class KinerjaModel {
       id_user: json['id_user'].toString(),
       tahun: json['tahun'],
       bulan: json['bulan'],
+      jumlah_hari_kerja: json['jumlah_hari_kerja'],
       jumlah_kehadiran: json['jumlah_kehadiran'],
       jumlah_izin: json['jumlah_izin'],
       jumlah_sakit_tnp_ket_dokter: json['jumlah_sakit_tnp_ket_dokter'],
@@ -128,6 +131,7 @@ class KinerjaModel {
       'id_user': id_user,
       'tahun': tahun,
       'bulan': bulan,
+      'jumlah_hari_kerja': jumlah_hari_kerja,
       'jumlah_kehadiran': jumlah_kehadiran,
       'jumlah_izin': jumlah_izin,
       'jumlah_sakit_tnp_ket_dokter': jumlah_sakit_tnp_ket_dokter,

@@ -223,4 +223,37 @@ class PekerjaanController {
       return [];
     }
   }
+
+  Future<List<PekerjaanModel>> getPekerjaanVerifikator() async {
+    try {
+      var token = await getToken();
+      var idUser = await getIdUser();
+      var response = await http.get(
+        Uri.parse('$url/verifikator/$idUser'),
+        headers: {'Authorization': 'Bearer $token'},
+      );
+      print(response.statusCode);
+      if (response.statusCode == 200) {
+        Iterable it = json.decode(response.body);
+        List<PekerjaanModel> pekerjaan = List<PekerjaanModel>.from(
+            it.map((e) => PekerjaanModel.fromJson(e)));
+        return pekerjaan;
+      } else if (response.statusCode == 401) {
+        SharedPreferences pref = await SharedPreferences.getInstance();
+        pref.clear();
+        Get.offAllNamed('/login');
+        QuickAlert.show(
+          context: Get.context!,
+          title: 'Token Expired, Login Ulang',
+          type: QuickAlertType.error,
+        );
+        return [];
+      } else {
+        return []; // Mengembalikan list kosong jika tidak ada data
+      }
+    } catch (e) {
+      print(e); // Print error to the console
+      return []; // Mengembalikan list kosong jika terjadi exception
+    }
+  }
 }

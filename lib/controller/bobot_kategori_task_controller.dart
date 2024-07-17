@@ -15,37 +15,6 @@ getToken() async {
 }
 
 class BobotKategoriTaskController {
-  //fungsi mendapatkan semua bobot kategori task
-  Future getAllBobotKategoriTask() async {
-    try {
-      var token = await getToken();
-      var response = await http.get(
-        Uri.parse(url),
-        headers: {'Authorization': 'Bearer $token'},
-      );
-      if (response.statusCode == 200) {
-        Iterable it = json.decode(response.body);
-        List<BobotKategoriTaskModel> bobotKategori =
-            List<BobotKategoriTaskModel>.from(
-                it.map((e) => BobotKategoriTaskModel.fromJson(e)));
-        return bobotKategori;
-      } else {
-        // Handle error
-        print('Error getAllBobotKategoriTask: ${response.body}');
-        return [];
-      }
-    } catch (e) {
-      print(e);
-      return [];
-    }
-  }
-
-  //fungsi menampilkan semua bobot kategori task
-  Future<List<BobotKategoriTaskModel>> showAll() async {
-    List<BobotKategoriTaskModel> data = await getAllBobotKategoriTask();
-    return data;
-  }
-
   //fungsi mendapatkan bobot kategori task berdasarkan id
   Future getBobotKategoriTaskById(String idBobotKategoriTask) async {
     try {
@@ -65,39 +34,6 @@ class BobotKategoriTaskController {
       }
     } catch (e) {
       return {};
-    }
-  }
-
-  //fungsi menampilkan bobot kategori task berdasarkan id
-  Future<BobotKategoriTaskModel> showById(String idBobotKategoriTask) async {
-    var data = await getBobotKategoriTaskById(idBobotKategoriTask);
-    return data;
-  }
-
-  Future<bool> cekBobot() async {
-    try {
-      var token = await getToken();
-      var response = await http.get(
-        Uri.parse('$urlcek'),
-        headers: {'Authorization': 'Bearer $token'},
-      );
-
-      if (response.statusCode == 200) {
-        Map<String, dynamic> responseBody = json.decode(response.body);
-        List<dynamic> data = responseBody['data'];
-        int jumlahData = responseBody['jumlah_data'];
-        int jumlahUserGroup = responseBody['jumlah_usergroup'];
-
-        if (jumlahData == jumlahUserGroup) {
-          return true;
-        } else {
-          return false;
-        }
-      } else {
-        return false;
-      }
-    } catch (e) {
-      return false;
     }
   }
 }

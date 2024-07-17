@@ -52,7 +52,7 @@ class AuthController {
   //fungsi cek email pada lupa password
   Future checkEmailExist(String email) async {
     try {
-      final String url = "$baseURL/authcekuser";
+      const String url = "$baseURL/authcekuser";
       var res = await http.post(Uri.parse(url), body: {"email": email});
       if (res.statusCode == 200) {
         return true;

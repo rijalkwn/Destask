@@ -33,30 +33,8 @@ class StatusTaskController {
   }
 
   //fungsi menampilkan semua status task
-  Future<List<StatusTaskModel>> showAll() async {
+  Future<List<StatusTaskModel>> showAllTask() async {
     List<StatusTaskModel> data = await getAllStatusTask();
-    return data;
-  }
-
-  //fungsi mendapatkan status task berdasarkan id
-  Future getStatusById(String idStatusPekerjaan) async {
-    var token = await getToken();
-    var response = await http.get(Uri.parse('$url/$idStatusPekerjaan'),
-        headers: {'Authorization': 'Bearer $token'});
-    if (response.statusCode == 200) {
-      Iterable it = json.decode(response.body);
-      List<StatusTaskModel> statustask = List<StatusTaskModel>.from(
-          it.map((e) => StatusTaskModel.fromJson(e)).toList());
-      return statustask;
-    } else {
-      // Handle error
-      return [];
-    }
-  }
-
-  //fungsi menampilkan status task berdasarkan id
-  Future<List<StatusTaskModel>> showById(String idStatusPekerjaan) async {
-    List<StatusTaskModel> data = await getStatusById(idStatusPekerjaan);
     return data;
   }
 }

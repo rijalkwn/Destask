@@ -43,82 +43,96 @@ class _VerifikasiTaskState extends State<VerifikasiTask> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: FutureBuilder<List<TaskModel>>(
-          future: task,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            } else if (snapshot.hasError) {
-              return Center(
-                child: Text('Error: ${snapshot.error}'),
-              );
-            } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-              List<TaskModel> allTasks = snapshot.data!;
-              return allTasks.isEmpty
-                  ? const Center(
-                      child: Text(
-                        'Tidak ada data verifikasi task',
-                        style: TextStyle(fontSize: 16),
-                      ),
-                    )
-                  : ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: allTasks.length,
-                      itemBuilder: (context, index) {
-                        Map<String, dynamic> taskData =
-                            allTasks[index].toJson();
-                        return Card(
-                          color: GlobalColors.mainColor,
-                          child: Column(
-                            children: [
-                              GestureDetector(
-                                onTap: () {
-                                  Get.toNamed(
-                                      '/detail_verifikasi/${taskData['id_task']}',
-                                      arguments: taskData);
-                                },
-                                child: ListTile(
-                                  title: Text(
-                                    taskData['deskripsi_task'].length > 20
-                                        ? taskData['deskripsi_task']
-                                                .substring(0, 20) +
-                                            '...'
-                                        : taskData['deskripsi_task'],
-                                    style: const TextStyle(
-                                        color: Colors.white, fontSize: 18),
-                                  ),
-                                  subtitle: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'PIC : ${taskData['data_tambahan']['nama_user']}',
-                                        style: const TextStyle(
-                                            color: Colors.white),
-                                      ),
-                                    ],
-                                  ),
-                                  trailing: const Icon(
-                                    Icons.arrow_forward_ios,
-                                    color: Colors.white,
-                                    size: 10,
-                                  ),
-                                ),
-                              ),
-                            ],
+        child: Expanded(
+          child: SingleChildScrollView(
+            child: FutureBuilder<List<TaskModel>>(
+              future: task,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                } else if (snapshot.hasError) {
+                  return Center(
+                    child: Text('Error: ${snapshot.error}'),
+                  );
+                } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                  List<TaskModel> allTasks = snapshot.data!;
+                  return allTasks.isEmpty
+                      ? const Center(
+                          child: Text(
+                            'Tidak ada data verifikasi task',
+                            style: TextStyle(fontSize: 16),
                           ),
+                        )
+                      : ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: allTasks.length,
+                          itemBuilder: (context, index) {
+                            Map<String, dynamic> taskData =
+                                allTasks[index].toJson();
+                            return Card(
+                              color: GlobalColors.mainColor,
+                              child: Column(
+                                children: [
+                                  GestureDetector(
+                                    onTap: () {
+                                      Get.toNamed(
+                                          '/detail_verifikasi/${taskData['id_task']}',
+                                          arguments: taskData);
+                                    },
+                                    child: ListTile(
+                                      title: Text(
+                                        taskData['deskripsi_task'].length > 70
+                                            ? taskData['deskripsi_task']
+                                                    .substring(0, 70) +
+                                                '...'
+                                            : taskData['deskripsi_task'],
+                                        style: const TextStyle(
+                                            color: Colors.white, fontSize: 14),
+                                      ),
+                                      subtitle: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            taskData['data_tambahan']
+                                                            ['nama_user'] !=
+                                                        null &&
+                                                    taskData['data_tambahan']
+                                                                ['nama_user']
+                                                            .length >
+                                                        32
+                                                ? 'Personil : ${taskData['data_tambahan']['nama_user'].substring(0, 32)}...'
+                                                : 'Personil : ${taskData['data_tambahan']['nama_user']}',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      trailing: const Icon(
+                                        Icons.arrow_forward_ios,
+                                        color: Colors.white,
+                                        size: 10,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
                         );
-                      },
-                    );
-            } else {
-              return const Center(
-                child: Text('Tidak ada data'),
-              );
-            }
-          },
+                } else {
+                  return const Center(
+                    child: Text('Tidak ada data'),
+                  );
+                }
+              },
+            ),
+          ),
         ),
       ),
     );

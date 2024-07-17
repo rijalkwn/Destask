@@ -1,7 +1,5 @@
 import 'package:destask/controller/task_controller.dart';
 import 'package:destask/model/task_model.dart';
-import 'package:destask/view/Beranda/Task/task.dart';
-import '../../../model/pekerjaan_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 

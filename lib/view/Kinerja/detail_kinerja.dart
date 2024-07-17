@@ -19,6 +19,7 @@ class _DetailKinerjaState extends State<DetailKinerja> {
   String id_user = '';
   String tahun = '';
   String bulan = '';
+  String jumlah_hari_kerja = '';
   String jumlah_kehadiran = '';
   String jumlah_izin = '';
   String jumlah_sakit_tnp_ket_dokter = '';
@@ -61,13 +62,13 @@ class _DetailKinerjaState extends State<DetailKinerja> {
   }
 
   getDataKinerja() async {
-    print('ini id kinerja $idKinerja');
     var data = await kinerjaController.getKinerjaById(idKinerja);
     setState(() {
       id_kinerja = data[0].id_kinerja;
       id_user = data[0].id_user;
       tahun = data[0].tahun;
       bulan = data[0].bulan;
+      jumlah_hari_kerja = data[0].jumlah_hari_kerja;
       jumlah_kehadiran = data[0].jumlah_kehadiran;
       jumlah_izin = data[0].jumlah_izin;
       jumlah_sakit_tnp_ket_dokter = data[0].jumlah_sakit_tnp_ket_dokter;
@@ -107,34 +108,22 @@ class _DetailKinerjaState extends State<DetailKinerja> {
   }
 
   String getMonthName(String monthNumber) {
-    switch (monthNumber) {
-      case '1':
-        return 'January';
-      case '2':
-        return 'February';
-      case '3':
-        return 'March';
-      case '4':
-        return 'April';
-      case '5':
-        return 'May';
-      case '6':
-        return 'June';
-      case '7':
-        return 'July';
-      case '8':
-        return 'August';
-      case '9':
-        return 'September';
-      case '10':
-        return 'October';
-      case '11':
-        return 'November';
-      case '12':
-        return 'December';
-      default:
-        return '';
-    }
+    List<String> months = [
+      'Januari',
+      'Februari',
+      'Maret',
+      'April',
+      'Mei',
+      'Juni',
+      'Juli',
+      'Agustus',
+      'September',
+      'Oktober',
+      'November',
+      'Desember'
+    ];
+    int monthIndex = int.tryParse(monthNumber) ?? 0;
+    return (monthIndex > 0 && monthIndex <= 12) ? months[monthIndex] : '';
   }
 
   @override
@@ -161,7 +150,7 @@ class _DetailKinerjaState extends State<DetailKinerja> {
                     color: Colors.cyan,
                     child: Column(
                       children: [
-                        Text(
+                        const Text(
                           'SCORE KPI',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
@@ -169,20 +158,20 @@ class _DetailKinerjaState extends State<DetailKinerja> {
                             fontSize: 16,
                           ),
                         ),
-                        Divider(color: Colors.white, thickness: 0.5),
+                        const Divider(color: Colors.white, thickness: 0.5),
                         Text(
                           score_kpi,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                             fontSize: 24,
                           ),
                         ),
-                        SizedBox(height: 2.0),
+                        const SizedBox(height: 2.0),
                         //periode
                         Text(
                           'Periode: ${getMonthName(bulan)} $tahun',
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                             fontSize: 16,
@@ -194,8 +183,8 @@ class _DetailKinerjaState extends State<DetailKinerja> {
                 ),
               ],
             ),
-            Divider(),
-            SizedBox(height: 16.0),
+            const Divider(),
+            const SizedBox(height: 16.0),
 
             //DISIPLIN
             // Table Header
@@ -268,12 +257,13 @@ class _DetailKinerjaState extends State<DetailKinerja> {
               ],
             ),
             // Data Rows
-            buildTableRow('A', 'Jumlah kehadiran', jumlah_kehadiran),
-            buildTableRow('B', 'Jumlah Izin', jumlah_izin),
+            buildTableRow('A', 'Jumlah hari kerja', jumlah_hari_kerja),
+            buildTableRow('B', 'Jumlah kehadiran', jumlah_kehadiran),
+            buildTableRow('C', 'Jumlah Izin', jumlah_izin),
             buildTableRow(
-                'C', 'Jumlah Sakit Tanpa Ket', jumlah_sakit_tnp_ket_dokter),
-            buildTableRow('D', 'Jumlah Mangkir', jumlah_mangkir),
-            buildTableRow('E', 'Jumlah Terlambat', jumlah_terlambat),
+                'D', 'Jumlah Sakit Tanpa Ket', jumlah_sakit_tnp_ket_dokter),
+            buildTableRow('E', 'Jumlah Mangkir', jumlah_mangkir),
+            buildTableRow('F', 'Jumlah Terlambat', jumlah_terlambat),
             //seragam
             Row(
               children: [

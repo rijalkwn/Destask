@@ -1,16 +1,10 @@
 import 'dart:async';
 
 import 'package:badges/badges.dart';
-import 'package:destask/controller/personil_controller.dart';
-import 'package:destask/controller/rekap_point_controller.dart';
 import 'package:destask/controller/target_poin_harian_controller.dart';
 import 'package:destask/controller/task_controller.dart';
 import 'package:destask/controller/user_controller.dart';
-import 'package:destask/model/target_poin_harian_model.dart';
-import 'package:quickalert/quickalert.dart';
-import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../controller/notifikasi_controller.dart';
 import '../../controller/pekerjaan_controller.dart';
 import '../../model/pekerjaan_model.dart';
 import '../../utils/global_colors.dart';
@@ -29,39 +23,22 @@ class _BerandaState extends State<Beranda> {
   TargetPoinHarianController targetPoinHarianController =
       TargetPoinHarianController();
   PekerjaanController pekerjaanController = PekerjaanController();
-  PersonilController personilController = PersonilController();
-  RekapPointController rekapPointController = RekapPointController();
   TaskController taskController = TaskController();
   UserController userController = UserController();
-  NotifikasiController notifikasiController = NotifikasiController();
-  late List<PekerjaanModel> pekerjaan;
+  late Future<List<PekerjaanModel>> pekerjaan;
   String nama = '';
   String jumlahPekerjaanSelesai = '';
-  String jumlahNotifikasi = '';
   String taskpoint = '';
-  String taskselesai = '';
+  String targetpoinsebulan = '';
 
   @override
   void initState() {
     super.initState();
-    loadData();
+    pekerjaan = getDataPekerjaan();
+    getJumlahPekerjaanSelesai();
+    getTaskPoin();
+    getTargetPoin();
     getDataUser();
-  }
-
-  void loadData() async {
-    try {
-      await getJumlahPekerjaanSelesai();
-      await getTaskPoin();
-      await getTaskSelesai();
-      // await getNotifikasi();
-      var data = await getDataPekerjaan();
-      setState(() {
-        pekerjaan = data;
-      });
-    } catch (e) {
-      print("Error: $e");
-      // Handle error appropriately
-    }
   }
 
   getDataUser() async {
@@ -74,14 +51,14 @@ class _BerandaState extends State<Beranda> {
   }
 
   //getdata pekerjaan
-  Future getDataPekerjaan() async {
+  Future<List<PekerjaanModel>> getDataPekerjaan() async {
     var data = await pekerjaanController.getOnProgressUser();
     return data;
   }
 
   //task poin
   getTaskPoin() async {
-    var data = await rekapPointController.getRekapPoint();
+    var data = await taskController.getRekapPoint();
     int count = 0;
     for (var i = 0; i < data.length; i++) {
       DateTime taskDate = DateTime.parse(data[i]['tgl_selesai']);
@@ -95,16 +72,10 @@ class _BerandaState extends State<Beranda> {
     return data;
   }
 
-  getTaskSelesai() async {
-    var data = await taskController.getTaskBulanIni();
-    int count = 0;
-    for (var i = 0; i < data.length; i++) {
-      if (data[i].id_status_task.toString() == '3') {
-        count += 1;
-      }
-    }
+  getTargetPoin() async {
+    var data = await targetPoinHarianController.getTarget();
     setState(() {
-      taskselesai = count.toString();
+      targetpoinsebulan = data[0].jumlah_target_poin_sebulan;
     });
   }
 
@@ -123,21 +94,6 @@ class _BerandaState extends State<Beranda> {
 
     return data;
   }
-
-  //get notifikasi
-  // getNotifikasi() async {
-  //   var data = await notifikasiController.getNotifikasi();
-  //   int count = 0; // Initialize a counter variable
-  //   for (var i = 0; i < data.length; i++) {
-  //     if (data[i].status_terbaca.toString() == '0') {
-  //       count += 1;
-  //     }
-  //   }
-  //   setState(() {
-  //     jumlahNotifikasi = count.toString();
-  //   });
-  //   return data;
-  // }
 
   @override
   void dispose() {
@@ -175,38 +131,6 @@ class _BerandaState extends State<Beranda> {
             ],
           ),
         ),
-        // actions: [
-        //   Padding(
-        //     padding: const EdgeInsets.only(top: 10, right: 15),
-        //     child: GestureDetector(
-        //       onTap: () {
-        //         Get.toNamed('/notifikasi');
-        //       },
-        //       child: Container(
-        //         decoration: BoxDecoration(
-        //           color: Colors.blue[300],
-        //           borderRadius: BorderRadius.circular(10),
-        //         ),
-        //         padding: const EdgeInsets.all(8.0),
-        //         child: badges.Badge(
-        //           badgeContent: Text(
-        //             jumlahNotifikasi.toString(),
-        //             style: const TextStyle(color: Colors.white),
-        //           ),
-        //           badgeStyle: const BadgeStyle(
-        //               badgeColor: Colors.red, // Red circle color
-        //               elevation: 4, // No shadow
-        //               padding: EdgeInsets.only(
-        //                   top: 5, bottom: 5, left: 5, right: 5)),
-        //           child: const Icon(
-        //             Icons.notifications,
-        //             color: Colors.white,
-        //           ),
-        //         ),
-        //       ),
-        //     ),
-        //   ),
-        // ],
       ),
       body: Stack(
         children: [
@@ -251,28 +175,48 @@ class _BerandaState extends State<Beranda> {
               height: screenHeight * 3 / 4,
               color: Colors.white,
               child: SingleChildScrollView(
-                child: FutureBuilder(
-                  future: getDataPekerjaan(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 200),
-                        child: Center(child: CircularProgressIndicator()),
-                      );
-                    } else if (snapshot.hasError) {
-                      return Center(child: Text('Error: ${snapshot.error}'));
-                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 200),
-                        child: Center(child: Text('No data available.')),
-                      );
-                    } else if (snapshot.hasData) {
-                      List<PekerjaanModel> pekerjaan = snapshot.data!;
-                      return pekerjaanlist(pekerjaan);
-                    } else {
-                      return const Center(child: Text('No data available.'));
-                    }
-                  },
+                child: Column(
+                  children: [
+                    Container(
+                      margin: const EdgeInsets.only(top: 30),
+                      child: const Text(
+                        "ON PROGRESS",
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black, // Choose your desired text color
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    FutureBuilder(
+                      future: getDataPekerjaan(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 200),
+                            child: Center(child: CircularProgressIndicator()),
+                          );
+                        } else if (snapshot.hasError) {
+                          return Center(
+                              child: Text('Error: ${snapshot.error}'));
+                        } else if (!snapshot.hasData ||
+                            snapshot.data!.isEmpty) {
+                          return const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 200),
+                            child: Center(child: Text('No data available.')),
+                          );
+                        } else if (snapshot.hasData) {
+                          List<PekerjaanModel> pekerjaan = snapshot.data!;
+                          return pekerjaanlist(pekerjaan);
+                        } else {
+                          return const Center(
+                              child: Text('No data available.'));
+                        }
+                      },
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -308,7 +252,7 @@ class _BerandaState extends State<Beranda> {
                       );
                     } else if (index == 1) {
                       badgecontent = Text(
-                        taskselesai,
+                        targetpoinsebulan,
                         style: const TextStyle(color: Colors.white),
                       );
                     } else if (index == 2) {
@@ -337,7 +281,7 @@ class _BerandaState extends State<Beranda> {
                               if (index == 0) {
                                 Get.toNamed('/pekerjaan_selesai');
                               } else if (index == 1) {
-                                Get.toNamed('/task_selesai');
+                                // Get.toNamed('/task_selesai');
                               } else if (index == 2) {
                                 Get.toNamed('/rekap_point');
                               }
@@ -378,94 +322,67 @@ class _BerandaState extends State<Beranda> {
 
   Padding pekerjaanlist(List<PekerjaanModel> pekerjaan) {
     return Padding(
-      padding: const EdgeInsets.only(top: 20),
+      padding: const EdgeInsets.all(10),
       child: Column(
         children: [
-          const Text(
-            "ON PROGRESS",
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.black, // Choose your desired text color
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(
-            height: 10,
-          ),
-          Padding(
-            padding: const EdgeInsets.only(left: 10, right: 10),
-            child: Column(
-              children: pekerjaan.map((pekerjaanItem) {
-                return Card(
-                  color: GlobalColors.mainColor,
-                  child: Column(
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          Get.toNamed('/task/${pekerjaanItem.id_pekerjaan}');
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.only(top: 8),
-                          child: ListTile(
-                            leading: Container(
-                              padding: const EdgeInsets.all(15),
-                              decoration: const BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
-                              ),
-                              child: Text(
-                                '${pekerjaanItem.data_tambahan.persentase_task_selesai}%',
-                                style: const TextStyle(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ),
-                            title: Text(
-                              pekerjaanItem.nama_pekerjaan!,
-                              style: const TextStyle(color: Colors.white),
-                            ),
-                            subtitle: Text(
-                              "PM: ${pekerjaanItem.data_tambahan.pm[0].nama!}",
-                              style: const TextStyle(color: Colors.white),
+          Column(
+            children: pekerjaan.map((pekerjaanItem) {
+              return Card(
+                color: GlobalColors.mainColor,
+                child: Column(
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        Get.toNamed('/task/${pekerjaanItem.id_pekerjaan}');
+                      },
+                      child: ListTile(
+                        leading: Container(
+                          padding: const EdgeInsets.all(15),
+                          decoration: const BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Text(
+                            '${pekerjaanItem.data_tambahan.persentase_task_selesai}%',
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
                             ),
                           ),
                         ),
-                      ),
-                      const Divider(),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Container(
-                              padding:
-                                  const EdgeInsets.only(top: 3, bottom: 13),
-                              child: GestureDetector(
-                                onTap: () {
-                                  Get.toNamed(
-                                      '/detail_pekerjaan/${pekerjaanItem.id_pekerjaan}');
-                                },
-                                child: const Center(
-                                  child: Text(
-                                    'Detail',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
+                        title: Text(
+                          pekerjaanItem.nama_pekerjaan.length > 45
+                              ? '${pekerjaanItem.nama_pekerjaan.substring(0, 45)}...'
+                              : pekerjaanItem.nama_pekerjaan,
+                          style: const TextStyle(
+                              color: Colors.white, fontSize: 14),
+                        ),
+                        subtitle: Text(
+                          pekerjaanItem.data_tambahan.project_manager.isNotEmpty
+                              ? "PM: ${pekerjaanItem.data_tambahan.project_manager[0].nama.length > 25 ? '${pekerjaanItem.data_tambahan.project_manager[0].nama.substring(0, 25)}...' : pekerjaanItem.data_tambahan.project_manager[0].nama}"
+                              : "PM: -",
+                          style: const TextStyle(
+                              color: Colors.white, fontSize: 12),
+                        ),
+                        trailing: GestureDetector(
+                          onTap: () {
+                            Get.toNamed(
+                                '/detail_pekerjaan/${pekerjaanItem.id_pekerjaan}');
+                          },
+                          child: const Icon(
+                            Icons.density_medium,
+                            color: Colors.white,
                           ),
-                        ],
+                        ),
                       ),
-                    ],
-                  ),
-                );
-              }).toList(),
-            ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
           ),
-          SizedBox(
+          const SizedBox(
             height: 100,
           ),
         ],
@@ -482,7 +399,7 @@ List<Color> colors = [
 
 List<String> names = [
   'Pekerjaan\nSelesai',
-  'Task Selesai\nBulan Ini',
+  'Target Point\nGrup Bulan Ini',
   'Point Task\n Bulan Ini'
 ];
 

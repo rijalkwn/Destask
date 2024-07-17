@@ -7,7 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:quickalert/quickalert.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-const url = '$baseURL/api/targetpoinharianbyuser';
+const url = '$baseURL/api/target';
 const urlcek = '$baseURL/api/cektargetpoinharian';
 
 getToken() async {
@@ -32,9 +32,11 @@ class TargetPoinHarianController {
         headers: {'Authorization': 'Bearer $token'},
       );
       if (response.statusCode == 200) {
-        print(response.body);
-        var data = json.decode(response.body);
-        return data;
+        Iterable it = json.decode(response.body);
+        List<TargetPoinHarianModel> targetpoin =
+            List<TargetPoinHarianModel>.from(
+                it.map((e) => TargetPoinHarianModel.fromJson(e)));
+        return targetpoin;
       } else if (response.statusCode == 401) {
         SharedPreferences pref = await SharedPreferences.getInstance();
         pref.clear();
@@ -51,33 +53,6 @@ class TargetPoinHarianController {
       }
     } catch (e) {
       return [];
-    }
-  }
-
-  Future<bool> cekTarget() async {
-    try {
-      var token = await getToken();
-      var response = await http.get(
-        Uri.parse('$urlcek'),
-        headers: {'Authorization': 'Bearer $token'},
-      );
-
-      if (response.statusCode == 200) {
-        Map<String, dynamic> responseBody = json.decode(response.body);
-        List<dynamic> data = responseBody['data'];
-        int jumlahData = responseBody['jumlah_data'];
-        int jumlahUserGroup = responseBody['jumlah_usergroup'];
-
-        if (jumlahData == jumlahUserGroup) {
-          return true;
-        } else {
-          return false;
-        }
-      } else {
-        return false;
-      }
-    } catch (e) {
-      return false;
     }
   }
 }

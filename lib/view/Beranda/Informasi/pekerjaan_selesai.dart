@@ -84,7 +84,7 @@ class _PekerjaanSelesaiState extends State<PekerjaanSelesai> {
                 .where((pekerjaan) =>
                     pekerjaan.id_status_pekerjaan == "3" &&
                     pekerjaan.waktu_selesai != null &&
-                    pekerjaan.nama_pekerjaan!
+                    pekerjaan.nama_pekerjaan
                         .toLowerCase()
                         .contains(searchQuery.toLowerCase()))
                 .toList();
@@ -132,12 +132,16 @@ class PekerjaanList extends StatelessWidget {
                 ),
               ),
               title: Text(
-                pekerjaan[index].nama_pekerjaan ?? '',
-                style: const TextStyle(color: Colors.white),
+                pekerjaan[index].nama_pekerjaan!.length > 45
+                    ? '${pekerjaan[index].nama_pekerjaan!.substring(0, 45)}...'
+                    : pekerjaan[index].nama_pekerjaan!,
+                style: const TextStyle(color: Colors.white, fontSize: 14),
               ),
               subtitle: Text(
-                "PM : ${pekerjaan[index].data_tambahan.pm[0].nama}",
-                style: const TextStyle(color: Colors.white),
+                pekerjaan[index].data_tambahan.project_manager.isNotEmpty
+                    ? "PM: ${pekerjaan[index].data_tambahan.project_manager[0].nama!.length > 25 ? pekerjaan[index].data_tambahan.project_manager[0].nama!.substring(0, 25) + '...' : pekerjaan[index].data_tambahan.project_manager[0].nama!}"
+                    : "PM: -",
+                style: const TextStyle(color: Colors.white, fontSize: 12),
               ),
               trailing: GestureDetector(
                 onTap: () {

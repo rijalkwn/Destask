@@ -19,7 +19,7 @@ class MyDateTimePicker extends StatelessWidget {
       controller: TextEditingController(
         text: selectedDate != null
             ? '${selectedDate!.toLocal()}'.split(' ')[0]
-            : 'No date selected',
+            : 'Tanggal Belum Dipilih',
       ),
       onTap: () => _selectDate(context),
       decoration: const InputDecoration(

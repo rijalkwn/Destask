@@ -12,6 +12,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 const url = '$baseURL/assets/file_pengguna/foto_user';
 
 class EditProfile extends StatefulWidget {
+  const EditProfile({super.key});
+
   @override
   _EditProfileState createState() => _EditProfileState();
 }

@@ -67,6 +67,17 @@ class _LupaPasswordState extends State<LupaPassword> {
                             ),
                           ),
                           const SizedBox(height: 20),
+                          Container(
+                            child: Text(
+                              "**Masukkan email anda yang telah terdaftar, kami akan mengirimkan kode token untuk mereset password**",
+                              style: const TextStyle(
+                                color: Colors.red,
+                                fontSize: 12,
+                                fontWeight: FontWeight.normal,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
                           TextFormField(
                             controller: emailController,
                             decoration: InputDecoration(

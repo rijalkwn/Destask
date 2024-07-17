@@ -1,12 +1,13 @@
 import 'package:destask/utils/constant_api.dart';
-import 'package:destask/view/Beranda/Task/my_date_time_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
-import 'package:quickalert/quickalert.dart';
+import 'package:quickalert/models/quickalert_type.dart';
+import 'package:quickalert/widgets/quickalert_dialog.dart';
 import '../../../controller/task_controller.dart';
 import '../../../utils/global_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:flutter_file_downloader/flutter_file_downloader.dart';
 
 class DetailVerifikasi extends StatefulWidget {
   const DetailVerifikasi({Key? key}) : super(key: key);
@@ -24,45 +25,91 @@ class _DetailVerifikasiState extends State<DetailVerifikasi> {
   String idTask = '';
   String idPekerjaan = '';
   String idUser = '';
+  String creator = '';
   String idStatusTask = '';
   String idKategoriTask = '';
   DateTime tglPlaning = DateTime.now();
-  DateTime tglSelesai = DateTime.now();
-  DateTime tglVerifikasiDiterima = DateTime.now();
-  String statusVerifikasi = '';
+  String tglSelesai = '';
+  String tglVerifikasiDiterima = '';
   String persentaseSelesai = '';
   String deskripsiTask = '';
   String alasanVerifikasi = '';
   String buktiSelesai = '';
   String tautanTask = '';
+  String statusVerifikasi = '';
+  String namaVerifikator = '';
+  double _progress = 0;
+  bool muncul = false;
 
   //bantuan
+  String namaCreator = '';
   String namaUserTask = '';
   String namaPekerjaan = '';
   String namaStatusTask = '';
   String namaKategoriTask = '';
-
   bool isLoading = false;
-  String status = '';
+
+  void download(urlfile) async {
+    FileDownloader.downloadFile(
+        url: urlfile.trim(),
+        onProgress: (name, progress) {
+          setState(() {
+            _progress = progress;
+          });
+        },
+        onDownloadCompleted: (value) {
+          setState(() {
+            _progress = 0;
+          });
+          Get.snackbar(
+            'Unduh File Berhasil',
+            'File Bukti Selesai berhasil diunduh',
+            snackPosition: SnackPosition.TOP,
+            backgroundColor: Colors.green,
+            colorText: Colors.white,
+          );
+        },
+        onDownloadError: (error) {
+          setState(() {
+            _progress = 0;
+          });
+          Get.snackbar(
+            'Unduh File Berhasil',
+            'File Bukti Selesai berhasil diunduh',
+            snackPosition: SnackPosition.TOP,
+            backgroundColor: Colors.green,
+            colorText: Colors.white,
+          );
+        });
+  }
 
   getDataTask() async {
-    print(idtask);
     var data = await taskController.getTaskById(idtask);
     setState(() {
       idTask = data[0].id_task ?? '-';
       idPekerjaan = data[0].id_pekerjaan ?? '-';
       idUser = data[0].id_user ?? '-';
+      creator = data[0].creator ?? '-';
       idStatusTask = data[0].id_status_task ?? '-';
       idKategoriTask = data[0].id_kategori_task ?? '-';
       tglPlaning = DateTime.parse(data[0].tgl_planing.toString());
+      tglSelesai = data[0].tgl_selesai.toString() == 'null'
+          ? '-'
+          : data[0].tgl_selesai.toString();
+      tglVerifikasiDiterima = data[0].tgl_verifikasi_diterima == null
+          ? '-'
+          : data[0].tgl_verifikasi_diterima.toString();
       persentaseSelesai = data[0].persentase_selesai ?? '-';
       deskripsiTask = data[0].deskripsi_task ?? '-';
-      buktiSelesai = data[0].bukti_selesai ?? '-';
+      alasanVerifikasi = data[0].alasan_verifikasi ?? '-';
+      buktiSelesai = data[0].bukti_selesai ?? '';
       tautanTask = data[0].tautan_task ?? '-';
       namaUserTask = data[0].data_tambahan.nama_user;
+      namaCreator = data[0].data_tambahan.nama_creator;
       namaPekerjaan = data[0].data_tambahan.nama_pekerjaan;
       namaStatusTask = data[0].data_tambahan.nama_status_task;
       namaKategoriTask = data[0].data_tambahan.nama_kategori_task;
+      namaVerifikator = data[0].data_tambahan.nama_verifikator;
     });
     return data;
   }
@@ -79,229 +126,291 @@ class _DetailVerifikasiState extends State<DetailVerifikasi> {
       appBar: AppBar(
         backgroundColor: GlobalColors.mainColor,
         iconTheme: const IconThemeData(color: Colors.white),
-        title: Text(
-          "Detail $deskripsiTask",
-          style: const TextStyle(fontSize: 20, color: Colors.white),
+        title: const Text(
+          "Detail Task",
+          style: TextStyle(fontSize: 20, color: Colors.white),
         ),
       ),
       body: SingleChildScrollView(
         child: Container(
           padding: const EdgeInsets.all(16.0),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Table(
-                columnWidths: const {
-                  0: FlexColumnWidth(7),
-                  1: FlexColumnWidth(0.5),
-                  2: FlexColumnWidth(10),
-                },
-                children: [
-                  _buildTableRow('ID Task', idTask),
-                  _buildTableRow('Pekerjaan', namaPekerjaan),
-                  _buildTableRow('User', namaUserTask),
-                  _buildTableRow('Deskripsi Task', deskripsiTask),
-                  _buildTableRow('Status Task', namaStatusTask),
-                  _buildTableRow('Kategori Task', namaKategoriTask),
-                  _buildTableRow(
-                      'Deadline',
-                      DateFormat('dd MMMM yyyy')
-                          .format(DateTime.parse(tglPlaning.toString()))),
-                  _buildTableRow('Persentase Selesai', '$persentaseSelesai%'),
-                  _buildTableRowLink('Tautan Task', tautanTask),
-                  _buildBuktiSelesai('Bukti Selesai', buktiSelesai),
-                ],
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: ListTile(
+                  title: Text(
+                    deskripsiTask,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  subtitle: Text(
+                    'Personil: $namaUserTask',
+                    style: const TextStyle(
+                      fontSize: 14,
+                    ),
+                  ),
+                  leading: CircleAvatar(
+                    radius: 30,
+                    backgroundColor: GlobalColors.mainColor,
+                    child: Text(
+                      '$persentaseSelesai%',
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ),
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        //menampilkan dialog isinya form alasan verifikasi
-                        showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            String alasanVerifikasiLocal = '';
-                            return AlertDialog(
-                              title: const Text('Tolak Task Ini?'),
-                              content: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Alasan menolak (wajib)'),
-                                      TextField(
-                                        onChanged: (value) {
-                                          alasanVerifikasiLocal = value;
+              Container(
+                margin: const EdgeInsets.only(top: 16),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    //status task
+                    detail('Status Task', namaStatusTask),
+                    //kategori task
+                    detail('Kategori Task', namaKategoriTask),
+                    //pekerjaan
+                    detail('Pekerjaan', namaPekerjaan),
+                    //tanggal planing
+                    detail('Target Waktu Selesai',
+                        formatDate(tglPlaning.toString())),
+                    //tanggal selesai
+                    detail('Tanggal Selesai', formatDate(tglSelesai)),
+                    //tanggal verifikasi diterima
+                    detail('Tanggal Verifikasi Diterima',
+                        formatDateTime(tglVerifikasiDiterima)),
+                    //verifikator
+                    namaVerifikator == ''
+                        ? Container()
+                        : detail('Verifikator', namaVerifikator),
+                    //tautan task
+                    tautanTask == ''
+                        ? Container()
+                        : detailtautan(context, 'Tautan Task', tautanTask),
+                    //bukti selesai
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        'Bukti Selesai',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    buktiSelesai == '' ? Container() : buktiselesai(context),
+                    //alasan verifikasi
+                    alasanVerifikasi == ''
+                        ? Container()
+                        : detail('Alasan Verifikasi Ditolak', alasanVerifikasi),
+                    //fungsi
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              //menampilkan dialog isinya form alasan verifikasi
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  String alasanVerifikasiLocal = '';
+                                  return AlertDialog(
+                                    title: const Text('Tolak Task Ini?'),
+                                    content: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const Text('Alasan menolak **'),
+                                            TextField(
+                                              onChanged: (value) {
+                                                alasanVerifikasiLocal = value;
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.pop(context);
                                         },
+                                        child: const Text('Batal'),
+                                      ),
+                                      TextButton(
+                                        onPressed: () async {
+                                          if (alasanVerifikasiLocal.isEmpty) {
+                                            QuickAlert.show(
+                                              context: context,
+                                              title:
+                                                  "Alasan tidak boleh kosong",
+                                              type: QuickAlertType.warning,
+                                            );
+                                            return;
+                                          }
+                                          Navigator.pop(context);
+                                          setState(() {
+                                            isLoading = true;
+                                          });
+                                          bool success = await taskController
+                                              .editTaskVerikasiTolak(idTask,
+                                                  alasanVerifikasiLocal);
+
+                                          // Jika verifikasi task berhasil, Anda dapat menambahkan logika penanganan berhasil di sini
+                                          if (success) {
+                                            Get.offAndToNamed(
+                                                '/verifikasi_task/$idPekerjaan');
+                                            Get.snackbar(
+                                              'Berhasil',
+                                              'Task berhasil ditolak',
+                                              snackPosition: SnackPosition.TOP,
+                                              backgroundColor: Colors.green,
+                                              colorText: Colors.white,
+                                            );
+                                          } else {
+                                            Navigator.pop(context);
+                                            Get.snackbar(
+                                              'Gagal',
+                                              'Task gagal ditolak',
+                                              snackPosition: SnackPosition.TOP,
+                                              backgroundColor: Colors.red,
+                                              colorText: Colors.white,
+                                            );
+                                          }
+                                          setState(() {
+                                            isLoading = false;
+                                          });
+                                        },
+                                        child: isLoading
+                                            ? const CircularProgressIndicator()
+                                            : const Text('Tolak'),
                                       ),
                                     ],
-                                  ),
-                                ],
+                                  );
+                                },
+                              );
+                            },
+                            child: Container(
+                              margin: const EdgeInsets.only(top: 16.0),
+                              padding: const EdgeInsets.all(16.0),
+                              decoration: BoxDecoration(
+                                color: Colors.red,
+                                borderRadius: BorderRadius.circular(8.0),
                               ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                  },
-                                  child: const Text('Batal'),
+                              child: const Center(
+                                child: Text(
+                                  'Tolak',
+                                  style: TextStyle(color: Colors.white),
                                 ),
-                                TextButton(
-                                  onPressed: () async {
-                                    if (alasanVerifikasiLocal.isEmpty) {
-                                      QuickAlert.show(
-                                        context: context,
-                                        title: "Alasan tidak boleh kosong",
-                                        type: QuickAlertType.warning,
-                                      );
-                                      return;
-                                    }
-                                    Navigator.pop(context);
-                                    setState(() {
-                                      isLoading = true;
-                                      status = "4"; //status ditolak
-                                    });
-                                    bool success = await taskController
-                                        .editTaskVerikasiTolak(
-                                            idTask,
-                                            alasanVerifikasiLocal,
-                                            tglPlaning,
-                                            status);
-
-                                    // Jika verifikasi task berhasil, Anda dapat menambahkan logika penanganan berhasil di sini
-                                    if (success) {
-                                      Get.offAndToNamed(
-                                          '/verifikasi_task/$idPekerjaan');
-                                      QuickAlert.show(
-                                        context: context,
-                                        title: "Berhasil Menolak Task",
-                                        type: QuickAlertType.success,
-                                      );
-                                    } else {
-                                      Navigator.pop(context);
-                                      QuickAlert.show(
-                                        context: context,
-                                        title: "Gagal Menolak Task",
-                                        type: QuickAlertType.error,
-                                      );
-                                    }
-                                    setState(() {
-                                      isLoading = false;
-                                    });
-                                  },
-                                  child: isLoading
-                                      ? const CircularProgressIndicator()
-                                      : const Text('Tolak'),
-                                ),
-                              ],
-                            );
-                          },
-                        );
-                      },
-                      child: Container(
-                        margin: const EdgeInsets.only(top: 16.0),
-                        padding: const EdgeInsets.all(16.0),
-                        decoration: BoxDecoration(
-                          color: Colors.red,
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                        child: const Center(
-                          child: Text(
-                            'Tolak',
-                            style: TextStyle(color: Colors.white),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16.0),
-                  //terima verifikasi
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          alasanVerifikasi = '-';
-                        });
-                        //menampilkan dialog yakin menerima verifikasi
-                        showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return AlertDialog(
-                              title: const Text('Yakin Terima Task Ini?'),
-                              actions: [
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                  },
-                                  child: const Text('Batal'),
+                        const SizedBox(width: 16.0),
+                        //terima verifikasi
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              //menampilkan dialog yakin menerima verifikasi
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: const Text('Yakin Terima Task Ini?'),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                        },
+                                        child: const Text('Batal'),
+                                      ),
+                                      TextButton(
+                                        onPressed: () async {
+                                          Navigator.pop(
+                                              context); // Close the dialog immediately
+
+                                          setState(() {
+                                            isLoading = true;
+                                          });
+
+                                          // Perform the asynchronous operation
+                                          bool success = await taskController
+                                              .editTaskVerikasiDiterima(idTask);
+
+                                          // Handle the result of the asynchronous operation
+                                          if (success) {
+                                            Get.offAndToNamed(
+                                                '/verifikasi_task/$idPekerjaan');
+                                            Get.snackbar(
+                                              'Berhasil',
+                                              'Task berhasil diterima',
+                                              snackPosition: SnackPosition.TOP,
+                                              backgroundColor: Colors.green,
+                                              colorText: Colors.white,
+                                            );
+                                          } else {
+                                            Navigator.pop(context);
+                                            Get.snackbar(
+                                              'Gagal',
+                                              'Task gagal diterima',
+                                              snackPosition: SnackPosition.TOP,
+                                              backgroundColor: Colors.red,
+                                              colorText: Colors.white,
+                                            );
+                                          }
+
+                                          setState(() {
+                                            isLoading = false;
+                                          });
+                                        },
+                                        child: const Text('Terima'),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            },
+                            child: Container(
+                              margin: const EdgeInsets.only(top: 16.0),
+                              padding: const EdgeInsets.all(16.0),
+                              decoration: BoxDecoration(
+                                color: GlobalColors.mainColor,
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
+                              child: const Center(
+                                child: Text(
+                                  'Terima',
+                                  style: TextStyle(color: Colors.white),
                                 ),
-                                TextButton(
-                                  onPressed: () async {
-                                    Navigator.pop(
-                                        context); // Close the dialog immediately
-
-                                    setState(() {
-                                      isLoading = true;
-                                      status = "3"; //status selesai
-                                    });
-
-                                    // Perform the asynchronous operation
-                                    bool success = await taskController
-                                        .editTaskVerikasiDiterima(
-                                            idTask,
-                                            alasanVerifikasi,
-                                            tglPlaning,
-                                            status);
-
-                                    // Handle the result of the asynchronous operation
-                                    if (success) {
-                                      Get.offAndToNamed(
-                                          '/verifikasi_task/$idPekerjaan');
-                                      QuickAlert.show(
-                                        context: context,
-                                        title: "Berhasil Memverifikasi Task",
-                                        type: QuickAlertType.success,
-                                      );
-                                    } else {
-                                      QuickAlert.show(
-                                        context: context,
-                                        title: "Gagal Memverifikasi Task",
-                                        type: QuickAlertType.error,
-                                      );
-                                    }
-
-                                    setState(() {
-                                      isLoading = false;
-                                    });
-                                  },
-                                  child: const Text('Terima'),
-                                ),
-                              ],
-                            );
-                          },
-                        );
-                      },
-                      child: Container(
-                        margin: const EdgeInsets.only(top: 16.0),
-                        padding: const EdgeInsets.all(16.0),
-                        decoration: BoxDecoration(
-                          color: GlobalColors.mainColor,
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                        child: const Center(
-                          child: Text(
-                            'Terima',
-                            style: TextStyle(color: Colors.white),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
+                      ],
                     ),
-                  ),
-                ],
-              )
+                    SizedBox(height: 16.0),
+                  ],
+                ),
+              ),
+              //bukti selesai
             ],
           ),
         ),
@@ -309,72 +418,171 @@ class _DetailVerifikasiState extends State<DetailVerifikasi> {
     );
   }
 
-  TableRow _buildTableRow(String label, dynamic value) {
-    return TableRow(
-      children: [
-        TableCell(
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 8.0),
-            child: Text(
-              label,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ),
-        ),
-        TableCell(
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 8.0),
-            child: const Text(":"),
-          ),
-        ),
-        TableCell(
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 8.0),
-            child: Text(value.toString()),
-          ),
-        ),
-      ],
+  Container buktiselesai(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          SizedBox(height: 8),
+          buktiSelesai != ''
+              ? Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _progress == 0
+                        ? GestureDetector(
+                            onTap: () async {
+                              final fileUrl = '$url/$buktiSelesai';
+                              // Download file menggunakan flutter_downloader
+                              download(fileUrl);
+                            },
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 15, vertical: 8),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(5),
+                                color: Colors.green,
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.download,
+                                    color: Colors.white,
+                                  ),
+                                  Text(
+                                    'Unduh Bukti',
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
+                        : CircularProgressIndicator(),
+                    SizedBox(width: 8),
+                    (buktiSelesai.endsWith('.png') ||
+                            buktiSelesai.endsWith('.jpeg') ||
+                            buktiSelesai.endsWith('.jpg'))
+                        ? muncul == false
+                            ? GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    muncul = true;
+                                  });
+                                },
+
+                                // button
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 15, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(5),
+                                    color: Colors.green,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.remove_red_eye_outlined,
+                                        color: Colors.white,
+                                      ),
+                                      Text(
+                                        'Lihat Bukti',
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              )
+                            : GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    muncul = false;
+                                  });
+                                },
+
+                                // button
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 15, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(5),
+                                    color: Colors.green,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.remove_red_eye_outlined,
+                                        color: Colors.white,
+                                      ),
+                                      Text(
+                                        'Tutup Bukti',
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              )
+                        : Container(),
+                  ],
+                )
+              : SizedBox(),
+          SizedBox(height: 16),
+          muncul == true
+              ? Container(
+                  width: 200,
+                  alignment: Alignment.center,
+                  child: Image.network(
+                    '$url/$buktiSelesai',
+                    fit: BoxFit.contain, // Sesuaikan sesuai kebutuhan
+                  ),
+                )
+              : SizedBox(),
+        ],
+      ),
     );
   }
 
-  TableRow _buildTableRowLink(String label, String link) {
-    return TableRow(
-      children: [
-        TableCell(
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 8.0),
-            child: Text(
-              label,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+  Container detailtautan(BuildContext context, String judul, String link) {
+    bool isValidLink(String url) {
+      final Uri? uri = Uri.tryParse(url);
+      return uri != null &&
+          (uri.hasScheme && (uri.scheme == 'http' || uri.scheme == 'https'));
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            judul,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
             ),
           ),
-        ),
-        TableCell(
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 8.0),
-            child: const Text(":"),
-          ),
-        ),
-        TableCell(
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    link.isNotEmpty
-                        ? link.length > 30
-                            ? '${link.substring(0, 30)}...'
-                            : link
-                        : "Tidak ada tautan",
-                    style: const TextStyle(
-                      color: Colors.blue,
-                      decoration: TextDecoration.underline,
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              isValidLink(link)
+                  ? Expanded(
+                      child: Text(
+                        link,
+                        style: const TextStyle(color: Colors.blue),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    )
+                  : Expanded(
+                      child: Text(
+                        link,
+                        textAlign: TextAlign.justify,
+                        style: const TextStyle(
+                          fontSize: 14,
+                        ),
+                      ),
                     ),
-                  ),
-                ),
+              if (isValidLink(link))
                 IconButton(
-                  icon: const Icon(Icons.copy),
+                  icon: const Icon(Icons.copy, color: Colors.blue, size: 20),
                   onPressed: () {
                     if (link.isNotEmpty) {
                       Clipboard.setData(ClipboardData(text: link));
@@ -386,69 +594,56 @@ class _DetailVerifikasiState extends State<DetailVerifikasi> {
                     }
                   },
                 ),
-              ],
-            ),
+            ],
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
-  TableRow _buildBuktiSelesai(String label, String namafoto) {
-    return TableRow(
-      children: [
-        TableCell(
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 8.0),
-            child: Text(
-              label,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+  Container detail(String judul, String isi) {
+    return Container(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            judul,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
             ),
+            textAlign: TextAlign.justify,
           ),
-        ),
-        TableCell(
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 8.0),
-            child: const Text(":"),
-          ),
-        ),
-        TableCell(
-          child: Padding(
-            padding: EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                // Text('Tidak ada bukti selesai'),
-                // cek apakah ada bukti selesai
-                namafoto == ''
-                    ? const Text('Tidak ada bukti selesai')
-                    : GestureDetector(
-                        onTap: () {
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return Dialog(
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    image: DecorationImage(
-                                      fit: BoxFit.cover,
-                                      image: NetworkImage('$url/$namafoto'),
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          );
-                        },
-                        child: Image.network(
-                          '$url/$namafoto',
-                          width: 100,
-                        ),
-                      ),
-              ],
-            ),
-          ),
-        ),
-      ],
+          const SizedBox(height: 8),
+          Text(isi),
+        ],
+      ),
     );
+  }
+
+  //format tanggal
+  String formatDate(String date) {
+    if (date == '-') {
+      return '-';
+    }
+    try {
+      DateTime dateTime = DateTime.parse(date);
+      return DateFormat('d MMMM yyyy', 'id').format(dateTime);
+    } catch (e) {
+      return '-';
+    }
+  }
+
+  String formatDateTime(String date) {
+    if (date == '-') {
+      return '-';
+    }
+    try {
+      DateTime dateTime = DateTime.parse(date);
+      return DateFormat('d MMMM yyyy HH:mm', 'id').format(dateTime);
+    } catch (e) {
+      return '-';
+    }
   }
 }

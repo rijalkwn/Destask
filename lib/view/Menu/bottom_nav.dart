@@ -4,7 +4,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../utils/global_colors.dart';
 import '../../view/Beranda/beranda.dart';
-import '../Beranda/Informasi/rekap_point.dart';
 import '../../view/Pekerjaan/pekerjaan.dart';
 import '../../view/Pengaturan/pengaturan.dart';
 

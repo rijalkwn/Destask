@@ -1,8 +1,5 @@
-import 'dart:io';
-import 'dart:math';
-import 'package:destask/controller/bobot_kategori_task_controller.dart';
 import 'package:destask/controller/pekerjaan_controller.dart';
-import 'package:destask/model/bobot_kategori_task_model.dart';
+import 'package:destask/controller/hari_libur_controller.dart';
 import 'package:destask/model/pekerjaan_model.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -12,7 +9,6 @@ import '../../../controller/task_controller.dart';
 import '../../../model/kategori_task_model.dart';
 import 'package:quickalert/quickalert.dart';
 import '../../../utils/global_colors.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'my_date_time_picker.dart';
@@ -32,16 +28,9 @@ class _AddTaskState extends State<AddTask> {
   KategoriTaskController kategoriTaskController = KategoriTaskController();
   TaskController taskController = TaskController();
   PekerjaanController pekerjaanController = PekerjaanController();
-  BobotKategoriTaskController bobotKategoriTaskController =
-      BobotKategoriTaskController();
+  HariLiburController hariLiburController = HariLiburController();
 
-  //file
-  PlatformFile? pickedFile;
-  File? fileToDisplay;
-  String? fileName;
-  String filePath = "";
   bool isLoading = false;
-  // String idStatusTask = "";
   String idUser = "";
   String idanggotauser = "";
   String idKategoriTask = "";
@@ -52,6 +41,7 @@ class _AddTaskState extends State<AddTask> {
   DateTime targetWaktuSelesai = DateTime.now();
   DateTime tanggalMulai = DateTime.now();
   DateTime today = DateTime.now();
+  List<DateTime> listTanggalLibur = [];
 
   @override
   void initState() {
@@ -60,6 +50,29 @@ class _AddTaskState extends State<AddTask> {
     cekuserPM();
     getDataKategoriTask();
     listPersonil();
+    listHariLibur();
+  }
+
+  //hari libur
+  Future<List<DateTime>> listHariLibur() async {
+    var data = await hariLiburController.getAllHariLibur();
+
+    // Ensure that tanggal_libur is explicitly cast to DateTime
+    List<DateTime> tanggalLibur = data.map<DateTime>((hariLibur) {
+      // Example: Assuming tanggal_libur is already DateTime, ensure the correct access
+      return DateTime.parse(hariLibur.tanggal_libur.toString());
+    }).toList();
+
+    setState(() {
+      listTanggalLibur.addAll(tanggalLibur);
+    });
+
+    print(listTanggalLibur);
+    return listTanggalLibur;
+  }
+
+  bool _isWeekend(DateTime date) {
+    return date.weekday == DateTime.saturday || date.weekday == DateTime.sunday;
   }
 
   Future getDataPekerjaan() async {
@@ -82,7 +95,7 @@ class _AddTaskState extends State<AddTask> {
         await pekerjaanController.getPekerjaanById(idpekerjaan);
     setState(() {
       namaPekerjaan = dataPekerjaan[0].nama_pekerjaan;
-      PM = dataPekerjaan[0].data_tambahan.pm[0].id_user;
+      PM = dataPekerjaan[0].data_tambahan.project_manager[0].id_user;
     });
     SharedPreferences prefs = await SharedPreferences.getInstance();
     idUser = prefs.getString('id_user') ?? '';
@@ -170,7 +183,7 @@ class _AddTaskState extends State<AddTask> {
                 const SizedBox(height: 16),
 
                 //tanggal mulai
-                buildLabel('Deadline *'),
+                buildLabel('Target Waktu Selesai *'),
                 MyDateTimePicker(
                   selectedDate: _selectedDateStart,
                   onChanged: (date) {
@@ -180,7 +193,7 @@ class _AddTaskState extends State<AddTask> {
                   },
                   validator: (date) {
                     if (date == null) {
-                      return 'Kolom Tanggal Deadline harus diisi';
+                      return 'Kolom Tanggal Target Waktu Selesai harus diisi';
                     } else if (date
                         .isBefore(tanggalMulai.subtract(Duration(days: 1)))) {
                       return 'Tanggal tidak boleh sebelum tanggal mulai';
@@ -189,6 +202,10 @@ class _AddTaskState extends State<AddTask> {
                     } else if (date
                         .isBefore(today.subtract(Duration(days: 1)))) {
                       return 'Tanggal tidak boleh sebelum hari ini';
+                    } else if (_isWeekend(date)) {
+                      return 'Tanggal tidak boleh jatuh pada hari Sabtu atau Minggu';
+                    } else if (listTanggalLibur.contains(date)) {
+                      return 'Tanggal yang dipilih adalah hari libur';
                     }
 
                     return null;
@@ -240,7 +257,7 @@ class _AddTaskState extends State<AddTask> {
                     ? Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          buildLabel('Pilih Autor *'),
+                          buildLabel('Pilih Personil *'),
                           FutureBuilder(
                             future:
                                 listPersonil(), // Replace 'idpekerjaan' with your actual job ID
@@ -268,7 +285,7 @@ class _AddTaskState extends State<AddTask> {
                                   dropdownDecoratorProps:
                                       DropDownDecoratorProps(
                                     dropdownSearchDecoration: InputDecoration(
-                                      hintText: "Pilih Autor",
+                                      hintText: "Pilih Personil *",
                                     ),
                                   ),
                                   onChanged: (value) {

@@ -1,5 +1,6 @@
 import 'package:destask/view/Beranda/Informasi/task_selesai.dart';
 import 'package:destask/view/Beranda/Task/submit_task.dart';
+// import 'package:destask/view/Beranda/Task/testing.dart';
 import 'package:destask/view/Kinerja/detail_kinerja.dart';
 import 'package:destask/view/Kinerja/kinerja.dart';
 import 'package:destask/view/ResetPassword/reset_password.dart';
@@ -7,6 +8,7 @@ import 'package:destask/view/ResetPassword/verifikasi_token.dart';
 import 'package:destask/view/verifikasi/detail_verifikasi.dart';
 import 'package:destask/view/verifikasi/verifikasi.dart';
 import 'package:destask/view/verifikasi/verifikasi_task.dart';
+import 'package:destask/view/verifikasi/verifikasi_task_done.dart';
 
 import '../view/Beranda/Informasi/pekerjaan_selesai.dart';
 import '../view/Beranda/Task/detail_task.dart';
@@ -16,7 +18,6 @@ import '../view/Beranda/Task/task.dart';
 import '../view/Beranda/beranda.dart';
 import 'view/Beranda/Informasi/rekap_point.dart';
 import '../view/Menu/bottom_nav.dart';
-import '../view/Notifikasi/notifikasi.dart';
 import '../view/Pekerjaan/detail_pekerjaan.dart';
 import '../view/Pekerjaan/pekerjaan.dart';
 import '../view/Pengaturan/pengaturan.dart';
@@ -53,7 +54,6 @@ class MyApp extends StatelessWidget {
           GetPage(
               name: '/pekerjaan_selesai', page: () => const PekerjaanSelesai()),
           GetPage(name: '/task_selesai', page: () => const TaskSelesai()),
-          GetPage(name: '/notifikasi', page: () => const Notifikasi()),
           GetPage(
             name: '/task/:idpekerjaan',
             page: () => const Task(),
@@ -61,6 +61,7 @@ class MyApp extends StatelessWidget {
           GetPage(name: '/add_task/:idpekerjaan', page: () => const AddTask()),
           GetPage(name: '/edit_task/:idtask', page: () => const EditTask()),
           GetPage(name: '/submit_task/:idtask', page: () => const SubmitTask()),
+          // GetPage(name: '/testing/:idtask', page: () => const Testing()),
           GetPage(name: '/detail_task/:idtask', page: () => const DetailTask()),
           GetPage(name: '/pekerjaan', page: () => const Pekerjaan()),
           GetPage(
@@ -75,6 +76,9 @@ class MyApp extends StatelessWidget {
           GetPage(
               name: '/verifikasi_task/:idpekerjaan',
               page: () => const VerifikasiTask()),
+          GetPage(
+              name: '/verifikasi_task_done/:idpekerjaan',
+              page: () => const VerifikasiTaskDone()),
           GetPage(
               name: '/detail_verifikasi/:idtask',
               page: () => const DetailVerifikasi()),

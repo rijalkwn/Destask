@@ -1,4 +1,4 @@
-import 'package:destask/controller/rekap_point_controller.dart';
+import 'package:destask/controller/task_controller.dart';
 import 'package:destask/utils/global_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -12,13 +12,13 @@ class RekapPoint extends StatefulWidget {
 }
 
 class _RekapPointState extends State<RekapPoint> {
-  RekapPointController rekapPointController = RekapPointController();
+  TaskController taskController = TaskController();
   DateTime? startDate;
   DateTime? endDate;
   int totalPoint = 0;
 
   getData() async {
-    var data = await rekapPointController.getRekapPoint();
+    var data = await taskController.getRekapPoint();
     if (startDate != null && endDate != null) {
       data = data.where((task) {
         DateTime taskDate = DateTime.parse(task['tgl_selesai']);
@@ -49,7 +49,7 @@ class _RekapPointState extends State<RekapPoint> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'Rekap Point',
           style: TextStyle(color: Colors.white),
         ),
@@ -285,14 +285,19 @@ class _RekapPointState extends State<RekapPoint> {
                               snapshot.data[index]['deskripsi_task']
                                           .split(' ')
                                           .length >
-                                      20
-                                  ? '${snapshot.data[index]['deskripsi_task'].split(' ').sublist(0, 20).join(' ')}...'
+                                      7
+                                  ? '${snapshot.data[index]['deskripsi_task'].split(' ').sublist(0, 7).join(' ')}...'
                                   : snapshot.data[index]['deskripsi_task'],
                               style: const TextStyle(color: Colors.white),
                             ),
-                            subtitle: Text(
-                                'Tanggal Selesai: ${DateFormat('dd MMMM yyyy').format(DateTime.parse(snapshot.data[index]['tgl_selesai']))}',
-                                style: const TextStyle(color: Colors.white)),
+                            subtitle: Row(
+                              children: [
+                                Text(
+                                    'Tanggal Selesai: ${DateFormat('dd MMMM yyyy').format(DateTime.parse(snapshot.data[index]['tgl_selesai']))}',
+                                    style:
+                                        const TextStyle(color: Colors.white)),
+                              ],
+                            ),
                             trailing: Text(
                               'Point: ${snapshot.data[index]['bobot_point']}',
                               style: const TextStyle(
