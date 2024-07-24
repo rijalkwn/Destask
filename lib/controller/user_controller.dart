@@ -24,6 +24,12 @@ Future getIdUser() async {
   return idUser;
 }
 
+Future getEmail() async {
+  final prefs = await SharedPreferences.getInstance();
+  var email = prefs.getString("email");
+  return email;
+}
+
 class UserController {
   Future getAllUser() async {
     try {
@@ -47,8 +53,9 @@ class UserController {
     }
   }
 
-  Future getUserById(String idUser) async {
+  Future getUserById() async {
     try {
+      var idUser = await getIdUser();
       var token = await getToken();
       var response = await http.get(
         Uri.parse('$url/$idUser'),
@@ -78,10 +85,8 @@ class UserController {
   }
 
   Future editProfile(
-    String idusergroup,
     String nama,
     String email,
-    String username,
   ) async {
     try {
       var token = await getToken();
@@ -89,10 +94,8 @@ class UserController {
       var uri = Uri.parse('$url/$user');
       final data = {
         'id_user': user,
-        'id_usergroup': idusergroup,
         'nama': nama,
         'email': email,
-        'username': username,
       };
       var response = await http.put(uri,
           headers: {
@@ -106,13 +109,9 @@ class UserController {
         //delete shared preferences
         final prefs = await SharedPreferences.getInstance();
         prefs.remove('nama');
-        prefs.remove('id_usergroup');
         prefs.remove('email');
-        prefs.remove('username');
         prefs.setString('nama', nama);
-        prefs.setString('id_usergroup', idusergroup);
         prefs.setString('email', email);
-        prefs.setString('username', username);
         return true;
       } else if (response.statusCode == 401) {
         SharedPreferences pref = await SharedPreferences.getInstance();
@@ -172,6 +171,40 @@ class UserController {
       }
     } catch (e) {
       print(e);
+      return false;
+    }
+  }
+
+  cekEmail(String emailbaru) async {
+    try {
+      var token = await getToken();
+      var email = await getEmail();
+      var response = await http.post(
+        Uri.parse('$url/cekemail'),
+        headers: {'Authorization': 'Bearer $token'},
+        body: {
+          'emaillama': email,
+          'emailbaru': emailbaru,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      } else if (response.statusCode == 401) {
+        SharedPreferences pref = await SharedPreferences.getInstance();
+        pref.clear();
+        Get.offAllNamed('/login');
+        QuickAlert.show(
+          context: Get.context!,
+          title: 'Token Expired, Login Ulang',
+          type: QuickAlertType.error,
+        );
+      } else {
+        print('Error adding task: ${response.body}');
+        return false;
+      }
+    } catch (e) {
+      print('Exception adding task: $e');
       return false;
     }
   }

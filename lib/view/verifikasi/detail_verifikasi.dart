@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:io';
 import 'package:destask/utils/constant_api.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -17,7 +19,7 @@ class DetailVerifikasi extends StatefulWidget {
 }
 
 class _DetailVerifikasiState extends State<DetailVerifikasi> {
-  var url = '$baseURL/assets/bukti_task/';
+  var url = '$baseURL/assets/bukti_task';
   final String idtask = Get.parameters['idtask'] ?? '';
   TaskController taskController = TaskController();
 
@@ -40,6 +42,7 @@ class _DetailVerifikasiState extends State<DetailVerifikasi> {
   String namaVerifikator = '';
   double _progress = 0;
   bool muncul = false;
+  bool _isDownloading = false;
 
   //bantuan
   String namaCreator = '';
@@ -49,38 +52,72 @@ class _DetailVerifikasiState extends State<DetailVerifikasi> {
   String namaKategoriTask = '';
   bool isLoading = false;
 
-  void download(urlfile) async {
-    FileDownloader.downloadFile(
-        url: urlfile.trim(),
-        onProgress: (name, progress) {
-          setState(() {
-            _progress = progress;
-          });
-        },
-        onDownloadCompleted: (value) {
-          setState(() {
-            _progress = 0;
-          });
-          Get.snackbar(
-            'Unduh File Berhasil',
-            'File Bukti Selesai berhasil diunduh',
-            snackPosition: SnackPosition.TOP,
-            backgroundColor: Colors.green,
-            colorText: Colors.white,
-          );
-        },
-        onDownloadError: (error) {
-          setState(() {
-            _progress = 0;
-          });
-          Get.snackbar(
-            'Unduh File Berhasil',
-            'File Bukti Selesai berhasil diunduh',
-            snackPosition: SnackPosition.TOP,
-            backgroundColor: Colors.green,
-            colorText: Colors.white,
-          );
+  void download(String urlfile) async {
+    String trimmedUrl = urlfile.trim();
+    print('Downloading file from: $trimmedUrl');
+
+    // Set a timeout duration
+    const timeoutDuration = Duration(seconds: 25);
+
+    setState(() {
+      _isDownloading = true;
+    });
+
+    // Start the download
+    Future<void> downloadTask = FileDownloader.downloadFile(
+      url: urlfile.trim(),
+      onProgress: (name, progress) {
+        setState(() {
+          _progress = progress;
         });
+      },
+      onDownloadCompleted: (value) {
+        setState(() {
+          _progress = 0;
+          _isDownloading = false;
+        });
+        Get.snackbar(
+          'Berhasil Mengunduh File',
+          'File Bukti Selesai berhasil diunduh',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
+      },
+      onDownloadError: (error) {
+        print('Error: $error');
+        setState(() {
+          _progress = 0;
+          _isDownloading = false;
+        });
+        Get.snackbar(
+          'Gagal Mengunduh File',
+          'Terjadi kesalahan saat mengunduh file: $error',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      },
+    );
+
+    // Handle the timeout
+    try {
+      await downloadTask.timeout(timeoutDuration);
+    } on TimeoutException catch (_) {
+      if (_isDownloading) {
+        setState(() {
+          _progress = 0;
+          _isDownloading = false;
+        });
+        Get.snackbar(
+          'Gagal Mengunduh File',
+          'Proses unduh melebihi batas waktu. Silakan coba lagi.',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
+    }
   }
 
   getDataTask() async {
@@ -418,126 +455,166 @@ class _DetailVerifikasiState extends State<DetailVerifikasi> {
     );
   }
 
-  Container buktiselesai(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(8.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          SizedBox(height: 8),
-          buktiSelesai != ''
-              ? Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _progress == 0
-                        ? GestureDetector(
-                            onTap: () async {
-                              final fileUrl = '$url/$buktiSelesai';
-                              // Download file menggunakan flutter_downloader
-                              download(fileUrl);
-                            },
-                            child: Container(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 15, vertical: 8),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(5),
-                                color: Colors.green,
-                              ),
-                              child: Row(
+  Column buktiselesai(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        //bukti selesai
+        const Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            'Bukti Selesai',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+
+        Container(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SizedBox(height: 8),
+              buktiSelesai != ''
+                  ? Column(
+                      children: [
+                        _isDownloading == false
+                            ? GestureDetector(
+                                onTap: () async {
+                                  final fileUrl = '$url/$buktiSelesai';
+                                  // Download file menggunakan flutter_downloader
+                                  download(fileUrl);
+                                },
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: Text(
+                                        buktiSelesai.length > 35
+                                            ? '${buktiSelesai.substring(0, 25)}...${buktiSelesai.substring(buktiSelesai.length - 5)}'
+                                            : buktiSelesai,
+                                        overflow: TextOverflow
+                                            .ellipsis, // Handles text overflow gracefully
+                                      ),
+                                    ),
+                                    Icon(
+                                      Icons.download_for_offline_sharp,
+                                      color: Colors.green,
+                                      size: 30,
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Icon(
-                                    Icons.download,
-                                    color: Colors.white,
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text(
+                                      'Downloading...',
+                                      overflow: TextOverflow
+                                          .ellipsis, // Optionally add ellipsis for overflow handling
+                                    ),
                                   ),
-                                  Text(
-                                    'Unduh Bukti',
-                                    style: TextStyle(color: Colors.white),
+                                  const CircularProgressIndicator(
+                                    backgroundColor: Colors.grey,
                                   ),
                                 ],
                               ),
-                            ),
-                          )
-                        : CircularProgressIndicator(),
-                    SizedBox(width: 8),
-                    (buktiSelesai.endsWith('.png') ||
-                            buktiSelesai.endsWith('.jpeg') ||
-                            buktiSelesai.endsWith('.jpg'))
-                        ? muncul == false
-                            ? GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    muncul = true;
-                                  });
-                                },
+                        Divider(),
+                        SizedBox(height: 8),
+                        (buktiSelesai.endsWith('.png') ||
+                                buktiSelesai.endsWith('.jpeg') ||
+                                buktiSelesai.endsWith('.jpg'))
+                            ? muncul == false
+                                ? GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        muncul = true;
+                                      });
+                                    },
 
-                                // button
-                                child: Container(
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: 15, vertical: 8),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(5),
-                                    color: Colors.green,
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        Icons.remove_red_eye_outlined,
-                                        color: Colors.white,
+                                    // button
+                                    child: Container(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: 15, vertical: 8),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(5),
+                                        color: Colors.green,
                                       ),
-                                      Text(
-                                        'Lihat Bukti',
-                                        style: TextStyle(color: Colors.white),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.remove_red_eye_outlined,
+                                            color: Colors.white,
+                                          ),
+                                          Text(
+                                            'Lihat Bukti',
+                                            style:
+                                                TextStyle(color: Colors.white),
+                                          ),
+                                        ],
                                       ),
-                                    ],
-                                  ),
-                                ),
-                              )
-                            : GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    muncul = false;
-                                  });
-                                },
+                                    ),
+                                  )
+                                : GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        muncul = false;
+                                      });
+                                    },
 
-                                // button
-                                child: Container(
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: 15, vertical: 8),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(5),
-                                    color: Colors.green,
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        Icons.remove_red_eye_outlined,
-                                        color: Colors.white,
+                                    // button
+                                    child: Container(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: 15, vertical: 8),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(5),
+                                        color: Colors.green,
                                       ),
-                                      Text(
-                                        'Tutup Bukti',
-                                        style: TextStyle(color: Colors.white),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.remove_red_eye_outlined,
+                                            color: Colors.white,
+                                          ),
+                                          Text(
+                                            'Tutup Bukti',
+                                            style:
+                                                TextStyle(color: Colors.white),
+                                          ),
+                                        ],
                                       ),
-                                    ],
-                                  ),
-                                ),
-                              )
-                        : Container(),
-                  ],
-                )
-              : SizedBox(),
-          SizedBox(height: 16),
-          muncul == true
-              ? Container(
-                  width: 200,
-                  alignment: Alignment.center,
-                  child: Image.network(
-                    '$url/$buktiSelesai',
-                    fit: BoxFit.contain, // Sesuaikan sesuai kebutuhan
-                  ),
-                )
-              : SizedBox(),
-        ],
-      ),
+                                    ),
+                                  )
+                            : Container(),
+                      ],
+                    )
+                  : SizedBox(),
+              SizedBox(height: 16),
+              muncul == true
+                  ? Container(
+                      width: 200,
+                      alignment: Alignment.center,
+                      child: Image.network(
+                        '$url/$buktiSelesai',
+                        fit: BoxFit.contain, // Sesuaikan sesuai kebutuhan
+                      ),
+                    )
+                  : SizedBox(),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -596,6 +673,7 @@ class _DetailVerifikasiState extends State<DetailVerifikasi> {
                 ),
             ],
           ),
+          Divider(),
         ],
       ),
     );
@@ -616,7 +694,8 @@ class _DetailVerifikasiState extends State<DetailVerifikasi> {
             textAlign: TextAlign.justify,
           ),
           const SizedBox(height: 8),
-          Text(isi),
+          Text(isi, style: const TextStyle(fontSize: 14)),
+          Divider(),
         ],
       ),
     );

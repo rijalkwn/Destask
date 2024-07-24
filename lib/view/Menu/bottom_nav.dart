@@ -1,5 +1,6 @@
 import 'package:destask/view/Kinerja/kinerja.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../utils/global_colors.dart';
@@ -32,7 +33,7 @@ class _BottomNavState extends State<BottomNav> {
       setState(() {
         supervisi = true;
       });
-    } else {
+    } else if (level == "staff") {
       setState(() {
         supervisi = false;
       });
@@ -87,8 +88,8 @@ class _BottomNavState extends State<BottomNav> {
               tooltip: "Kinerja"),
           const BottomNavigationBarItem(
               icon: Icon(Icons.settings),
-              label: "Pengaturan",
-              tooltip: "Pengaturan"),
+              label: "Settings",
+              tooltip: "Settings"),
         ],
       ),
     );

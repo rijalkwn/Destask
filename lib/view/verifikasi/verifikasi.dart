@@ -37,6 +37,13 @@ class _VerifikasiState extends State<Verifikasi>
     pekerjaanVerifikasiDone = pekerjaanverifikasitaskdone();
   }
 
+  refresh() async {
+    setState(() {
+      pekerjaanVerifikasi = pekerjaanverifikasitask();
+      pekerjaanVerifikasiDone = pekerjaanverifikasitaskdone();
+    });
+  }
+
   Future<List<PekerjaanModel>> pekerjaanverifikasitask() async {
     var data = await pekerjaanController.getPekerjaanVerifikasi();
     return data;
@@ -169,9 +176,52 @@ class ViewPekerjaan extends StatelessWidget {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
+            return Container(
+              padding:
+                  const EdgeInsets.symmetric(vertical: 200, horizontal: 20),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Gagal memuat data, Silakan tekan tombol refresh untuk mencoba lagi.',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Colors.black,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      onDismissed();
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.blue,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.refresh,
+                            color: Colors.white,
+                          ),
+                          const Text(
+                            'Refresh',
+                            style: TextStyle(
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No data available.'));
+            return const Center(child: Text('Data Kosong'));
           } else if (snapshot.hasData) {
             List<PekerjaanModel> pekerjaan = snapshot.data!;
             final filteredList = pekerjaan
@@ -181,7 +231,7 @@ class ViewPekerjaan extends StatelessWidget {
                 .toList();
 
             if (filteredList.isEmpty) {
-              return const Center(child: Text('Data Pada Status Ini Kosong'));
+              return const Center(child: Text('Data Tidak Ditemukan'));
             }
 
             return PekerjaanList(
@@ -226,13 +276,15 @@ class PekerjaanList extends StatelessWidget {
           color: GlobalColors.mainColor,
           child: ListTile(
             leading: Container(
-              padding: const EdgeInsets.all(15),
+              width: 50, // Set fixed width
+              height: 50, // Set fixed height
               decoration: const BoxDecoration(
                 color: Colors.white,
                 shape: BoxShape.circle,
               ),
+              alignment: Alignment.center,
               child: Text(
-                '${pekerjaan[index].data_tambahan.persentase_task_selesai}%',
+                "${_formatPercentage(pekerjaan[index].data_tambahan.persentase_task_selesai)}%",
                 style: const TextStyle(
                   color: Colors.black,
                   fontWeight: FontWeight.bold,
@@ -275,5 +327,13 @@ class PekerjaanList extends StatelessWidget {
         );
       },
     );
+  }
+
+  String _formatPercentage(String percentage) {
+    if (percentage == '100.0') {
+      return '100';
+    } else {
+      return percentage;
+    }
   }
 }

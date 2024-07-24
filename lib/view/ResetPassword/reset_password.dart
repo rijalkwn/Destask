@@ -12,7 +12,6 @@ class ResetPassword extends StatefulWidget {
 }
 
 class _ResetPasswordState extends State<ResetPassword> {
-  final TextEditingController _oldPasswordController = TextEditingController();
   final TextEditingController _newPasswordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
       TextEditingController();
@@ -151,6 +150,11 @@ class _ResetPasswordState extends State<ResetPassword> {
       validator: (value) {
         if (value == null || value.isEmpty) {
           return 'Kolom $label harus diisi';
+        } else if (label == 'Konfirmasi Password Baru' &&
+            value != _newPasswordController.text) {
+          return 'Konfirmasi password baru tidak sama dengan password baru';
+        } else if (label == 'Password Baru' && value.length < 6) {
+          return 'Password minimal 6 karakter';
         }
         return null;
       },

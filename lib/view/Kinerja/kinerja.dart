@@ -24,6 +24,12 @@ class _KinerjaState extends State<Kinerja> {
     kinerja = kinerjaController.showKinerjaUser();
   }
 
+  refresh() async {
+    setState(() {
+      kinerja = kinerjaController.showKinerjaUser();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -98,8 +104,49 @@ class _KinerjaState extends State<Kinerja> {
                     child: CircularProgressIndicator(),
                   );
                 } else if (snapshot.hasError) {
-                  return Center(
-                    child: Text('Error: ${snapshot.error}'),
+                  return Container(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 200, horizontal: 20),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Gagal memuat data, Silakan tekan tombol refresh untuk mencoba lagi.',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.black,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            refresh();
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: Colors.blue,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(
+                                  Icons.refresh,
+                                  color: Colors.white,
+                                ),
+                                const Text(
+                                  'Refresh',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   );
                 } else {
                   List<KinerjaModel> allKinerja = snapshot.data!;

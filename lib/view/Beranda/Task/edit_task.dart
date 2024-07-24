@@ -52,13 +52,18 @@ class _EditTaskState extends State<EditTask> {
   String idKategoriTask = "";
   bool completed = false;
   List<StatusTaskModel> statusList = [];
-  List<KategoriTaskModel> kategoriList = [];
 
   @override
   void initState() {
     super.initState();
 
     loadData();
+  }
+
+  refresh() async {
+    setState(() {
+      loadData();
+    });
   }
 
   getIdUser() async {
@@ -94,8 +99,8 @@ class _EditTaskState extends State<EditTask> {
 
   void loadData() async {
     try {
-      kategoriList = await kategoriTaskController.showAll();
       listHariLibur();
+      getDataKategoriTask();
       getIdUser();
       taskController.showById(idTask).then((value) {
         setState(() {
@@ -151,6 +156,13 @@ class _EditTaskState extends State<EditTask> {
         _selectedDateStart = pickedDate;
       });
     }
+  }
+
+  //getkategori task
+  Future<List<KategoriTaskModel>> getDataKategoriTask() async {
+    List<KategoriTaskModel> dataKategori =
+        await kategoriTaskController.getAllKategoriTask();
+    return dataKategori;
   }
 
   @override
@@ -221,14 +233,75 @@ class _EditTaskState extends State<EditTask> {
                               const SizedBox(height: 16),
                               //kategori task
                               buildLabel('Kategori Task *'),
-                              idKategoriTask == ""
-                                  ? const Text("Memuat data")
-                                  : DropdownButtonFormField<String>(
+                              FutureBuilder<List<KategoriTaskModel>>(
+                                future: getDataKategoriTask(),
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return const Center(
+                                      child: CircularProgressIndicator(),
+                                    );
+                                  } else if (snapshot.hasError) {
+                                    return Container(
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            'Gagal memuat data, Silakan tekan tombol refresh untuk mencoba lagi.',
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.black,
+                                            ),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                          GestureDetector(
+                                            onTap: () {
+                                              refresh();
+                                            },
+                                            child: Container(
+                                              padding: const EdgeInsets.all(10),
+                                              decoration: BoxDecoration(
+                                                color: Colors.blue,
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
+                                              ),
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  const Icon(
+                                                    Icons.refresh,
+                                                    color: Colors.white,
+                                                  ),
+                                                  const Text(
+                                                    'Refresh',
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  } else if (!snapshot.hasData ||
+                                      snapshot.data!.isEmpty) {
+                                    return const Text(
+                                        'Data Kategori Task tidak ditemukan');
+                                  } else {
+                                    List<KategoriTaskModel> kategoriList =
+                                        snapshot.data!;
+                                    return DropdownButtonFormField<String>(
                                       value: idKategoriTask,
                                       onChanged: (value) {
                                         setState(() {
                                           idKategoriTask = value!;
                                         });
+                                        print(
+                                            'idKategoriTask: $idKategoriTask');
                                       },
                                       items: kategoriList.map((kategori) {
                                         return DropdownMenuItem<String>(
@@ -249,7 +322,39 @@ class _EditTaskState extends State<EditTask> {
                                         }
                                         return null;
                                       },
-                                    ),
+                                    );
+                                  }
+                                },
+                              ),
+                              // idKategoriTask == ""
+                              //     ? const Text("Memuat data")
+                              //     : DropdownButtonFormField<String>(
+                              //         value: idKategoriTask,
+                              //         onChanged: (value) {
+                              //           setState(() {
+                              //             idKategoriTask = value!;
+                              //           });
+                              //         },
+                              //         items: kategoriList.map((kategori) {
+                              //           return DropdownMenuItem<String>(
+                              //             value: kategori.id_kategori_task,
+                              //             child: Text(kategori
+                              //                 .nama_kategori_task
+                              //                 .toString()),
+                              //           );
+                              //         }).toList(),
+                              //         decoration: const InputDecoration(
+                              //           contentPadding: EdgeInsets.symmetric(
+                              //               horizontal: 15, vertical: 3),
+                              //           border: OutlineInputBorder(),
+                              //         ),
+                              //         validator: (value) {
+                              //           if (value == null || value.isEmpty) {
+                              //             return 'Kolom Kategori Task harus diisi';
+                              //           }
+                              //           return null;
+                              //         },
+                              //       ),
                               //persentase selesai
                               buildLabel('Persentase Selesai *'),
                               buildFormFieldPersentase(
@@ -341,7 +446,9 @@ class _EditTaskState extends State<EditTask> {
                     }
                   },
                   child: isLoading
-                      ? const CircularProgressIndicator()
+                      ? const Center(
+                          child: CircularProgressIndicator(),
+                        )
                       : Container(
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(10),

@@ -3,11 +3,8 @@ import 'package:quickalert/quickalert.dart';
 
 import '../../controller/auth_controller.dart';
 import '../../utils/global_colors.dart';
-import 'package:destask/view/Auth/login.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:mailer/mailer.dart';
-import 'package:mailer/smtp_server/gmail.dart';
 
 class LupaPassword extends StatefulWidget {
   const LupaPassword({super.key});
@@ -80,6 +77,7 @@ class _LupaPasswordState extends State<LupaPassword> {
                           const SizedBox(height: 20),
                           TextFormField(
                             controller: emailController,
+                            keyboardType: TextInputType.emailAddress,
                             decoration: InputDecoration(
                               labelText: 'Email',
                               contentPadding: const EdgeInsets.symmetric(
@@ -94,6 +92,8 @@ class _LupaPasswordState extends State<LupaPassword> {
                             validator: (value) {
                               if (value!.isEmpty) {
                                 return "Masukan Email!";
+                              } else if (!GetUtils.isEmail(value)) {
+                                return "Email Tidak Valid!";
                               } else {
                                 return null;
                               }
@@ -103,10 +103,10 @@ class _LupaPasswordState extends State<LupaPassword> {
                           const SizedBox(height: 20),
                           InkWell(
                             onTap: () async {
-                              setState(() {
-                                isLoading = true;
-                              });
                               if (formkey.currentState!.validate()) {
+                                setState(() {
+                                  isLoading = true;
+                                });
                                 bool checkemail = await authController
                                     .checkEmailExist(emailController.text);
                                 if (checkemail) {
@@ -116,7 +116,8 @@ class _LupaPasswordState extends State<LupaPassword> {
                                     Get.toNamed('/verifikasi_token');
                                     QuickAlert.show(
                                       context: context,
-                                      title: "Email Berhasil Dikirim",
+                                      title:
+                                          "Email Berhasil Dikirim, Silakan Cek Email Anda",
                                       type: QuickAlertType.success,
                                     );
                                     setState(() {
@@ -125,7 +126,8 @@ class _LupaPasswordState extends State<LupaPassword> {
                                   } else {
                                     QuickAlert.show(
                                       context: context,
-                                      title: "Email Gagal Dikirim",
+                                      title:
+                                          "Email Gagal Dikirim, Silakan Coba Lagi",
                                       type: QuickAlertType.error,
                                     );
                                     setState(() {

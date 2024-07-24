@@ -33,7 +33,7 @@ class _AddTaskState extends State<AddTask> {
   bool isLoading = false;
   String idUser = "";
   String idanggotauser = "";
-  String idKategoriTask = "";
+  String idKategoriTask = "1";
   String namaPekerjaan = "";
   bool cekPM = false;
   bool cekBobot = false;
@@ -51,6 +51,16 @@ class _AddTaskState extends State<AddTask> {
     getDataKategoriTask();
     listPersonil();
     listHariLibur();
+  }
+
+  refresh() async {
+    setState(() {
+      getDataPekerjaan();
+      cekuserPM();
+      getDataKategoriTask();
+      listPersonil();
+      listHariLibur();
+    });
   }
 
   //hari libur
@@ -217,17 +227,64 @@ class _AddTaskState extends State<AddTask> {
                 FutureBuilder<List<KategoriTaskModel>>(
                   future: getDataKategoriTask(),
                   builder: (context, snapshot) {
-                    if (snapshot.hasError) {
-                      return const Text('Error loading data');
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    } else if (snapshot.hasError) {
+                      return Container(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Gagal memuat data, Silakan tekan tombol refresh untuk mencoba lagi.',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.black,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                refresh();
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: Colors.blue,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(
+                                      Icons.refresh,
+                                      color: Colors.white,
+                                    ),
+                                    const Text(
+                                      'Refresh',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
                     } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return const Text('No data available');
+                      return const Text('Data Kategori Task tidak ditemukan');
                     } else {
                       List<KategoriTaskModel> kategoriList = snapshot.data!;
                       return DropdownButtonFormField<String>(
+                        value: idKategoriTask,
                         onChanged: (value) {
                           setState(() {
                             idKategoriTask = value!;
                           });
+                          print('idKategoriTask: $idKategoriTask');
                         },
                         items: kategoriList.map((kategori) {
                           return DropdownMenuItem<String>(
@@ -264,13 +321,54 @@ class _AddTaskState extends State<AddTask> {
                             builder: (context, snapshot) {
                               if (snapshot.connectionState ==
                                   ConnectionState.waiting) {
-                                return Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [CircularProgressIndicator()],
+                                return const Center(
+                                  child: CircularProgressIndicator(),
                                 );
                               } else if (snapshot.hasError) {
-                                return Text('Error: ${snapshot.error}');
+                                return Container(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        'Gagal memuat data, Silakan tekan tombol refresh untuk mencoba lagi.',
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.black,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      GestureDetector(
+                                        onTap: () {
+                                          refresh();
+                                        },
+                                        child: Container(
+                                          padding: const EdgeInsets.all(10),
+                                          decoration: BoxDecoration(
+                                            color: Colors.blue,
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                          ),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              const Icon(
+                                                Icons.refresh,
+                                                color: Colors.white,
+                                              ),
+                                              const Text(
+                                                'Refresh',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
                               } else if (snapshot.hasData) {
                                 List<Map<String, dynamic>> picList =
                                     snapshot.data as List<Map<String, dynamic>>;

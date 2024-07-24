@@ -25,20 +25,28 @@ class _BerandaState extends State<Beranda> {
   PekerjaanController pekerjaanController = PekerjaanController();
   TaskController taskController = TaskController();
   UserController userController = UserController();
-  late Future<List<PekerjaanModel>> pekerjaan;
   String nama = '';
-  String jumlahPekerjaanSelesai = '';
+  String pekerjaanOnProgress = '';
   String taskpoint = '';
-  String targetpoinsebulan = '';
+  String taskoverdue = '';
+  int totalPoint = 0;
 
   @override
   void initState() {
     super.initState();
-    pekerjaan = getDataPekerjaan();
-    getJumlahPekerjaanSelesai();
-    getTaskPoin();
-    getTargetPoin();
+    getDataPekerjaan();
+    getDataPekerjaans();
+    getPoint();
     getDataUser();
+    getTaskOverdue();
+  }
+
+  refresh() async {
+    getDataPekerjaan();
+    getDataPekerjaans();
+    getPoint();
+    getDataUser();
+    getTaskOverdue();
   }
 
   getDataUser() async {
@@ -56,42 +64,30 @@ class _BerandaState extends State<Beranda> {
     return data;
   }
 
-  //task poin
-  getTaskPoin() async {
-    var data = await taskController.getRekapPoint();
-    int count = 0;
-    for (var i = 0; i < data.length; i++) {
-      DateTime taskDate = DateTime.parse(data[i]['tgl_selesai']);
-      if (taskDate.month == DateTime.now().month) {
-        count += int.parse(data[i]['bobot_point'].toString());
-      }
-    }
+  getDataPekerjaans() async {
+    var data = await pekerjaanController.getOnProgressUser();
     setState(() {
-      taskpoint = count.toString();
+      pekerjaanOnProgress = data.length.toString();
     });
     return data;
   }
 
-  getTargetPoin() async {
-    var data = await targetPoinHarianController.getTarget();
+  //task poin
+  getPoint() async {
+    var data = await taskController.getTaskRekapPointbyUser();
     setState(() {
-      targetpoinsebulan = data[0].jumlah_target_poin_sebulan;
+      totalPoint = 0;
+      for (var task in data) {
+        totalPoint += int.parse(task['bobot_point']);
+      }
     });
   }
 
-  getJumlahPekerjaanSelesai() async {
-    var data = await pekerjaanController.getAllPekerjaanUser();
-    int count = 0;
-    for (var i = 0; i < data.length; i++) {
-      if (data[i].id_status_pekerjaan.toString() == '3' &&
-          data[i].waktu_selesai != null) {
-        count += 1;
-      }
-    }
+  getTaskOverdue() async {
+    var data = await taskController.getTaskOverduebyUser();
     setState(() {
-      jumlahPekerjaanSelesai = count.toString();
+      taskoverdue = data.length.toString();
     });
-
     return data;
   }
 
@@ -199,8 +195,51 @@ class _BerandaState extends State<Beranda> {
                             child: Center(child: CircularProgressIndicator()),
                           );
                         } else if (snapshot.hasError) {
-                          return Center(
-                              child: Text('Error: ${snapshot.error}'));
+                          return Container(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 200, horizontal: 20),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  'Gagal memuat data, Silakan tekan tombol refresh untuk mencoba lagi.',
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.black,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                                GestureDetector(
+                                  onTap: () {
+                                    refresh();
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
+                                      color: Colors.blue,
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        const Icon(
+                                          Icons.refresh,
+                                          color: Colors.white,
+                                        ),
+                                        const Text(
+                                          'Refresh',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
                         } else if (!snapshot.hasData ||
                             snapshot.data!.isEmpty) {
                           return const Padding(
@@ -247,17 +286,17 @@ class _BerandaState extends State<Beranda> {
 
                     if (index == 0) {
                       badgecontent = Text(
-                        jumlahPekerjaanSelesai,
+                        pekerjaanOnProgress,
                         style: const TextStyle(color: Colors.white),
                       );
                     } else if (index == 1) {
                       badgecontent = Text(
-                        targetpoinsebulan,
+                        taskoverdue,
                         style: const TextStyle(color: Colors.white),
                       );
                     } else if (index == 2) {
                       badgecontent = Text(
-                        taskpoint,
+                        totalPoint.toString(),
                         style: const TextStyle(color: Colors.white),
                       );
                     } else {
@@ -279,9 +318,9 @@ class _BerandaState extends State<Beranda> {
                           child: InkWell(
                             onTap: () {
                               if (index == 0) {
-                                Get.toNamed('/pekerjaan_selesai');
+                                // Get.toNamed('/pekerjaan_selesai');
                               } else if (index == 1) {
-                                // Get.toNamed('/task_selesai');
+                                Get.toNamed('/task_overdue');
                               } else if (index == 2) {
                                 Get.toNamed('/rekap_point');
                               }
@@ -320,47 +359,49 @@ class _BerandaState extends State<Beranda> {
     );
   }
 
-  Padding pekerjaanlist(List<PekerjaanModel> pekerjaan) {
+  Padding pekerjaanlist(List<PekerjaanModel> pekerjaans) {
     return Padding(
       padding: const EdgeInsets.all(10),
       child: Column(
         children: [
           Column(
-            children: pekerjaan.map((pekerjaanItem) {
+            children: pekerjaans.map((pekerjaan) {
               return Card(
                 color: GlobalColors.mainColor,
                 child: Column(
                   children: [
                     GestureDetector(
                       onTap: () {
-                        Get.toNamed('/task/${pekerjaanItem.id_pekerjaan}');
+                        Get.toNamed('/task/${pekerjaan.id_pekerjaan}');
                       },
                       child: ListTile(
                         leading: Container(
-                          padding: const EdgeInsets.all(15),
+                          width: 50, // Set fixed width
+                          height: 50, // Set fixed height
                           decoration: const BoxDecoration(
                             color: Colors.white,
                             shape: BoxShape.circle,
                           ),
+                          alignment: Alignment.center,
                           child: Text(
-                            '${pekerjaanItem.data_tambahan.persentase_task_selesai}%',
+                            "${_formatPercentage(pekerjaan.data_tambahan.persentase_task_selesai)}%",
                             style: const TextStyle(
                               color: Colors.black,
                               fontWeight: FontWeight.bold,
-                              fontSize: 14,
+                              fontSize: 16,
                             ),
                           ),
                         ),
                         title: Text(
-                          pekerjaanItem.nama_pekerjaan.length > 45
-                              ? '${pekerjaanItem.nama_pekerjaan.substring(0, 45)}...'
-                              : pekerjaanItem.nama_pekerjaan,
+                          pekerjaan.nama_pekerjaan.length > 45
+                              ? '${pekerjaan.nama_pekerjaan.substring(0, 45)}...'
+                              : pekerjaan.nama_pekerjaan,
                           style: const TextStyle(
                               color: Colors.white, fontSize: 14),
                         ),
                         subtitle: Text(
-                          pekerjaanItem.data_tambahan.project_manager.isNotEmpty
-                              ? "PM: ${pekerjaanItem.data_tambahan.project_manager[0].nama.length > 25 ? '${pekerjaanItem.data_tambahan.project_manager[0].nama.substring(0, 25)}...' : pekerjaanItem.data_tambahan.project_manager[0].nama}"
+                          pekerjaan.data_tambahan.project_manager.isNotEmpty
+                              ? "PM: ${pekerjaan.data_tambahan.project_manager[0].nama.length > 25 ? '${pekerjaan.data_tambahan.project_manager[0].nama.substring(0, 25)}...' : pekerjaan.data_tambahan.project_manager[0].nama}"
                               : "PM: -",
                           style: const TextStyle(
                               color: Colors.white, fontSize: 12),
@@ -368,7 +409,7 @@ class _BerandaState extends State<Beranda> {
                         trailing: GestureDetector(
                           onTap: () {
                             Get.toNamed(
-                                '/detail_pekerjaan/${pekerjaanItem.id_pekerjaan}');
+                                '/detail_pekerjaan/${pekerjaan.id_pekerjaan}');
                           },
                           child: const Icon(
                             Icons.density_medium,
@@ -389,17 +430,25 @@ class _BerandaState extends State<Beranda> {
       ),
     );
   }
+
+  String _formatPercentage(String percentage) {
+    if (percentage == '100.0') {
+      return '100';
+    } else {
+      return percentage;
+    }
+  }
 }
 
 List<Color> colors = [
   Colors.amber,
-  Colors.green,
+  Colors.pink,
   Colors.purple,
 ];
 
 List<String> names = [
-  'Pekerjaan\nSelesai',
-  'Target Point\nGrup Bulan Ini',
+  'Pekerjaan\nOn Progress',
+  'Task\nOverdue',
   'Point Task\n Bulan Ini'
 ];
 

@@ -1,6 +1,5 @@
-import 'package:destask/view/Beranda/Informasi/task_selesai.dart';
+import 'package:destask/view/Beranda/Informasi/task_overdue.dart';
 import 'package:destask/view/Beranda/Task/submit_task.dart';
-// import 'package:destask/view/Beranda/Task/testing.dart';
 import 'package:destask/view/Kinerja/detail_kinerja.dart';
 import 'package:destask/view/Kinerja/kinerja.dart';
 import 'package:destask/view/ResetPassword/reset_password.dart';
@@ -53,7 +52,7 @@ class MyApp extends StatelessWidget {
           GetPage(name: '/beranda', page: () => const Beranda()),
           GetPage(
               name: '/pekerjaan_selesai', page: () => const PekerjaanSelesai()),
-          GetPage(name: '/task_selesai', page: () => const TaskSelesai()),
+          GetPage(name: '/task_overdue', page: () => const TaskOverdue()),
           GetPage(
             name: '/task/:idpekerjaan',
             page: () => const Task(),
@@ -61,7 +60,6 @@ class MyApp extends StatelessWidget {
           GetPage(name: '/add_task/:idpekerjaan', page: () => const AddTask()),
           GetPage(name: '/edit_task/:idtask', page: () => const EditTask()),
           GetPage(name: '/submit_task/:idtask', page: () => const SubmitTask()),
-          // GetPage(name: '/testing/:idtask', page: () => const Testing()),
           GetPage(name: '/detail_task/:idtask', page: () => const DetailTask()),
           GetPage(name: '/pekerjaan', page: () => const Pekerjaan()),
           GetPage(

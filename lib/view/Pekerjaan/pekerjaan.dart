@@ -31,6 +31,13 @@ class _PekerjaanState extends State<Pekerjaan> with TickerProviderStateMixin {
     pekerjaan = getDataPekerjaan();
   }
 
+  refresh() async {
+    setState(() {
+      statusPekerjaan = getStatusPekerjaan();
+      pekerjaan = getDataPekerjaan();
+    });
+  }
+
   //status pekerjaan
   Future<List<StatusPekerjaanModel>> getStatusPekerjaan() async {
     var data = await statusPekerjaanController.getAllStatusPekerjaan();
@@ -106,7 +113,50 @@ class _PekerjaanState extends State<Pekerjaan> with TickerProviderStateMixin {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
+            return Container(
+              padding:
+                  const EdgeInsets.symmetric(vertical: 200, horizontal: 20),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Gagal memuat data, Silakan tekan tombol refresh untuk mencoba lagi.',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Colors.black,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      refresh();
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.blue,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.refresh,
+                            color: Colors.white,
+                          ),
+                          const Text(
+                            'Refresh',
+                            style: TextStyle(
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return Center(child: Text('No data available'));
           } else {
@@ -120,15 +170,59 @@ class _PekerjaanState extends State<Pekerjaan> with TickerProviderStateMixin {
                 if (pekerjaanSnapshot.connectionState ==
                     ConnectionState.waiting) {
                   return Center(child: CircularProgressIndicator());
-                } else if (pekerjaanSnapshot.hasError) {
-                  return Center(
-                      child: Text('Error: ${pekerjaanSnapshot.error}'));
+                } else if (snapshot.hasError) {
+                  return Container(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 200, horizontal: 20),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Gagal memuat data, Silakan tekan tombol refresh untuk mencoba lagi.',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.black,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              statusPekerjaan = getStatusPekerjaan();
+                              pekerjaan = getDataPekerjaan();
+                            });
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: Colors.blue,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(
+                                  Icons.refresh,
+                                  color: Colors.white,
+                                ),
+                                const Text(
+                                  'Refresh',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
                 } else if (!pekerjaanSnapshot.hasData ||
                     pekerjaanSnapshot.data!.isEmpty) {
                   return Center(child: Text('No data available'));
                 } else {
-                  final List<PekerjaanModel> pekerjaanData =
-                      pekerjaanSnapshot.data!;
+                  List<PekerjaanModel> pekerjaanData = pekerjaanSnapshot.data!;
 
                   return Column(
                     children: [
@@ -148,40 +242,44 @@ class _PekerjaanState extends State<Pekerjaan> with TickerProviderStateMixin {
                         child: TabBarView(
                           controller: _tabController,
                           children: statusData.map((status) {
-                            final filteredPekerjaan =
-                                pekerjaanData.where((pekerjaan) {
-                              final matchesStatus =
-                                  pekerjaan.id_status_pekerjaan ==
-                                      status.id_status_pekerjaan;
-                              final matchesSearchQuery = searchQuery.isEmpty ||
-                                  pekerjaan.nama_pekerjaan!
-                                      .toLowerCase()
-                                      .contains(searchQuery.toLowerCase());
-                              return matchesStatus && matchesSearchQuery;
-                            }).toList();
+                            final filterPekerjaan = pekerjaanData
+                                .where((pekerjaan) =>
+                                    pekerjaan.id_status_pekerjaan ==
+                                    status.id_status_pekerjaan)
+                                .where((pekerjaan) =>
+                                    pekerjaan.nama_pekerjaan
+                                        .toLowerCase()
+                                        .contains(
+                                          searchController.text.toLowerCase(),
+                                        ) ||
+                                    pekerjaan.data_tambahan.project_manager
+                                        .toString()
+                                        .contains(searchController.text))
+                                .toList();
 
-                            if (filteredPekerjaan.isEmpty) {
+                            if (filterPekerjaan.isEmpty) {
                               return Center(
-                                  child: Text(
-                                      'Tidak ada data pekerjaan untuk ${status.nama_status_pekerjaan}'));
+                                  child: Text('Tidak ada data pekerjaan'));
                             }
 
                             return ListView.builder(
-                              itemCount: filteredPekerjaan.length,
+                              itemCount: filterPekerjaan.length,
                               itemBuilder: (context, index) {
-                                final pekerjaan = filteredPekerjaan[index];
+                                final pekerjaan = filterPekerjaan[index];
                                 return Card(
                                   color: Color(int.parse(
                                       '0xff${status.color.replaceAll('#', '')}')),
                                   child: ListTile(
                                     leading: Container(
-                                      padding: const EdgeInsets.all(15),
+                                      width: 50, // Set fixed width
+                                      height: 50, // Set fixed height
                                       decoration: const BoxDecoration(
                                         color: Colors.white,
                                         shape: BoxShape.circle,
                                       ),
+                                      alignment: Alignment.center,
                                       child: Text(
-                                        '${pekerjaan.data_tambahan.persentase_task_selesai}%',
+                                        "${_formatPercentage(pekerjaan.data_tambahan.persentase_task_selesai)}%",
                                         style: const TextStyle(
                                           color: Colors.black,
                                           fontWeight: FontWeight.bold,
@@ -234,5 +332,13 @@ class _PekerjaanState extends State<Pekerjaan> with TickerProviderStateMixin {
         },
       ),
     );
+  }
+
+  String _formatPercentage(String percentage) {
+    if (percentage == '100.0') {
+      return '100';
+    } else {
+      return percentage;
+    }
   }
 }

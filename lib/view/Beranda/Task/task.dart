@@ -1,6 +1,6 @@
-import 'package:destask/controller/status_task_controller.dart';
+import 'package:destask/controller/bobot_kategori_task_controller.dart';
+import 'package:destask/controller/target_poin_harian_controller.dart';
 import 'package:destask/controller/user_controller.dart';
-import 'package:destask/model/status_task_model.dart';
 import 'package:destask/utils/global_colors.dart';
 import 'package:intl/intl.dart';
 import '../../../controller/pekerjaan_controller.dart';
@@ -23,9 +23,15 @@ class _TaskState extends State<Task> {
   PekerjaanController pekerjaanController = PekerjaanController();
   TaskController taskController = TaskController();
   UserController userController = UserController();
-  StatusTaskController statusTaskController = StatusTaskController();
+  BobotKategoriTaskController bobotKategoriTaskController =
+      BobotKategoriTaskController();
+  TargetPoinHarianController targetPoinHarianController =
+      TargetPoinHarianController();
   bool isSearchBarVisible = false;
-
+  bool cekBobotKategoriTaskPM = false;
+  bool cekTargetPoinPM = false;
+  bool cekBobotKategoriTaskIndividu = false;
+  bool cekTargetPoinIndividu = false;
   String namaPekerjaan = '';
   String idStatusPekerjaan = '';
   String statusTaskValue = 'Status'; //server
@@ -43,17 +49,26 @@ class _TaskState extends State<Task> {
   @override
   void initState() {
     super.initState();
+    task = getDataTask();
     getIdUser();
     getPekerjaan();
     listPersonil();
-    // getStatusTask();
-    task = getDataTask();
+    getBobotKategoriTaskPM();
+    getBobotKategoriTaskIndividu();
+    getBobotTargetPoinPM();
+    getBobotTargetPoinIndividu();
   }
 
   void refresh() {
     setState(() {
-      // Memperbarui data tugas dengan memanggil getDataTask()
       task = getDataTask();
+      getIdUser();
+      getPekerjaan();
+      listPersonil();
+      getBobotKategoriTaskPM();
+      getBobotKategoriTaskIndividu();
+      getBobotTargetPoinPM();
+      getBobotTargetPoinIndividu();
     });
   }
 
@@ -64,6 +79,37 @@ class _TaskState extends State<Task> {
       idStatusPekerjaan = pekerjaan[0].id_status_pekerjaan.toString();
       idpm = pekerjaan[0].data_tambahan.project_manager[0].id_user;
     });
+  }
+
+  getBobotKategoriTaskPM() async {
+    bool cekBobot = await bobotKategoriTaskController.cekBobotPM();
+    setState(() {
+      cekBobotKategoriTaskPM = cekBobot;
+    });
+  }
+
+  getBobotKategoriTaskIndividu() async {
+    bool cekBobot = await bobotKategoriTaskController.cekBobotIndividu();
+    setState(() {
+      cekBobotKategoriTaskIndividu = cekBobot;
+    });
+    print('cekBobotKategoriTaskIndividu : $cekBobotKategoriTaskIndividu');
+  }
+
+  getBobotTargetPoinPM() async {
+    bool cekBobot = await targetPoinHarianController.cekBobotPM();
+    setState(() {
+      cekTargetPoinPM = cekBobot;
+    });
+    print('cektargetpoinpm : $cekBobotKategoriTaskPM');
+  }
+
+  getBobotTargetPoinIndividu() async {
+    bool cekBobot = await targetPoinHarianController.cekBobotIndividu();
+    setState(() {
+      cekTargetPoinIndividu = cekBobot;
+    });
+    print('cektargetpoinindividu : $cekBobotKategoriTaskIndividu');
   }
 
   List<String> dropdownItems = [
@@ -216,7 +262,17 @@ class _TaskState extends State<Task> {
       body: Column(
         children: [
           buildFilterSection(),
-          // statusTaskValue == 'Status' ? buildKeteranganSection() : Container(),
+          if (isPM == true)
+            cekBobotKategoriTaskPM == false || cekTargetPoinPM == false
+                ? buildWarningSection(
+                    isPM, cekBobotKategoriTaskPM, cekTargetPoinPM)
+                : Container()
+          else
+            cekBobotKategoriTaskIndividu == false ||
+                    cekTargetPoinIndividu == false
+                ? buildWarningSection(
+                    isPM, cekBobotKategoriTaskIndividu, cekTargetPoinIndividu)
+                : Container(),
           dropdownValue == 'Semua' ? buildKeteranganSection() : Container(),
           Expanded(
             child: ListView(
@@ -234,15 +290,38 @@ class _TaskState extends State<Task> {
           ),
         ],
       ),
-      floatingActionButton: idStatusPekerjaan == '3' || idStatusPekerjaan == '5'
-          ? null
-          : FloatingActionButton(
-              onPressed: () {
-                Get.toNamed('/add_task/$idPekerjaan');
-              },
-              child: const Icon(Icons.add, color: Colors.white),
-              backgroundColor: GlobalColors.mainColor,
-            ),
+      //jika pekerjaan bast atau cancel maka tidak bisa menambah task
+      // floatingActionButton: idStatusPekerjaan == '3' || idStatusPekerjaan == '5'
+      //     ? null
+      //     //jika seorang pm
+      //     : isPM == true
+      //         ? cekTargetPoinPM == false || cekBobotKategoriTaskPM == false
+      //             ? null
+      //             : FloatingActionButton(
+      //                 backgroundColor: GlobalColors.mainColor,
+      //                 onPressed: () {
+      //                   Get.toNamed('/add_task/$idPekerjaan');
+      //                 },
+      //                 child: const Icon(Icons.add, color: Colors.white),
+      //               )
+      //         //jika bukam pm
+      //         : cekTargetPoinIndividu == false ||
+      //                 cekBobotKategoriTaskIndividu == false
+      //             ? null
+      //             : FloatingActionButton(
+      //                 backgroundColor: GlobalColors.mainColor,
+      //                 onPressed: () {
+      //                   Get.toNamed('/add_task/$idPekerjaan');
+      //                 },
+      //                 child: const Icon(Icons.add, color: Colors.white),
+      //               ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: GlobalColors.mainColor,
+        onPressed: () {
+          Get.toNamed('/add_task/$idPekerjaan');
+        },
+        child: const Icon(Icons.add, color: Colors.white),
+      ),
     );
   }
 
@@ -444,10 +523,47 @@ class _TaskState extends State<Task> {
             child: CircularProgressIndicator(),
           );
         } else if (snapshot.hasError) {
-          return Center(
-            child: Text(
-              'Error: ${snapshot.error}',
-              style: const TextStyle(fontSize: 16),
+          return Container(
+            padding: const EdgeInsets.symmetric(vertical: 200, horizontal: 20),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Gagal memuat data, Silakan tekan tombol refresh untuk mencoba lagi.',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Colors.black,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                GestureDetector(
+                  onTap: () {
+                    refresh();
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.blue,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.refresh,
+                          color: Colors.white,
+                        ),
+                        const Text(
+                          'Refresh',
+                          style: TextStyle(
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
           );
         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
@@ -484,7 +600,10 @@ class _TaskState extends State<Task> {
                 return true; // Tampilkan semua tugas
               case 'On Progress':
                 return task.id_status_task == '1' &&
-                    task.tgl_verifikasi_diterima == null;
+                    task.tgl_verifikasi_diterima == null &&
+                    today.year != task.tgl_planing.year &&
+                    today.month != task.tgl_planing.month &&
+                    today.day != task.tgl_planing.day;
               case 'Deadline Hari ini':
                 return task.tgl_verifikasi_diterima == null &&
                     task.id_status_task == '1' &&
@@ -516,7 +635,7 @@ class _TaskState extends State<Task> {
           //     return task.id_status_task == statusTaskValue;
           //   }
           // }).toList();
-          return allTasks.isEmpty
+          return filterTask.isEmpty
               ? const Center(
                   child: Text(
                     'Data task kosong',
@@ -661,7 +780,9 @@ class _TaskState extends State<Task> {
                           //garis
                           taskData['tgl_verifikasi_diterima'] != null &&
                                       taskData['id_status_task'] == '3' ||
-                                  taskData['id_status_task'] == '2'
+                                  taskData['id_status_task'] == '2' ||
+                                  idStatusPekerjaan == '3' ||
+                                  idStatusPekerjaan == '5'
                               ? const SizedBox()
                               : const Divider(
                                   color: Colors.white,
@@ -669,7 +790,9 @@ class _TaskState extends State<Task> {
                                 ),
                           taskData['tgl_verifikasi_diterima'] != null &&
                                       taskData['id_status_task'] == '3' ||
-                                  taskData['id_status_task'] == '2'
+                                  taskData['id_status_task'] == '2' ||
+                                  idStatusPekerjaan == '3' ||
+                                  idStatusPekerjaan == '5'
                               ? SizedBox()
                               : Row(
                                   mainAxisAlignment:
@@ -786,7 +909,7 @@ class _TaskState extends State<Task> {
                                             // Get.toNamed(
                                             //     '/submit_task/${taskData['id_task']}');
                                             Get.toNamed(
-                                                '/testing/${taskData['id_task']}');
+                                                '/submit_task/${taskData['id_task']}');
                                           },
                                         ),
                                       ),
@@ -800,6 +923,57 @@ class _TaskState extends State<Task> {
                 );
         }
       },
+    );
+  }
+
+  Widget buildWarningSection(bool pm, bool bobot, bool target) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: Colors.red,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      child: Column(
+        children: [
+          const Text(
+            'Perhatian: ',
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Divider(
+            color: Colors.white,
+            thickness: 1,
+          ),
+          if (pm == false && bobot == false && target == false)
+            const Text(
+              'BOBOT KATEGORI TASK dan TARGET POIN HARIAN belum diatur, silahkan hubungi HOD',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.white,
+              ),
+            ),
+          if (pm == false && bobot == false && target == true)
+            const Text('BOBOT KATEGORI TASK belum diatur, silahkan hubungi HOD',
+                style: TextStyle(fontSize: 14, color: Colors.white)),
+          if (pm == false && bobot == true && target == false)
+            const Text('TARGET POIN HARIAN belum diatur, silahkan hubungi HOD',
+                style: TextStyle(fontSize: 14, color: Colors.white)),
+          if (pm == true && bobot == false && target == false)
+            const Text(
+                'BOBOT KATEGORI TASK dan TARGET POIN HARIAN belum diatur, silahkan hubungi HOD',
+                style: TextStyle(fontSize: 14, color: Colors.white)),
+          if (pm == true && bobot == false && target == true)
+            const Text('BOBOT KATEGORI TASK belum diatur, silahkan hubungi HOD',
+                style: TextStyle(fontSize: 14, color: Colors.white)),
+          if (pm == true && bobot == true && target == false)
+            const Text('TARGET POIN HARIAN belum diatur, silahkan hubungi HOD',
+                style: TextStyle(fontSize: 14, color: Colors.white)),
+        ],
+      ),
     );
   }
 

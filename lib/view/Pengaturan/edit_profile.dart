@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:destask/controller/auth_controller.dart';
 import 'package:destask/utils/constant_api.dart';
 
 import '../../controller/user_controller.dart';
@@ -26,22 +27,13 @@ class _EditProfileState extends State<EditProfile> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   UserController userController = UserController();
+  AuthController authController = AuthController();
   String namafoto = '';
   File? _image;
   bool isLoading = false;
   bool isFailed = false;
-
-  getToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    var token = prefs.getString("token");
-    return token;
-  }
-
-  getIdUser() async {
-    final prefs = await SharedPreferences.getInstance();
-    var idUser = prefs.getString("id_user");
-    return idUser;
-  }
+  String emaillama = '';
+  String namalama = '';
 
   //mengambil gambar dari gallery
   Future getImageGallery() async {
@@ -61,11 +53,12 @@ class _EditProfileState extends State<EditProfile> {
 
   //getdata user
   getDataUser() async {
-    var iduser = await getIdUser();
-    var data = await userController.getUserById(iduser);
+    var data = await userController.getUserById();
     setState(() {
       _nameController.text = data[0].nama ?? '';
+      namalama = data[0].nama ?? '';
       _emailController.text = data[0].email ?? '';
+      emaillama = data[0].email ?? '';
       _usernameController.text = data[0].username ?? '';
       _usergroupController.text = data[0].id_usergroup ?? '';
       namafoto = data[0].foto_profil != null ? data[0].foto_profil : 'user.png';
@@ -167,30 +160,51 @@ class _EditProfileState extends State<EditProfile> {
                       )
                     : const SizedBox(),
                 // Nama
-                buildTextField("Nama", _nameController, iconData: Icons.person),
 
-                // Email
-                buildTextField("Email", _emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    iconData: Icons.email),
-
-                // Username
-                buildTextField("Username", _usernameController,
-                    iconData: Icons.person_outline),
-
-                // Usergroup
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: TextField(
-                    controller: _usergroupController,
-                    decoration: const InputDecoration(
-                      labelText: 'Usergroup',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.group),
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: TextFormField(
+                    controller: _nameController,
+                    decoration: InputDecoration(
+                      labelText: 'Nama',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      prefixIcon: const Icon(Icons.person_outline),
                     ),
-                    enabled: false,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Kolom Nama harus diisi';
+                      }
+                    },
                   ),
                 ),
+                //email
+                TextFormField(
+                  controller: _emailController,
+                  decoration: InputDecoration(
+                    labelText: 'Email',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    prefixIcon: const Icon(Icons.email_outlined),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Kolom Email harus diisi';
+                    } else if (!value.contains('@')) {
+                      return 'Email tidak valid';
+                    }
+                  },
+                ),
+
+                // Username
+                buildFormDisable("Username", _usernameController.text,
+                    const Icon(Icons.person_outline)),
+
+                // Usergroup
+                buildFormDisable("Usergroup", _usergroupController.text,
+                    const Icon(Icons.group_outlined)),
 
                 // Tombol Simpan
                 GestureDetector(
@@ -200,29 +214,50 @@ class _EditProfileState extends State<EditProfile> {
                         setState(() {
                           isLoading = true;
                         });
-                        bool editProfile = await userController.editProfile(
-                            _usergroupController.text,
-                            _nameController.text,
-                            _emailController.text,
-                            _usernameController.text);
-
-                        if (editProfile) {
-                          QuickAlert.show(
-                            context: context,
-                            type: QuickAlertType.success,
-                            text: 'Profil berhasil diupdate!',
-                          );
-                        } else {
+                        if (emaillama == _emailController.text &&
+                            namalama == _nameController.text) {
                           QuickAlert.show(
                             context: context,
                             type: QuickAlertType.error,
                             title: 'Oops...',
-                            text: 'Profil gagal diupdate!',
+                            text: 'Tidak ada perubahan data!',
                           );
+                          setState(() {
+                            isLoading = false;
+                          });
+                        } else {
+                          bool cekemail = await userController
+                              .cekEmail(_emailController.text);
+
+                          if (cekemail) {
+                            bool update = await userController.editProfile(
+                                _nameController.text, _emailController.text);
+                            if (update) {
+                              QuickAlert.show(
+                                context: context,
+                                type: QuickAlertType.success,
+                                text: 'Profil berhasil diupdate!',
+                              );
+                            } else {
+                              QuickAlert.show(
+                                context: context,
+                                type: QuickAlertType.error,
+                                title: 'Oops...',
+                                text: 'Profil gagal diupdate!',
+                              );
+                            }
+                          } else {
+                            QuickAlert.show(
+                              context: context,
+                              type: QuickAlertType.error,
+                              title: 'Oops...',
+                              text: 'Email sudah terdaftar pada akun lain!',
+                            );
+                          }
+                          setState(() {
+                            isLoading = false;
+                          });
                         }
-                        setState(() {
-                          isLoading = false;
-                        });
                       }
                     } catch (e) {
                       print(e);
@@ -262,17 +297,16 @@ class _EditProfileState extends State<EditProfile> {
     );
   }
 
-  Widget buildTextField(String label, TextEditingController controller,
-      {TextInputType keyboardType = TextInputType.text, IconData? iconData}) {
+  Padding buildFormDisable(String label, String value, Icon icon) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: TextFormField(
-        controller: controller,
-        keyboardType: keyboardType,
+        controller: TextEditingController(text: value),
+        enabled: false,
         decoration: InputDecoration(
           labelText: label,
+          prefixIcon: icon,
           border: const OutlineInputBorder(),
-          prefixIcon: iconData != null ? Icon(iconData) : null,
         ),
       ),
     );

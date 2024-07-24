@@ -7,8 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:quickalert/quickalert.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-const url = '$baseURL/api/target';
-const urlcek = '$baseURL/api/cektargetpoinharian';
+const url = '$baseURL/api/targetpoinharian';
 
 getToken() async {
   final prefs = await SharedPreferences.getInstance();
@@ -20,6 +19,12 @@ getIdUser() async {
   final prefs = await SharedPreferences.getInstance();
   var iduser = prefs.getString("id_user");
   return iduser;
+}
+
+getIdUserGroup() async {
+  final prefs = await SharedPreferences.getInstance();
+  var idusergroup = prefs.getString("id_usergroup");
+  return idusergroup;
 }
 
 class TargetPoinHarianController {
@@ -53,6 +58,49 @@ class TargetPoinHarianController {
       }
     } catch (e) {
       return [];
+    }
+  }
+
+  Future<bool> cekBobotPM() async {
+    try {
+      var token = await getToken();
+      var response = await http.get(
+        Uri.parse('$url/cek/pm'),
+        headers: {'Authorization': 'Bearer $token'},
+      );
+      if (response.statusCode == 200) {
+        var data = json.decode(response.body);
+        if (data['status'] == 200 && !data['error']) {
+          print('cekBobotPMBobot: ${data['messages']}');
+          return true;
+        }
+      }
+      return false;
+    } catch (e) {
+      print('Error: $e');
+      return false;
+    }
+  }
+
+  Future<bool> cekBobotIndividu() async {
+    try {
+      var token = await getToken();
+      var idusergroup = await getIdUserGroup();
+      var response = await http.get(
+        Uri.parse('$url/cek/individu/$idusergroup'),
+        headers: {'Authorization': 'Bearer $token'},
+      );
+      if (response.statusCode == 200) {
+        var data = json.decode(response.body);
+        if (data['status'] == 200 && !data['error']) {
+          print('cekBobotPMBobot: ${data['messages']}');
+          return true;
+        }
+      }
+      return false;
+    } catch (e) {
+      print('Error: $e');
+      return false;
     }
   }
 }

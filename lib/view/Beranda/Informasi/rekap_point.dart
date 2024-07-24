@@ -1,7 +1,7 @@
+import 'package:destask/controller/target_poin_harian_controller.dart';
 import 'package:destask/controller/task_controller.dart';
 import 'package:destask/utils/global_colors.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 class RekapPoint extends StatefulWidget {
@@ -13,36 +13,91 @@ class RekapPoint extends StatefulWidget {
 
 class _RekapPointState extends State<RekapPoint> {
   TaskController taskController = TaskController();
-  DateTime? startDate;
-  DateTime? endDate;
+  TargetPoinHarianController targetPoinHarianController =
+      TargetPoinHarianController();
   int totalPoint = 0;
+  String totalPointTarget = '';
 
-  getData() async {
-    var data = await taskController.getRekapPoint();
-    if (startDate != null && endDate != null) {
-      data = data.where((task) {
-        DateTime taskDate = DateTime.parse(task['tgl_selesai']);
-        return taskDate.isAfter(startDate!.subtract(const Duration(days: 1))) &&
-            taskDate.isBefore(endDate!.add(const Duration(days: 1)));
-      }).toList();
-    } else if (startDate != null) {
-      data = data.where((task) {
-        DateTime taskDate = DateTime.parse(task['tgl_selesai']);
-        return taskDate.isAfter(startDate!.subtract(const Duration(days: 1)));
-      }).toList();
-    } else if (endDate != null) {
-      data = data.where((task) {
-        DateTime taskDate = DateTime.parse(task['tgl_selesai']);
-        return taskDate.isBefore(endDate!.add(const Duration(days: 1)));
-      }).toList();
-    }
+  getDataRekapPoint() async {
+    var data = await taskController.getTaskRekapPointbyUser();
     return data;
+  }
+
+  getPoint() async {
+    var data = await taskController.getTaskRekapPointbyUser();
+    setState(() {
+      totalPoint = 0;
+      for (var task in data) {
+        totalPoint += int.parse(task['bobot_point']);
+      }
+    });
+  }
+
+  getTargetpoint() async {
+    var data = await targetPoinHarianController.getTarget();
+    setState(() {
+      totalPointTarget = data[0].jumlah_target_poin_sebulan.toString();
+    });
+  }
+
+  //menampilkan nama bulan skrg
+  String getMonthName() {
+    var now = DateTime.now();
+    var month = now.month;
+    var monthName = '';
+    switch (month) {
+      case 1:
+        monthName = 'Januari';
+        break;
+      case 2:
+        monthName = 'Februari';
+        break;
+      case 3:
+        monthName = 'Maret';
+        break;
+      case 4:
+        monthName = 'April';
+        break;
+      case 5:
+        monthName = 'Mei';
+        break;
+      case 6:
+        monthName = 'Juni';
+        break;
+      case 7:
+        monthName = 'Juli';
+        break;
+      case 8:
+        monthName = 'Agustus';
+        break;
+      case 9:
+        monthName = 'September';
+        break;
+      case 10:
+        monthName = 'Oktober';
+        break;
+      case 11:
+        monthName = 'November';
+        break;
+      case 12:
+        monthName = 'Desember';
+        break;
+    }
+    return monthName;
   }
 
   @override
   void initState() {
     super.initState();
-    getData();
+    getTargetpoint();
+    getPoint();
+    getDataRekapPoint();
+  }
+
+  refresh() async {
+    getTargetpoint();
+    getPoint();
+    getDataRekapPoint();
   }
 
   @override
@@ -60,256 +115,219 @@ class _RekapPointState extends State<RekapPoint> {
       body: Column(
         children: [
           Container(
-            color: GlobalColors.mainColor,
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
+            padding: const EdgeInsets.all(10),
+            child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                FutureBuilder(
-                  future: getData(),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Total point target
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.all(8.0),
+                        decoration: BoxDecoration(
+                          color: Colors.pink,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Column(
+                          children: [
+                            Text(
+                              'Target Point Bulan Ini:',
+                              style: const TextStyle(
+                                  fontSize: 14, color: Colors.white),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 10),
+                            Divider(
+                              color: Colors.white,
+                              thickness: 2,
+                            ),
+                            Text(
+                              totalPointTarget,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                  fontSize: 20,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    // Total point usergroup
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.all(8.0),
+                        decoration: BoxDecoration(
+                          color: Colors.orange,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Column(
+                          children: [
+                            Text(
+                              'Bulan',
+                              style: const TextStyle(
+                                  fontSize: 14, color: Colors.white),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 10),
+                            Divider(
+                              color: Colors.white,
+                              thickness: 2,
+                            ),
+                            Text(
+                              getMonthName(),
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                  fontSize: 20,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                // Total point anda
+                Container(
+                  padding: const EdgeInsets.all(8.0),
+                  decoration: BoxDecoration(
+                    color: Colors.purple,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        'Point Anda Bulan Ini:',
+                        style:
+                            const TextStyle(fontSize: 14, color: Colors.white),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 10),
+                      Divider(
+                        color: Colors.white,
+                        thickness: 2,
+                      ),
+                      Text(
+                        totalPoint.toString(),
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                            fontSize: 20,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Daftar task
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.cyan,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
+                ),
+              ),
+              padding: const EdgeInsets.all(8),
+              child: FutureBuilder(
+                  future: getDataRekapPoint(),
                   builder: (BuildContext context, AsyncSnapshot snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(
                         child: CircularProgressIndicator(),
                       );
-                    } else {
-                      if (snapshot.hasError) {
-                        return Center(
-                          child: Text('Error: ${snapshot.error}'),
-                        );
-                      } else {
-                        totalPoint = 0;
-                        for (var task in snapshot.data) {
-                          totalPoint += int.parse(task['bobot_point']);
-                        }
-                        return Column(
+                    } else if (snapshot.hasError) {
+                      return Container(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 200, horizontal: 20),
+                        child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              'Total Point:',
+                              'Gagal memuat data, Silakan tekan tombol refresh untuk mencoba lagi.',
                               style: const TextStyle(
-                                  fontSize: 20, color: Colors.white),
-                            ),
-                            const SizedBox(height: 10),
-                            Container(
-                              width: 50,
-                              height: 50,
-                              decoration: BoxDecoration(
-                                  shape: BoxShape.circle, color: Colors.green),
-                              child: Center(
-                                child: Text(
-                                  totalPoint.toString(),
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
+                                fontSize: 12,
+                                color: Colors.black,
                               ),
+                              textAlign: TextAlign.center,
                             ),
-                          ],
-                        );
-                      }
-                    }
-                  },
-                ),
-                // Filter tanggal
-                Column(
-                  children: [
-                    Row(
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const [
-                            Text(
-                              'Dari:',
-                              style: TextStyle(color: Colors.white),
-                            ),
-                            SizedBox(height: 15),
-                            Text(
-                              'Sampai:',
-                              style: TextStyle(color: Colors.white),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(width: 10),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
                             GestureDetector(
-                              onTap: () async {
-                                DateTime? picked = await showDatePicker(
-                                  context: context,
-                                  initialDate: DateTime.now(),
-                                  firstDate: DateTime(2015, 8),
-                                  lastDate: DateTime(2101),
-                                );
-                                if (picked != null) {
-                                  if (endDate != null) {
-                                    if (picked.isAfter(endDate!)) {
-                                      Get.snackbar('Error',
-                                          'Tanggal awal tidak boleh lebih besar dari tanggal akhir!',
-                                          snackPosition: SnackPosition.TOP,
-                                          backgroundColor: Colors.red,
-                                          colorText: Colors.white);
-                                    } else {
-                                      setState(() {
-                                        startDate = picked;
-                                      });
-                                    }
-                                  } else {
-                                    setState(() {
-                                      startDate = picked;
-                                    });
-                                  }
-                                }
-                              },
-                              child: Row(
-                                children: [
-                                  startDate == null
-                                      ? Text('Pilih tanggal',
-                                          style: const TextStyle(
-                                              color: Colors.white))
-                                      : Text(
-                                          '${startDate!.day}/${startDate!.month}/${startDate!.year}',
-                                          style: const TextStyle(
-                                              color: Colors.white)),
-                                  SizedBox(width: 10),
-                                  const Icon(Icons.calendar_today,
-                                      color: Colors.white),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            GestureDetector(
-                              onTap: () async {
-                                DateTime? picked = await showDatePicker(
-                                  context: context,
-                                  initialDate: DateTime.now(),
-                                  firstDate: DateTime(2015, 8),
-                                  lastDate: DateTime(2101),
-                                );
-                                if (picked != null) {
-                                  if (startDate != null) {
-                                    if (picked.isBefore(startDate!)) {
-                                      Get.snackbar('Error',
-                                          'Tanggal akhir tidak boleh lebih kecil dari tanggal awal!',
-                                          snackPosition: SnackPosition.TOP,
-                                          backgroundColor: Colors.red,
-                                          colorText: Colors.white);
-                                    } else {
-                                      setState(() {
-                                        endDate = picked;
-                                      });
-                                    }
-                                  } else {
-                                    setState(() {
-                                      endDate = picked;
-                                    });
-                                  }
-                                }
-                              },
-                              child: Row(
-                                children: [
-                                  endDate == null
-                                      ? Text('Pilih tanggal',
-                                          style: const TextStyle(
-                                              color: Colors.white))
-                                      : Text(
-                                          '${endDate!.day}/${endDate!.month}/${endDate!.year}',
-                                          style: const TextStyle(
-                                              color: Colors.white)),
-                                  SizedBox(width: 10),
-                                  const Icon(Icons.calendar_today,
-                                      color: Colors.white),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    if (startDate != null || endDate != null)
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(top: 10.0),
-                            child: GestureDetector(
                               onTap: () {
-                                setState(() {
-                                  startDate = null;
-                                  endDate = null;
-                                });
+                                refresh();
                               },
                               child: Container(
-                                padding: const EdgeInsets.all(8.0),
-                                color: Colors.red,
-                                child: const Text(
-                                  'Reset Filter',
-                                  style: TextStyle(color: Colors.white),
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: Colors.blue,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(
+                                      Icons.refresh,
+                                      color: Colors.white,
+                                    ),
+                                    const Text(
+                                      'Refresh',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-
-          // Daftar task
-          Expanded(
-            child: FutureBuilder(
-              future: getData(),
-              builder: (BuildContext context, AsyncSnapshot snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
-                } else {
-                  if (snapshot.hasError) {
-                    return Center(
-                      child: Text('Error: ${snapshot.error}'),
-                    );
-                  } else {
-                    return ListView.builder(
-                      itemCount: snapshot.data.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        return Card(
-                          color: Colors.lightGreen,
-                          child: ListTile(
-                            title: Text(
-                              snapshot.data[index]['deskripsi_task']
-                                          .split(' ')
-                                          .length >
-                                      7
-                                  ? '${snapshot.data[index]['deskripsi_task'].split(' ').sublist(0, 7).join(' ')}...'
-                                  : snapshot.data[index]['deskripsi_task'],
-                              style: const TextStyle(color: Colors.white),
+                          ],
+                        ),
+                      );
+                    } else {
+                      return ListView.builder(
+                        itemCount: snapshot.data.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          return Card(
+                            color: Colors.white,
+                            child: ListTile(
+                              title: Text(
+                                snapshot.data[index]['deskripsi_task']
+                                            .split(' ')
+                                            .length >
+                                        7
+                                    ? '${snapshot.data[index]['deskripsi_task'].split(' ').sublist(0, 7).join(' ')}...'
+                                    : snapshot.data[index]['deskripsi_task'],
+                                style: const TextStyle(color: Colors.black),
+                              ),
+                              subtitle: Row(
+                                children: [
+                                  Text(
+                                      'Tanggal Selesai: ${DateFormat('dd MMMM yyyy').format(DateTime.parse(snapshot.data[index]['tgl_selesai']))}',
+                                      style:
+                                          const TextStyle(color: Colors.black)),
+                                ],
+                              ),
+                              trailing: CircleAvatar(
+                                backgroundColor: Colors.cyan,
+                                child: Text(
+                                  snapshot.data[index]['bobot_point'],
+                                  style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              ),
                             ),
-                            subtitle: Row(
-                              children: [
-                                Text(
-                                    'Tanggal Selesai: ${DateFormat('dd MMMM yyyy').format(DateTime.parse(snapshot.data[index]['tgl_selesai']))}',
-                                    style:
-                                        const TextStyle(color: Colors.white)),
-                              ],
-                            ),
-                            trailing: Text(
-                              'Point: ${snapshot.data[index]['bobot_point']}',
-                              style: const TextStyle(
-                                  fontSize: 16, color: Colors.white),
-                            ),
-                          ),
-                        );
-                      },
-                    );
-                  }
-                }
-              },
+                          );
+                        },
+                      );
+                    }
+                  }),
             ),
           ),
         ],

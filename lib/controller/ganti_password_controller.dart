@@ -59,4 +59,43 @@ class GantiPasswordController {
       print(e);
     }
   }
+
+  Future<bool> cekPassword(String password) async {
+    try {
+      var token = await getToken();
+      var iduser = await getIdUser();
+      final data = json.encode({
+        'id_user': iduser,
+        'password': password,
+      });
+
+      final response = await http.post(
+        Uri.parse('$baseURL/api/cekpassword'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: data,
+      );
+
+      print('Response Status Code: ${response.statusCode}');
+      print('Response Body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        var data = json.decode(response.body);
+        if (data['status'] == 200 && !data['error']) {
+          return true;
+        } else {
+          print('Server Error: ${data['error']}');
+          return false;
+        }
+      } else {
+        print('Request Failed: ${response.statusCode}');
+        return false;
+      }
+    } catch (e) {
+      print('Exception: $e');
+      return false;
+    }
+  }
 }

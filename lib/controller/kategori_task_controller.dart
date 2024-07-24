@@ -15,7 +15,7 @@ getToken() async {
 
 class KategoriTaskController {
   //fungsi mendapatkan semua kategori task
-  Future getAllKategoriTask() async {
+  Future<List<KategoriTaskModel>> getAllKategoriTask() async {
     try {
       var token = await getToken();
       var response = await http.get(
