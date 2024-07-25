@@ -601,9 +601,7 @@ class _TaskState extends State<Task> {
               case 'On Progress':
                 return task.id_status_task == '1' &&
                     task.tgl_verifikasi_diterima == null &&
-                    today.year != task.tgl_planing.year &&
-                    today.month != task.tgl_planing.month &&
-                    today.day != task.tgl_planing.day;
+                    today.isBefore(task.tgl_planing);
               case 'Deadline Hari ini':
                 return task.tgl_verifikasi_diterima == null &&
                     task.id_status_task == '1' &&

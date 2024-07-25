@@ -51,6 +51,8 @@ class _ResetPasswordState extends State<ResetPassword> {
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Kolom password baru harus diisi';
+                    } else if (value.length < 6) {
+                      return 'Password minimal 6 karakter';
                     }
                     return null;
                   },
@@ -71,6 +73,8 @@ class _ResetPasswordState extends State<ResetPassword> {
                       return 'Kolom konfirmasi password baru harus diisi';
                     } else if (value != _newPasswordController.text) {
                       return 'Konfirmasi password baru tidak sama dengan password baru';
+                    } else if (value.length < 6) {
+                      return 'Password minimal 6 karakter';
                     }
                     return null;
                   },

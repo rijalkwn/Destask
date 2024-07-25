@@ -218,9 +218,6 @@ class _EditTaskState extends State<EditTask> {
                                     return 'Kolom Tanggal Target Waktu Selesai harus diisi';
                                   } else if (date.isAfter(targetWaktuSelesai)) {
                                     return 'Tanggal melebihi target waktu selesai pekerjaan';
-                                  } else if (date.isBefore(
-                                      today.subtract(Duration(days: 1)))) {
-                                    return 'Tanggal tidak boleh sebelum hari ini';
                                   } else if (_isWeekend(date)) {
                                     return 'Tanggal tidak boleh jatuh pada hari Sabtu atau Minggu';
                                   } else if (listTanggalLibur.contains(date)) {

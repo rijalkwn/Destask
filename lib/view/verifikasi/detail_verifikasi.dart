@@ -237,16 +237,6 @@ class _DetailVerifikasiState extends State<DetailVerifikasi> {
                         ? Container()
                         : detailtautan(context, 'Tautan Task', tautanTask),
                     //bukti selesai
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(
-                        'Bukti Selesai',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
                     buktiSelesai == '' ? Container() : buktiselesai(context),
                     //alasan verifikasi
                     alasanVerifikasi == ''
