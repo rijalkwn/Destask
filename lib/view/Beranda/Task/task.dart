@@ -86,6 +86,7 @@ class _TaskState extends State<Task> {
     setState(() {
       cekBobotKategoriTaskPM = cekBobot;
     });
+    print('cekBobotKategoriTaskPM : $cekBobotKategoriTaskPM');
   }
 
   getBobotKategoriTaskIndividu() async {
@@ -291,37 +292,30 @@ class _TaskState extends State<Task> {
         ],
       ),
       //jika pekerjaan bast atau cancel maka tidak bisa menambah task
-      // floatingActionButton: idStatusPekerjaan == '3' || idStatusPekerjaan == '5'
-      //     ? null
-      //     //jika seorang pm
-      //     : isPM == true
-      //         ? cekTargetPoinPM == false || cekBobotKategoriTaskPM == false
-      //             ? null
-      //             : FloatingActionButton(
-      //                 backgroundColor: GlobalColors.mainColor,
-      //                 onPressed: () {
-      //                   Get.toNamed('/add_task/$idPekerjaan');
-      //                 },
-      //                 child: const Icon(Icons.add, color: Colors.white),
-      //               )
-      //         //jika bukam pm
-      //         : cekTargetPoinIndividu == false ||
-      //                 cekBobotKategoriTaskIndividu == false
-      //             ? null
-      //             : FloatingActionButton(
-      //                 backgroundColor: GlobalColors.mainColor,
-      //                 onPressed: () {
-      //                   Get.toNamed('/add_task/$idPekerjaan');
-      //                 },
-      //                 child: const Icon(Icons.add, color: Colors.white),
-      //               ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: GlobalColors.mainColor,
-        onPressed: () {
-          Get.toNamed('/add_task/$idPekerjaan');
-        },
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
+      floatingActionButton: idStatusPekerjaan == '3' || idStatusPekerjaan == '5'
+          ? null
+          //jika seorang pm
+          : isPM == true
+              ? cekTargetPoinPM == false || cekBobotKategoriTaskPM == false
+                  ? null
+                  : FloatingActionButton(
+                      backgroundColor: GlobalColors.mainColor,
+                      onPressed: () {
+                        Get.toNamed('/add_task/$idPekerjaan');
+                      },
+                      child: const Icon(Icons.add, color: Colors.white),
+                    )
+              //jika bukam pm
+              : cekTargetPoinIndividu == false ||
+                      cekBobotKategoriTaskIndividu == false
+                  ? null
+                  : FloatingActionButton(
+                      backgroundColor: GlobalColors.mainColor,
+                      onPressed: () {
+                        Get.toNamed('/add_task/$idPekerjaan');
+                      },
+                      child: const Icon(Icons.add, color: Colors.white),
+                    ),
     );
   }
 

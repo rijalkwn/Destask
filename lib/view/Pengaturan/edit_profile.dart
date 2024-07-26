@@ -38,17 +38,55 @@ class _EditProfileState extends State<EditProfile> {
   //mengambil gambar dari gallery
   Future getImageGallery() async {
     var image = await ImagePicker().pickImage(source: ImageSource.gallery);
-    setState(() {
-      _image = File(image!.path);
-    });
+    if (image != null) {
+      final File file = File(image.path);
+      final fileSize = await file.length();
+      const maxSizeInBytes = 1 * 1024 * 1024;
+      double fileSizeInMB = maxSizeInBytes / (1024 * 1024);
+      if (fileSize <= maxSizeInBytes) {
+        setState(() {
+          _image = File(image.path);
+        });
+      } else {
+        setState(() {
+          _image = null;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                'Maksimal ukuran file adalah 1MB, ukuran file saat ini: ${fileSizeInMB.toStringAsFixed(2)}MB'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   //mengambil gambar dari camera
   Future getImageCamera() async {
     var image = await ImagePicker().pickImage(source: ImageSource.camera);
-    setState(() {
-      _image = File(image!.path);
-    });
+    if (image != null) {
+      final File file = File(image.path);
+      final fileSize = await file.length();
+      const maxSizeInBytes = 1 * 1024 * 1024;
+      double fileSizeInMB = maxSizeInBytes / (1024 * 1024);
+      if (fileSize <= maxSizeInBytes) {
+        setState(() {
+          _image = File(image.path);
+        });
+      } else {
+        setState(() {
+          _image = null;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                'Maksimal ukuran file adalah 1MB, ukuran file saat ini: ${fileSizeInMB.toStringAsFixed(2)}MB'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   //getdata user
@@ -92,6 +130,11 @@ class _EditProfileState extends State<EditProfile> {
               children: [
                 // Foto (Placeholder)
                 buildPhotoField(),
+                Text(
+                  'Note: Foto profil maksimal 1MB',
+                  style: TextStyle(color: Colors.red),
+                  textAlign: TextAlign.center,
+                ),
                 _image != null
                     ? Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -159,6 +202,8 @@ class _EditProfileState extends State<EditProfile> {
                               ),
                       )
                     : const SizedBox(),
+
+                SizedBox(height: 30),
                 // Nama
 
                 Padding(

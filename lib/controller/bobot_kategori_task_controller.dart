@@ -20,27 +20,6 @@ getIdUserGroup() async {
 }
 
 class BobotKategoriTaskController {
-  // Future getBobotKategoriTaskById(String idBobotKategoriTask) async {
-  //   try {
-  //     var token = await getToken();
-  //     var response = await http.get(
-  //       Uri.parse('$url/$idBobotKategoriTask'),
-  //       headers: {'Authorization': 'Bearer $token'},
-  //     );
-  //     if (response.statusCode == 200) {
-  //       Iterable it = json.decode(response.body);
-  //       List<BobotKategoriTaskModel> bobotKategori =
-  //           List<BobotKategoriTaskModel>.from(
-  //               it.map((e) => BobotKategoriTaskModel.fromJson(e)));
-  //       return bobotKategori;
-  //     } else {
-  //       return {};
-  //     }
-  //   } catch (e) {
-  //     return {};
-  //   }
-  // }
-
   Future<bool> cekBobotPM() async {
     try {
       var token = await getToken();
