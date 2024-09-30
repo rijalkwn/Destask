@@ -238,7 +238,7 @@ class _SubmitTaskState extends State<SubmitTask> {
                       });
                       if (_formKey.currentState!.validate()) {
                         if (_selectedFile != null) {
-                          bool success = await taskController.submit(
+                          bool success = await taskController.submitDataTask(
                             idTask,
                             _tautanTaskController.text,
                             _selectedFile!,

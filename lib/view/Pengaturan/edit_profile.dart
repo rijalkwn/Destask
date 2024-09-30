@@ -41,7 +41,7 @@ class _EditProfileState extends State<EditProfile> {
     if (image != null) {
       final File file = File(image.path);
       final fileSize = await file.length();
-      const maxSizeInBytes = 1 * 1024 * 1024;
+      const maxSizeInBytes = 5 * 1024 * 1024;
       double fileSizeInMB = maxSizeInBytes / (1024 * 1024);
       if (fileSize <= maxSizeInBytes) {
         setState(() {
@@ -54,7 +54,7 @@ class _EditProfileState extends State<EditProfile> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-                'Maksimal ukuran file adalah 1MB, ukuran file saat ini: ${fileSizeInMB.toStringAsFixed(2)}MB'),
+                'Maksimal ukuran file adalah 5MB, ukuran file saat ini: ${fileSizeInMB.toStringAsFixed(2)}MB'),
             backgroundColor: Colors.red,
           ),
         );
@@ -68,7 +68,7 @@ class _EditProfileState extends State<EditProfile> {
     if (image != null) {
       final File file = File(image.path);
       final fileSize = await file.length();
-      const maxSizeInBytes = 1 * 1024 * 1024;
+      const maxSizeInBytes = 5 * 1024 * 1024;
       double fileSizeInMB = maxSizeInBytes / (1024 * 1024);
       if (fileSize <= maxSizeInBytes) {
         setState(() {
@@ -81,7 +81,7 @@ class _EditProfileState extends State<EditProfile> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-                'Maksimal ukuran file adalah 1MB, ukuran file saat ini: ${fileSizeInMB.toStringAsFixed(2)}MB'),
+                'Maksimal ukuran file adalah 5MB, ukuran file saat ini: ${fileSizeInMB.toStringAsFixed(2)}MB'),
             backgroundColor: Colors.red,
           ),
         );
@@ -131,7 +131,7 @@ class _EditProfileState extends State<EditProfile> {
                 // Foto (Placeholder)
                 buildPhotoField(),
                 Text(
-                  'Note: Foto profil maksimal 1MB',
+                  'Note: Foto profil maksimal 5MB',
                   style: TextStyle(color: Colors.red),
                   textAlign: TextAlign.center,
                 ),

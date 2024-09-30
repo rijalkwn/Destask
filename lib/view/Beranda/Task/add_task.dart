@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:destask/controller/pekerjaan_controller.dart';
 import 'package:destask/controller/hari_libur_controller.dart';
 import 'package:destask/model/pekerjaan_model.dart';
@@ -42,6 +44,8 @@ class _AddTaskState extends State<AddTask> {
   DateTime tanggalMulai = DateTime.now();
   DateTime today = DateTime.now();
   List<DateTime> listTanggalLibur = [];
+  Future<List<KategoriTaskModel>> _kategoriFuture = Future.value([]);
+  Future<dynamic> _personilFuture = Future.value([]);
 
   @override
   void initState() {
@@ -51,6 +55,8 @@ class _AddTaskState extends State<AddTask> {
     getDataKategoriTask();
     listPersonil();
     listHariLibur();
+    _personilFuture = listPersonil();
+    _kategoriFuture = getDataKategoriTask();
   }
 
   refresh() async {
@@ -157,8 +163,7 @@ class _AddTaskState extends State<AddTask> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: GlobalColors.mainColor,
-        title:
-            const Text('Tambahkan Task', style: TextStyle(color: Colors.white)),
+        title: const Text('Tambah Task', style: TextStyle(color: Colors.white)),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: SingleChildScrollView(
@@ -225,7 +230,7 @@ class _AddTaskState extends State<AddTask> {
                 //kategori task
                 buildLabel('Kategori Task *'),
                 FutureBuilder<List<KategoriTaskModel>>(
-                  future: getDataKategoriTask(),
+                  future: _kategoriFuture,
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(
@@ -317,7 +322,7 @@ class _AddTaskState extends State<AddTask> {
                           buildLabel('Pilih Personil *'),
                           FutureBuilder(
                             future:
-                                listPersonil(), // Replace 'idpekerjaan' with your actual job ID
+                                _personilFuture, // Replace 'idpekerjaan' with your actual job ID
                             builder: (context, snapshot) {
                               if (snapshot.connectionState ==
                                   ConnectionState.waiting) {

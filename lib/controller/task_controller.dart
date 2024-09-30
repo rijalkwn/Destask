@@ -228,7 +228,7 @@ class TaskController {
   //   }
   // }
 
-  Future submit(
+  Future submitDataTask(
     String idTask,
     String tautanTask,
     File buktiFile,

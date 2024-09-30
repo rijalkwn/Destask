@@ -198,7 +198,6 @@ class _KinerjaState extends State<Kinerja> {
                         )
                       : ListView.builder(
                           shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
                           itemCount: filterKinerja.length,
                           itemBuilder: (context, index) {
                             KinerjaModel kinerjaData = filterKinerja[index];
